@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}Registro - DarkFov{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h1>CRIAR CONTA</h1>
+                <p>Junte-se à elite dos jogadores profissionais</p>
+            </div>
+            
+            <form id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <label for="email">
+                        <i class="fas fa-envelope"></i>
+                        EMAIL
+                    </label>
+                    <input type="email" id="email" name="email" required placeholder="seuemail@exemplo.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-lock"></i>
+                        SENHA
+                    </label>
+                    <div class="password-input">
+                        <input type="password" id="password" name="password" required placeholder="Senha forte (min. 8 caracteres)">
+                        <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="password-strength" id="passwordStrength"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirm_password">
+                        <i class="fas fa-lock"></i>
+                        CONFIRMAR SENHA
+                    </label>
+                    <div class="password-input">
+                        <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirme sua senha">
+                        <button type="button" class="password-toggle" onclick="togglePassword('confirm_password')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="terms" required>
+                        <span class="checkmark"></span>
+                        Aceito os <a href="#" class="terms-link">termos de uso</a> e <a href="#" class="terms-link">política de privacidade</a>
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-full">
+                    <i class="fas fa-user-plus"></i>
+                    CRIAR CONTA
+                </button>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Já possui uma conta?</p>
+                <a href="/login" class="auth-link">
+                    <i class="fas fa-sign-in-alt"></i>
+                    FAZER LOGIN
+                </a>
+            </div>
+        </div>
+        
+        <div class="auth-visual">
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="code-buttons">
+                        <span class="btn-close"></span>
+                        <span class="btn-minimize"></span>
+                        <span class="btn-maximize"></span>
+                    </div>
+                    <span class="code-title">user_registration.py</span>
+                </div>
+                <div class="code-body">
+                    <div class="code-line">
+                        <span class="line-number">01</span>
+                        <span class="code-content">
+                            <span class="keyword">class</span> <span class="class-name">DarkFovUser</span>:
+                        </span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-number">02</span>
+                        <span class="code-content">
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">def</span> <span class="function">__init__</span>(<span class="variable">self</span>, <span class="variable">email</span>):
+                        </span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-number">03</span>
+                        <span class="code-content">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="variable">self</span>.<span class="property">email</span> = <span class="variable">email</span>
+                        </span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-number">04</span>
+                        <span class="code-content">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="variable">self</span>.<span class="property">status</span> = <span class="string">"ELITE"</span>
+                        </span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-number">05</span>
+                        <span class="code-content">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="variable">self</span>.<span class="property">access_level</span> = <span class="number">9999</span>
+                        </span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-number">06</span>
+                        <span class="code-content">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># Inicializar módulos de combate</span>
+                        </span>
+                    </div>
+                    <div class="code-line code-highlight">
+                        <span class="line-number">07</span>
+                        <span class="code-content">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="variable">self</span>.<span class="function">activate_aimbot</span>()
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const registerForm = document.getElementById('registerForm');
+    const passwordField = document.getElementById('password');
+    const confirmPasswordField = document.getElementById('confirm_password');
+    const strengthIndicator = document.getElementById('passwordStrength');
+    
+    // Verificação de força da senha
+    passwordField.addEventListener('input', function() {
+        const password = this.value;
+        const strength = checkPasswordStrength(password);
+        updatePasswordStrength(strength);
+    });
+    
+    // Verificação de confirmação de senha
+    confirmPasswordField.addEventListener('input', function() {
+        const password = passwordField.value;
+        const confirmPassword = this.value;
+        
+        if (confirmPassword && password !== confirmPassword) {
+            this.setCustomValidity('Senhas não coincidem');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    registerForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(registerForm);
+        const submitBtn = registerForm.querySelector('button[type="submit"]');
+        
+        // Verificar se os termos foram aceitos
+        const termsCheckbox = document.getElementById('terms');
+        if (!termsCheckbox.checked) {
+            showToast('Você deve aceitar os termos de uso', 'error');
+            return;
+        }
+        
+        // Mostrar loading
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CRIANDO CONTA...';
+        submitBtn.disabled = true;
+        
+        try {
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                showToast('Conta criada com sucesso!', 'success');
+                
+                // Redirecionar para login após 2 segundos
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 2000);
+                
+            } else {
+                showToast(data.detail || 'Erro ao criar conta', 'error');
+            }
+            
+        } catch (error) {
+            console.error('Erro:', error);
+            showToast('Erro de conexão', 'error');
+        } finally {
+            // Restaurar botão
+            submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> CRIAR CONTA';
+            submitBtn.disabled = false;
+        }
+    });
+});
+
+function checkPasswordStrength(password) {
+    let score = 0;
+    let feedback = [];
+    
+    // Comprimento
+    if (password.length >= 8) score += 1;
+    else feedback.push('pelo menos 8 caracteres');
+    
+    // Letras minúsculas
+    if (/[a-z]/.test(password)) score += 1;
+    else feedback.push('letras minúsculas');
+    
+    // Letras maiúsculas
+    if (/[A-Z]/.test(password)) score += 1;
+    else feedback.push('letras maiúsculas');
+    
+    // Números
+    if (/\d/.test(password)) score += 1;
+    else feedback.push('números');
+    
+    // Caracteres especiais
+    if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) score += 1;
+    else feedback.push('caracteres especiais');
+    
+    return { score, feedback };
+}
+
+function updatePasswordStrength(strength) {
+    const indicator = document.getElementById('passwordStrength');
+    const { score, feedback } = strength;
+    
+    let className = '';
+    let text = '';
+    
+    if (score === 0) {
+        className = '';
+        text = '';
+    } else if (score <= 2) {
+        className = 'weak';
+        text = 'Fraca - Adicione: ' + feedback.slice(0, 2).join(', ');
+    } else if (score <= 3) {
+        className = 'medium';
+        text = 'Média - Adicione: ' + feedback.join(', ');
+    } else if (score <= 4) {
+        className = 'strong';
+        text = 'Forte';
+    } else {
+        className = 'very-strong';
+        text = 'Muito Forte';
+    }
+    
+    indicator.className = 'password-strength ' + className;
+    indicator.textContent = text;
+}
+
+function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    const toggle = field.parentElement.querySelector('.password-toggle i');
+    
+    if (field.type === 'password') {
+        field.type = 'text';
+        toggle.className = 'fas fa-eye-slash';
+    } else {
+        field.type = 'password';
+        toggle.className = 'fas fa-eye';
+    }
+}
+</script>
+{% endblock %}

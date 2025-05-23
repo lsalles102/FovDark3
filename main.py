@@ -1,0 +1,341 @@
+import os
+from datetime import datetime, timedelta
+from typing import Optional
+
+from fastapi import FastAPI, Depends, HTTPException, status, Request, Form, File, UploadFile
+from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.orm import Session
+import uvicorn
+
+from database import get_db, engine, Base
+from models import User, Payment
+from auth import (
+    authenticate_user, create_access_token, get_current_user,
+    get_password_hash, verify_password, decode_access_token
+)
+from license import verify_license, create_payment_record
+from admin import get_admin_user
+
+# Criar todas as tabelas
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="DarkFov - Sistema de Vendas", version="1.0.0")
+
+# Configurar arquivos estáticos e templates
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
+
+security = HTTPBearer()
+
+
+# Middleware para verificar token em rotas protegidas
+async def verify_token_middleware(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials
+    payload = decode_access_token(token)
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido ou expirado"
+        )
+    return payload
+
+
+# Rota principal
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+
+# Página de login
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+
+# Página de registro
+@app.get("/register", response_class=HTMLResponse)
+async def register_page(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
+
+
+# Página de compra
+@app.get("/comprar", response_class=HTMLResponse)
+async def comprar_page(request: Request):
+    return templates.TemplateResponse("comprar.html", {"request": request})
+
+
+# Painel do usuário
+@app.get("/painel", response_class=HTMLResponse)
+async def painel_page(request: Request):
+    return templates.TemplateResponse("painel.html", {"request": request})
+
+
+# Painel administrativo
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_page(request: Request):
+    return templates.TemplateResponse("admin.html", {"request": request})
+
+
+# API Endpoints
+
+# Registro de usuário
+@app.post("/api/register")
+async def register_user(
+    email: str = Form(...),
+    password: str = Form(...),
+    confirm_password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    if password != confirm_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Senhas não coincidem"
+        )
+    
+    # Verificar se usuário já existe
+    existing_user = db.query(User).filter(User.email == email).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email já está em uso"
+        )
+    
+    # Criar novo usuário
+    hashed_password = get_password_hash(password)
+    new_user = User(
+        email=email,
+        senha_hash=hashed_password,
+        data_expiracao=None  # Sem licença inicialmente
+    )
+    
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    
+    return {"message": "Usuário criado com sucesso", "user_id": new_user.id}
+
+
+# Login
+@app.post("/api/login")
+async def login_user(
+    email: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    user = authenticate_user(db, email, password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Email ou senha incorretos"
+        )
+    
+    access_token = create_access_token(data={"sub": user.email})
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "is_admin": user.is_admin,
+            "data_expiracao": user.data_expiracao.isoformat() if user.data_expiracao else None
+        }
+    }
+
+
+# Verificar licença
+@app.get("/api/license/check")
+async def check_license(
+    current_user: User = Depends(get_current_user)
+):
+    is_valid = verify_license(current_user)
+    return {
+        "valid": is_valid,
+        "email": current_user.email,
+        "data_expiracao": current_user.data_expiracao.isoformat() if current_user.data_expiracao else None
+    }
+
+
+# Processar compra
+@app.post("/api/purchase")
+async def process_purchase(
+    plano: str = Form(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Definir preços e durações
+    planos = {
+        "mensal": {"preco": 29.90, "dias": 30},
+        "trimestral": {"preco": 79.90, "dias": 90},
+        "anual": {"preco": 299.90, "dias": 365}
+    }
+    
+    if plano not in planos:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Plano inválido"
+        )
+    
+    plano_info = planos[plano]
+    
+    # Simular processamento de pagamento (em produção, integrar com gateway)
+    # Aqui você integraria com Mercado Pago, PagSeguro, etc.
+    
+    # Criar registro de pagamento
+    payment = create_payment_record(
+        db, current_user.id, plano_info["preco"]
+    )
+    
+    # Atualizar data de expiração do usuário
+    if current_user.data_expiracao and current_user.data_expiracao > datetime.utcnow():
+        # Estender licença existente
+        new_expiration = current_user.data_expiracao + timedelta(days=plano_info["dias"])
+    else:
+        # Nova licença
+        new_expiration = datetime.utcnow() + timedelta(days=plano_info["dias"])
+    
+    current_user.data_expiracao = new_expiration
+    db.commit()
+    
+    return {
+        "message": "Compra processada com sucesso",
+        "payment_id": payment.id,
+        "nova_expiracao": new_expiration.isoformat()
+    }
+
+
+# Download do script (protegido)
+@app.get("/api/download/script")
+async def download_script(
+    current_user: User = Depends(get_current_user)
+):
+    if not verify_license(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Licença expirada ou inexistente"
+        )
+    
+    # Em produção, retornaria o arquivo real
+    # Aqui vamos simular um arquivo
+    script_content = f"""
+# DarkFov Aimbot Script
+# Licenciado para: {current_user.email}
+# Válido até: {current_user.data_expiracao}
+
+import os
+import sys
+
+def main():
+    print("DarkFov Aimbot carregado com sucesso!")
+    print(f"Usuário: {current_user.email}")
+    print("Status: Licença ativa")
+    
+    # Aqui seria implementada a lógica do aimbot
+    # IMPORTANTE: Este é apenas um exemplo educacional
+    
+if __name__ == "__main__":
+    main()
+"""
+    
+    # Criar arquivo temporário
+    filename = f"darkfov_loader_{current_user.id}.py"
+    with open(filename, "w") as f:
+        f.write(script_content)
+    
+    return FileResponse(
+        filename,
+        media_type="application/octet-stream",
+        filename="darkfov_loader.py"
+    )
+
+
+# Endpoints administrativos
+@app.get("/api/admin/users")
+async def get_all_users(
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    users = db.query(User).all()
+    return [
+        {
+            "id": user.id,
+            "email": user.email,
+            "is_admin": user.is_admin,
+            "data_expiracao": user.data_expiracao.isoformat() if user.data_expiracao else None,
+            "created_at": user.created_at.isoformat() if user.created_at else None
+        }
+        for user in users
+    ]
+
+
+@app.get("/api/admin/payments")
+async def get_all_payments(
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    payments = db.query(Payment).all()
+    return [
+        {
+            "id": payment.id,
+            "user_id": payment.user_id,
+            "valor": payment.valor,
+            "data_pagamento": payment.data_pagamento.isoformat(),
+            "status": payment.status
+        }
+        for payment in payments
+    ]
+
+
+@app.post("/api/admin/users/{user_id}/license")
+async def update_user_license(
+    user_id: int,
+    dias: int = Form(...),
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuário não encontrado"
+        )
+    
+    if dias > 0:
+        user.data_expiracao = datetime.utcnow() + timedelta(days=dias)
+    else:
+        user.data_expiracao = None
+    
+    db.commit()
+    
+    return {"message": "Licença atualizada com sucesso"}
+
+
+@app.delete("/api/admin/users/{user_id}")
+async def delete_user(
+    user_id: int,
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuário não encontrado"
+        )
+    
+    if user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Não é possível deletar administradores"
+        )
+    
+    db.delete(user)
+    db.commit()
+    
+    return {"message": "Usuário deletado com sucesso"}
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=5000)

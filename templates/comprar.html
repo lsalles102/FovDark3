@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block title %}Comprar - DarkFov{% endblock %}
+
+{% block content %}
+<section class="purchase-section">
+    <div class="container">
+        <div class="purchase-header">
+            <h1>ESCOLHA SEU PLANO</h1>
+            <p>Selecione o plano ideal para dominar o campo de batalha</p>
+        </div>
+        
+        <div class="pricing-grid">
+            <div class="pricing-card" data-plan="mensal">
+                <div class="pricing-header">
+                    <h3>MENSAL</h3>
+                    <div class="price">
+                        <span class="currency">R$</span>
+                        <span class="amount">29</span>
+                        <span class="period">,90/mês</span>
+                    </div>
+                </div>
+                
+                <ul class="pricing-features">
+                    <li><i class="fas fa-check"></i> Aimbot completo</li>
+                    <li><i class="fas fa-check"></i> ESP & Wallhack</li>
+                    <li><i class="fas fa-check"></i> Anti-detecção</li>
+                    <li><i class="fas fa-check"></i> Suporte via Discord</li>
+                    <li><i class="fas fa-check"></i> Atualizações gratuitas</li>
+                    <li><i class="fas fa-check"></i> Configurações básicas</li>
+                </ul>
+                
+                <button class="btn btn-outline select-plan" data-plan="mensal">
+                    <i class="fas fa-shopping-cart"></i>
+                    SELECIONAR PLANO
+                </button>
+            </div>
+            
+            <div class="pricing-card pricing-popular" data-plan="trimestral">
+                <div class="popular-badge">MAIS POPULAR</div>
+                <div class="pricing-header">
+                    <h3>TRIMESTRAL</h3>
+                    <div class="price">
+                        <span class="currency">R$</span>
+                        <span class="amount">79</span>
+                        <span class="period">,90/3 meses</span>
+                    </div>
+                    <div class="savings">Economize 28%</div>
+                </div>
+                
+                <ul class="pricing-features">
+                    <li><i class="fas fa-check"></i> Tudo do plano mensal</li>
+                    <li><i class="fas fa-check"></i> Configurações premium</li>
+                    <li><i class="fas fa-check"></i> Suporte prioritário</li>
+                    <li><i class="fas fa-check"></i> Acesso antecipado</li>
+                    <li><i class="fas fa-check"></i> Perfis salvos</li>
+                    <li><i class="fas fa-check"></i> Hotkeys avançadas</li>
+                </ul>
+                
+                <button class="btn btn-primary select-plan" data-plan="trimestral">
+                    <i class="fas fa-crown"></i>
+                    SELECIONAR PLANO
+                </button>
+            </div>
+            
+            <div class="pricing-card" data-plan="anual">
+                <div class="pricing-header">
+                    <h3>ANUAL</h3>
+                    <div class="price">
+                        <span class="currency">R$</span>
+                        <span class="amount">299</span>
+                        <span class="period">,90/ano</span>
+                    </div>
+                    <div class="savings">Economize 31%</div>
+                </div>
+                
+                <ul class="pricing-features">
+                    <li><i class="fas fa-check"></i> Tudo dos planos anteriores</li>
+                    <li><i class="fas fa-check"></i> Recursos exclusivos</li>
+                    <li><i class="fas fa-check"></i> Suporte VIP 24/7</li>
+                    <li><i class="fas fa-check"></i> Acesso vitalício a updates</li>
+                    <li><i class="fas fa-check"></i> Beta tester program</li>
+                    <li><i class="fas fa-check"></i> Configurações ilimitadas</li>
+                </ul>
+                
+                <button class="btn btn-outline select-plan" data-plan="anual">
+                    <i class="fas fa-gem"></i>
+                    MELHOR VALOR
+                </button>
+            </div>
+        </div>
+        
+        <!-- Modal de Checkout -->
+        <div id="checkoutModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>FINALIZAR COMPRA</h2>
+                    <button class="modal-close" onclick="closeModal('checkoutModal')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="checkout-summary">
+                        <h3>Resumo do Pedido</h3>
+                        <div class="summary-item">
+                            <span class="item-name" id="selectedPlanName">Plano Trimestral</span>
+                            <span class="item-price" id="selectedPlanPrice">R$ 79,90</span>
+                        </div>
+                        <div class="summary-total">
+                            <span>Total:</span>
+                            <span id="totalPrice">R$ 79,90</span>
+                        </div>
+                    </div>
+                    
+                    <form id="checkoutForm" class="checkout-form">
+                        <input type="hidden" id="selectedPlan" name="plano" value="">
+                        
+                        <div class="payment-methods">
+                            <h3>Método de Pagamento</h3>
+                            <div class="payment-options">
+                                <label class="payment-option">
+                                    <input type="radio" name="payment_method" value="pix" checked>
+                                    <div class="payment-card">
+                                        <i class="fas fa-qrcode"></i>
+                                        <span>PIX</span>
+                                        <small>Aprovação instantânea</small>
+                                    </div>
+                                </label>
+                                
+                                <label class="payment-option">
+                                    <input type="radio" name="payment_method" value="credit">
+                                    <div class="payment-card">
+                                        <i class="fas fa-credit-card"></i>
+                                        <span>Cartão</span>
+                                        <small>Até 12x sem juros</small>
+                                    </div>
+                                </label>
+                                
+                                <label class="payment-option">
+                                    <input type="radio" name="payment_method" value="boleto">
+                                    <div class="payment-card">
+                                        <i class="fas fa-barcode"></i>
+                                        <span>Boleto</span>
+                                        <small>Vence em 3 dias</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="checkout-actions">
+                            <button type="submit" class="btn btn-primary btn-full">
+                                <i class="fas fa-shield-alt"></i>
+                                PROCESSAR PAGAMENTO
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Features Comparison -->
+        <div class="features-comparison">
+            <h2>COMPARAÇÃO DE RECURSOS</h2>
+            <div class="comparison-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Recursos</th>
+                            <th>Mensal</th>
+                            <th>Trimestral</th>
+                            <th>Anual</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Aimbot Inteligente</td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td>ESP & Wallhack</td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td>Anti-detecção</td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td>Configurações Premium</td>
+                            <td><i class="fas fa-times text-danger"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td>Suporte Prioritário</td>
+                            <td><i class="fas fa-times text-danger"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td>Recursos Exclusivos</td>
+                            <td><i class="fas fa-times text-danger"></i></td>
+                            <td><i class="fas fa-times text-danger"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td>Beta Access</td>
+                            <td><i class="fas fa-times text-danger"></i></td>
+                            <td><i class="fas fa-times text-danger"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Verificar se está logado
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+        showToast('Você precisa fazer login primeiro', 'warning');
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 2000);
+        return;
+    }
+    
+    // Event listeners para seleção de plano
+    document.querySelectorAll('.select-plan').forEach(button => {
+        button.addEventListener('click', function() {
+            const plan = this.dataset.plan;
+            openCheckoutModal(plan);
+        });
+    });
+    
+    // Event listener para o formulário de checkout
+    document.getElementById('checkoutForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        await processPayment();
+    });
+});
+
+function openCheckoutModal(plan) {
+    const plans = {
+        mensal: { name: 'Plano Mensal', price: 'R$ 29,90' },
+        trimestral: { name: 'Plano Trimestral', price: 'R$ 79,90' },
+        anual: { name: 'Plano Anual', price: 'R$ 299,90' }
+    };
+    
+    const selectedPlan = plans[plan];
+    
+    document.getElementById('selectedPlanName').textContent = selectedPlan.name;
+    document.getElementById('selectedPlanPrice').textContent = selectedPlan.price;
+    document.getElementById('totalPrice').textContent = selectedPlan.price;
+    document.getElementById('selectedPlan').value = plan;
+    
+    document.getElementById('checkoutModal').style.display = 'flex';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+async function processPayment() {
+    const form = document.getElementById('checkoutForm');
+    const formData = new FormData(form);
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const token = localStorage.getItem('access_token');
+    
+    // Mostrar loading
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSANDO...';
+    submitBtn.disabled = true;
+    
+    try {
+        const response = await fetch('/api/purchase', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showToast('Compra processada com sucesso!', 'success');
+            
+            // Fechar modal
+            closeModal('checkoutModal');
+            
+            // Redirecionar para o painel
+            setTimeout(() => {
+                window.location.href = '/painel';
+            }, 2000);
+            
+        } else {
+            if (response.status === 401) {
+                showToast('Sessão expirada. Faça login novamente.', 'error');
+                localStorage.clear();
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 2000);
+            } else {
+                showToast(data.detail || 'Erro ao processar pagamento', 'error');
+            }
+        }
+        
+    } catch (error) {
+        console.error('Erro:', error);
+        showToast('Erro de conexão', 'error');
+    } finally {
+        // Restaurar botão
+        submitBtn.innerHTML = '<i class="fas fa-shield-alt"></i> PROCESSAR PAGAMENTO';
+        submitBtn.disabled = false;
+    }
+}
+
+// Fechar modal clicando fora
+window.addEventListener('click', function(e) {
+    const modal = document.getElementById('checkoutModal');
+    if (e.target === modal) {
+        closeModal('checkoutModal');
+    }
+});
+</script>
+{% endblock %}

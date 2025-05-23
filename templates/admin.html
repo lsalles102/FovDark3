@@ -1,0 +1,544 @@
+{% extends "base.html" %}
+
+{% block title %}Painel Administrativo - DarkFov{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <!-- Admin Header -->
+        <div class="admin-header">
+            <h1>PAINEL ADMINISTRATIVO</h1>
+            <p>Controle total do sistema DarkFov</p>
+        </div>
+        
+        <!-- Admin Navigation -->
+        <div class="admin-nav">
+            <button class="admin-nav-btn active" data-tab="overview">
+                <i class="fas fa-chart-pie"></i>
+                VISÃO GERAL
+            </button>
+            <button class="admin-nav-btn" data-tab="users">
+                <i class="fas fa-users"></i>
+                USUÁRIOS
+            </button>
+            <button class="admin-nav-btn" data-tab="payments">
+                <i class="fas fa-credit-card"></i>
+                PAGAMENTOS
+            </button>
+            <button class="admin-nav-btn" data-tab="system">
+                <i class="fas fa-cogs"></i>
+                SISTEMA
+            </button>
+        </div>
+        
+        <!-- Overview Tab -->
+        <div id="overview-tab" class="admin-tab active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalUsers">-</h3>
+                        <span>Total de Usuários</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="activeLicenses">-</h3>
+                        <span>Licenças Ativas</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalRevenue">R$ -</h3>
+                        <span>Receita Total</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="todaySignups">-</h3>
+                        <span>Cadastros Hoje</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Users Tab -->
+        <div id="users-tab" class="admin-tab">
+            <div class="tab-header">
+                <h2>GERENCIAR USUÁRIOS</h2>
+                <button class="btn btn-primary" onclick="refreshUsers()">
+                    <i class="fas fa-sync-alt"></i>
+                    ATUALIZAR
+                </button>
+            </div>
+            
+            <div class="admin-table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Email</th>
+                            <th>Tipo</th>
+                            <th>Licença</th>
+                            <th>Cadastro</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="6" class="loading-row">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Carregando usuários...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Payments Tab -->
+        <div id="payments-tab" class="admin-tab">
+            <div class="tab-header">
+                <h2>HISTÓRICO DE PAGAMENTOS</h2>
+                <button class="btn btn-primary" onclick="refreshPayments()">
+                    <i class="fas fa-sync-alt"></i>
+                    ATUALIZAR
+                </button>
+            </div>
+            
+            <div class="admin-table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Usuário</th>
+                            <th>Valor</th>
+                            <th>Data</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentsTableBody">
+                        <tr>
+                            <td colspan="5" class="loading-row">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Carregando pagamentos...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- System Tab -->
+        <div id="system-tab" class="admin-tab">
+            <div class="tab-header">
+                <h2>CONFIGURAÇÕES DO SISTEMA</h2>
+            </div>
+            
+            <div class="system-controls">
+                <div class="control-group">
+                    <h3>Manutenção</h3>
+                    <div class="control-items">
+                        <button class="btn btn-outline" onclick="clearCache()">
+                            <i class="fas fa-broom"></i>
+                            LIMPAR CACHE
+                        </button>
+                        <button class="btn btn-outline" onclick="exportData()">
+                            <i class="fas fa-download"></i>
+                            EXPORTAR DADOS
+                        </button>
+                        <button class="btn btn-warning" onclick="maintenanceMode()">
+                            <i class="fas fa-tools"></i>
+                            MODO MANUTENÇÃO
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Logs do Sistema</h3>
+                    <div class="log-viewer">
+                        <pre id="systemLogs">Sistema iniciado com sucesso
+Conexão com banco estabelecida
+Todos os serviços online
+Anti-detecção ativo</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- User Edit Modal -->
+<div id="userEditModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>EDITAR USUÁRIO</h2>
+            <button class="modal-close" onclick="closeModal('userEditModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="userEditForm">
+                <input type="hidden" id="editUserId" name="user_id">
+                
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="editUserEmail" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label>Estender Licença (dias):</label>
+                    <input type="number" id="extendDays" name="dias" min="0" max="365" placeholder="0 = remover licença">
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('userEditModal')">
+                        CANCELAR
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        SALVAR
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    checkAdminAuth();
+    setupAdminNavigation();
+    loadOverviewData();
+});
+
+function checkAdminAuth() {
+    const token = localStorage.getItem('access_token');
+    const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+    
+    if (!token || !userData.is_admin) {
+        showToast('Acesso negado. Privilégios de administrador necessários.', 'error');
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 2000);
+        return;
+    }
+}
+
+function setupAdminNavigation() {
+    document.querySelectorAll('.admin-nav-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tabName = this.dataset.tab;
+            switchAdminTab(tabName);
+        });
+    });
+}
+
+function switchAdminTab(tabName) {
+    // Remover classe active de todos os botões e tabs
+    document.querySelectorAll('.admin-nav-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));
+    
+    // Adicionar classe active ao botão e tab selecionados
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+    document.getElementById(`${tabName}-tab`).classList.add('active');
+    
+    // Carregar dados específicos da tab
+    switch(tabName) {
+        case 'users':
+            loadUsers();
+            break;
+        case 'payments':
+            loadPayments();
+            break;
+        case 'overview':
+            loadOverviewData();
+            break;
+    }
+}
+
+async function loadOverviewData() {
+    // Em uma implementação real, estes dados viriam da API
+    // Aqui vamos simular alguns dados
+    document.getElementById('totalUsers').textContent = '1,234';
+    document.getElementById('activeLicenses').textContent = '892';
+    document.getElementById('totalRevenue').textContent = 'R$ 45,678';
+    document.getElementById('todaySignups').textContent = '15';
+}
+
+async function loadUsers() {
+    const token = localStorage.getItem('access_token');
+    const tbody = document.getElementById('usersTableBody');
+    
+    try {
+        const response = await fetch('/api/admin/users', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const users = await response.json();
+            displayUsers(users);
+        } else {
+            throw new Error('Erro ao carregar usuários');
+        }
+        
+    } catch (error) {
+        console.error('Erro:', error);
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="error-row">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Erro ao carregar usuários
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function displayUsers(users) {
+    const tbody = document.getElementById('usersTableBody');
+    
+    if (users.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="empty-row">
+                    <i class="fas fa-users"></i>
+                    Nenhum usuário encontrado
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = users.map(user => {
+        const licenseStatus = user.data_expiracao ? 
+            (new Date(user.data_expiracao) > new Date() ? 'Ativa' : 'Expirada') : 
+            'Sem licença';
+        
+        const userType = user.is_admin ? 'Admin' : 'Usuário';
+        const cadastroDate = user.created_at ? 
+            new Date(user.created_at).toLocaleDateString('pt-BR') : 
+            '-';
+        
+        return `
+            <tr>
+                <td>${user.id}</td>
+                <td>${user.email}</td>
+                <td>
+                    <span class="badge ${user.is_admin ? 'badge-admin' : 'badge-user'}">
+                        ${userType}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge ${licenseStatus === 'Ativa' ? 'badge-success' : licenseStatus === 'Expirada' ? 'badge-warning' : 'badge-danger'}">
+                        ${licenseStatus}
+                    </span>
+                </td>
+                <td>${cadastroDate}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn-icon btn-edit" onclick="editUser(${user.id}, '${user.email}')" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        ${!user.is_admin ? `
+                            <button class="btn-icon btn-delete" onclick="deleteUser(${user.id})" title="Deletar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+async function loadPayments() {
+    const token = localStorage.getItem('access_token');
+    const tbody = document.getElementById('paymentsTableBody');
+    
+    try {
+        const response = await fetch('/api/admin/payments', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const payments = await response.json();
+            displayPayments(payments);
+        } else {
+            throw new Error('Erro ao carregar pagamentos');
+        }
+        
+    } catch (error) {
+        console.error('Erro:', error);
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="error-row">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Erro ao carregar pagamentos
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function displayPayments(payments) {
+    const tbody = document.getElementById('paymentsTableBody');
+    
+    if (payments.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="empty-row">
+                    <i class="fas fa-credit-card"></i>
+                    Nenhum pagamento encontrado
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = payments.map(payment => {
+        const dataFormatada = new Date(payment.data_pagamento).toLocaleDateString('pt-BR');
+        const valorFormatado = `R$ ${payment.valor.toFixed(2)}`;
+        
+        return `
+            <tr>
+                <td>${payment.id}</td>
+                <td>Usuário #${payment.user_id}</td>
+                <td>${valorFormatado}</td>
+                <td>${dataFormatada}</td>
+                <td>
+                    <span class="badge badge-success">
+                        ${payment.status}
+                    </span>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function editUser(userId, userEmail) {
+    document.getElementById('editUserId').value = userId;
+    document.getElementById('editUserEmail').value = userEmail;
+    document.getElementById('extendDays').value = '';
+    
+    document.getElementById('userEditModal').style.display = 'flex';
+}
+
+async function deleteUser(userId) {
+    if (!confirm('Tem certeza que deseja deletar este usuário?')) {
+        return;
+    }
+    
+    const token = localStorage.getItem('access_token');
+    
+    try {
+        const response = await fetch(`/api/admin/users/${userId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            showToast('Usuário deletado com sucesso', 'success');
+            loadUsers(); // Recarregar lista
+        } else {
+            const data = await response.json();
+            showToast(data.detail || 'Erro ao deletar usuário', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Erro:', error);
+        showToast('Erro de conexão', 'error');
+    }
+}
+
+// Event listener para o formulário de edição
+document.getElementById('userEditForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const userId = formData.get('user_id');
+    const token = localStorage.getItem('access_token');
+    
+    try {
+        const response = await fetch(`/api/admin/users/${userId}/license`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+        
+        if (response.ok) {
+            showToast('Usuário atualizado com sucesso', 'success');
+            closeModal('userEditModal');
+            loadUsers(); // Recarregar lista
+        } else {
+            const data = await response.json();
+            showToast(data.detail || 'Erro ao atualizar usuário', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Erro:', error);
+        showToast('Erro de conexão', 'error');
+    }
+});
+
+function refreshUsers() {
+    loadUsers();
+}
+
+function refreshPayments() {
+    loadPayments();
+}
+
+function clearCache() {
+    showToast('Cache limpo com sucesso', 'success');
+}
+
+function exportData() {
+    showToast('Exportação iniciada', 'info');
+}
+
+function maintenanceMode() {
+    if (confirm('Ativar modo de manutenção? Isso impedirá novos logins.')) {
+        showToast('Modo de manutenção ativado', 'warning');
+    }
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+// Fechar modal clicando fora
+window.addEventListener('click', function(e) {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}

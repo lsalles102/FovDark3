@@ -1,0 +1,434 @@
+{% extends "base.html" %}
+
+{% block title %}Painel do Usuário - DarkFov{% endblock %}
+
+{% block content %}
+<section class="dashboard-section">
+    <div class="container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="user-welcome">
+                <h1>PAINEL DE CONTROLE</h1>
+                <p class="user-email">Bem-vindo, <span id="userEmail">carregando...</span></p>
+            </div>
+            <div class="dashboard-actions">
+                <button class="btn btn-primary" onclick="downloadScript()">
+                    <i class="fas fa-download"></i>
+                    BAIXAR SCRIPT
+                </button>
+            </div>
+        </div>
+        
+        <!-- License Status Card -->
+        <div class="dashboard-grid">
+            <div class="dashboard-card license-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-shield-alt"></i> STATUS DA LICENÇA</h3>
+                </div>
+                <div class="card-body">
+                    <div class="license-status" id="licenseStatus">
+                        <div class="status-indicator status-loading">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Verificando...</span>
+                        </div>
+                    </div>
+                    <div class="license-details" id="licenseDetails" style="display: none;">
+                        <div class="detail-item">
+                            <span class="label">Expira em:</span>
+                            <span class="value" id="expirationDate">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Dias restantes:</span>
+                            <span class="value" id="daysRemaining">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- System Status Card -->
+            <div class="dashboard-card system-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-desktop"></i> STATUS DO SISTEMA</h3>
+                </div>
+                <div class="card-body">
+                    <div class="system-stats">
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-server"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Servidores</span>
+                                <span class="stat-value status-online">ONLINE</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Anti-Detecção</span>
+                                <span class="stat-value status-active">ATIVO</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-sync-alt"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Última Atualização</span>
+                                <span class="stat-value">Hoje</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Download Section -->
+            <div class="dashboard-card download-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-download"></i> DOWNLOADS</h3>
+                </div>
+                <div class="card-body">
+                    <div class="download-items">
+                        <div class="download-item">
+                            <div class="download-info">
+                                <h4>DarkFov Loader</h4>
+                                <p>Executável principal do aimbot</p>
+                            </div>
+                            <button class="btn btn-outline btn-small" onclick="downloadScript()">
+                                <i class="fas fa-download"></i>
+                                BAIXAR
+                            </button>
+                        </div>
+                        
+                        <div class="download-item">
+                            <div class="download-info">
+                                <h4>Manual de Uso</h4>
+                                <p>Guia completo de configuração</p>
+                            </div>
+                            <button class="btn btn-outline btn-small" onclick="downloadManual()">
+                                <i class="fas fa-book"></i>
+                                BAIXAR
+                            </button>
+                        </div>
+                        
+                        <div class="download-item">
+                            <div class="download-info">
+                                <h4>Configurações Pré-definidas</h4>
+                                <p>Perfis otimizados para diferentes situações</p>
+                            </div>
+                            <button class="btn btn-outline btn-small" onclick="downloadConfigs()">
+                                <i class="fas fa-cog"></i>
+                                BAIXAR
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="dashboard-card actions-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-bolt"></i> AÇÕES RÁPIDAS</h3>
+                </div>
+                <div class="card-body">
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="window.location.href='/comprar'">
+                            <i class="fas fa-plus"></i>
+                            <span>Renovar Licença</span>
+                        </button>
+                        
+                        <button class="action-btn" onclick="openSupportModal()">
+                            <i class="fas fa-headset"></i>
+                            <span>Suporte</span>
+                        </button>
+                        
+                        <button class="action-btn" onclick="openSettingsModal()">
+                            <i class="fas fa-cog"></i>
+                            <span>Configurações</span>
+                        </button>
+                        
+                        <button class="action-btn" onclick="checkUpdates()">
+                            <i class="fas fa-sync-alt"></i>
+                            <span>Verificar Updates</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="dashboard-card activity-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-history"></i> ATIVIDADE RECENTE</h3>
+                </div>
+                <div class="card-body">
+                    <div class="activity-list" id="activityList">
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-sign-in-alt"></i>
+                            </div>
+                            <div class="activity-info">
+                                <span class="activity-text">Login realizado</span>
+                                <span class="activity-time">Agora</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Performance Stats -->
+            <div class="dashboard-card stats-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-chart-line"></i> ESTATÍSTICAS</h3>
+                </div>
+                <div class="card-body">
+                    <div class="performance-stats">
+                        <div class="performance-item">
+                            <span class="perf-label">Precisão Média</span>
+                            <div class="perf-bar">
+                                <div class="perf-fill" style="width: 95%"></div>
+                            </div>
+                            <span class="perf-value">95%</span>
+                        </div>
+                        
+                        <div class="performance-item">
+                            <span class="perf-label">Tempo de Resposta</span>
+                            <div class="perf-bar">
+                                <div class="perf-fill" style="width: 88%"></div>
+                            </div>
+                            <span class="perf-value">88ms</span>
+                        </div>
+                        
+                        <div class="performance-item">
+                            <span class="perf-label">Eficiência</span>
+                            <div class="perf-bar">
+                                <div class="perf-fill" style="width: 92%"></div>
+                            </div>
+                            <span class="perf-value">92%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Support Modal -->
+<div id="supportModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>SUPORTE TÉCNICO</h2>
+            <button class="modal-close" onclick="closeModal('supportModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="support-options">
+                <a href="#" class="support-option">
+                    <i class="fab fa-discord"></i>
+                    <div>
+                        <h3>Discord</h3>
+                        <p>Chat em tempo real com a comunidade</p>
+                    </div>
+                </a>
+                
+                <a href="#" class="support-option">
+                    <i class="fab fa-telegram"></i>
+                    <div>
+                        <h3>Telegram</h3>
+                        <p>Suporte direto via mensagens</p>
+                    </div>
+                </a>
+                
+                <a href="#" class="support-option">
+                    <i class="fas fa-ticket-alt"></i>
+                    <div>
+                        <h3>Ticket</h3>
+                        <p>Abrir chamado para problemas específicos</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    checkAuthentication();
+    loadUserData();
+    checkLicenseStatus();
+});
+
+function checkAuthentication() {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+}
+
+function loadUserData() {
+    const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+    if (userData.email) {
+        document.getElementById('userEmail').textContent = userData.email;
+    }
+}
+
+async function checkLicenseStatus() {
+    const token = localStorage.getItem('access_token');
+    
+    try {
+        const response = await fetch('/api/license/check', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            updateLicenseDisplay(data);
+        } else {
+            if (response.status === 401) {
+                localStorage.clear();
+                window.location.href = '/login';
+            } else {
+                showLicenseError();
+            }
+        }
+        
+    } catch (error) {
+        console.error('Erro ao verificar licença:', error);
+        showLicenseError();
+    }
+}
+
+function updateLicenseDisplay(licenseData) {
+    const statusContainer = document.getElementById('licenseStatus');
+    const detailsContainer = document.getElementById('licenseDetails');
+    
+    if (licenseData.valid) {
+        const expirationDate = new Date(licenseData.data_expiracao);
+        const now = new Date();
+        const daysRemaining = Math.ceil((expirationDate - now) / (1000 * 60 * 60 * 24));
+        
+        let statusClass = 'status-active';
+        let statusText = 'ATIVA';
+        
+        if (daysRemaining <= 3) {
+            statusClass = 'status-warning';
+            statusText = 'EXPIRANDO';
+        } else if (daysRemaining <= 7) {
+            statusClass = 'status-warning';
+            statusText = 'AVISO';
+        }
+        
+        statusContainer.innerHTML = `
+            <div class="status-indicator ${statusClass}">
+                <i class="fas fa-shield-alt"></i>
+                <span>${statusText}</span>
+            </div>
+        `;
+        
+        document.getElementById('expirationDate').textContent = expirationDate.toLocaleDateString('pt-BR');
+        document.getElementById('daysRemaining').textContent = daysRemaining + ' dias';
+        detailsContainer.style.display = 'block';
+        
+    } else {
+        statusContainer.innerHTML = `
+            <div class="status-indicator status-expired">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>EXPIRADA</span>
+            </div>
+        `;
+        detailsContainer.style.display = 'none';
+    }
+}
+
+function showLicenseError() {
+    const statusContainer = document.getElementById('licenseStatus');
+    statusContainer.innerHTML = `
+        <div class="status-indicator status-error">
+            <i class="fas fa-times"></i>
+            <span>ERRO</span>
+        </div>
+    `;
+}
+
+async function downloadScript() {
+    const token = localStorage.getItem('access_token');
+    
+    try {
+        const response = await fetch('/api/download/script', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'darkfov_loader.py';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            showToast('Download iniciado!', 'success');
+            
+        } else if (response.status === 403) {
+            showToast('Licença expirada. Renove para baixar o script.', 'error');
+        } else {
+            showToast('Erro ao baixar script', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Erro no download:', error);
+        showToast('Erro de conexão', 'error');
+    }
+}
+
+function downloadManual() {
+    showToast('Manual será disponibilizado em breve', 'info');
+}
+
+function downloadConfigs() {
+    showToast('Configurações serão disponibilizadas em breve', 'info');
+}
+
+function openSupportModal() {
+    document.getElementById('supportModal').style.display = 'flex';
+}
+
+function openSettingsModal() {
+    showToast('Configurações em desenvolvimento', 'info');
+}
+
+function checkUpdates() {
+    showToast('Verificando atualizações...', 'info');
+    setTimeout(() => {
+        showToast('Sistema atualizado!', 'success');
+    }, 2000);
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+// Fechar modal clicando fora
+window.addEventListener('click', function(e) {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}

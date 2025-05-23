@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Login - DarkFov{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-icon">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <h1>ACESSO RESTRITO</h1>
+                <p>Entre com suas credenciais para acessar o sistema</p>
+            </div>
+            
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="email">
+                        <i class="fas fa-envelope"></i>
+                        EMAIL
+                    </label>
+                    <input type="email" id="email" name="email" required placeholder="seuemail@exemplo.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-lock"></i>
+                        SENHA
+                    </label>
+                    <div class="password-input">
+                        <input type="password" id="password" name="password" required placeholder="Sua senha secreta">
+                        <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-full">
+                    <i class="fas fa-sign-in-alt"></i>
+                    INICIAR SESSÃO
+                </button>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Não possui uma conta?</p>
+                <a href="/register" class="auth-link">
+                    <i class="fas fa-user-plus"></i>
+                    CRIAR CONTA
+                </a>
+            </div>
+        </div>
+        
+        <div class="auth-visual">
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-buttons">
+                        <span class="btn-close"></span>
+                        <span class="btn-minimize"></span>
+                        <span class="btn-maximize"></span>
+                    </div>
+                    <span class="terminal-title">DarkFov Terminal</span>
+                </div>
+                <div class="terminal-body">
+                    <div class="terminal-line">
+                        <span class="prompt">root@darkfov:~$</span>
+                        <span class="command">./authenticate.sh</span>
+                    </div>
+                    <div class="terminal-line">
+                        <span class="output">Initializing security protocols...</span>
+                    </div>
+                    <div class="terminal-line">
+                        <span class="output success">✓ Anti-detection systems online</span>
+                    </div>
+                    <div class="terminal-line">
+                        <span class="output success">✓ Encryption modules loaded</span>
+                    </div>
+                    <div class="terminal-line">
+                        <span class="output warning">⚠ Awaiting user authentication</span>
+                    </div>
+                    <div class="terminal-line terminal-cursor">
+                        <span class="prompt">root@darkfov:~$</span>
+                        <span class="cursor">_</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(loginForm);
+        const submitBtn = loginForm.querySelector('button[type="submit"]');
+        
+        // Mostrar loading
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AUTENTICANDO...';
+        submitBtn.disabled = true;
+        
+        try {
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                // Salvar token
+                localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('user_data', JSON.stringify(data.user));
+                
+                showToast('Login realizado com sucesso!', 'success');
+                
+                // Redirecionar baseado no tipo de usuário
+                setTimeout(() => {
+                    if (data.user.is_admin) {
+                        window.location.href = '/admin';
+                    } else {
+                        window.location.href = '/painel';
+                    }
+                }, 1000);
+                
+            } else {
+                showToast(data.detail || 'Erro no login', 'error');
+            }
+            
+        } catch (error) {
+            console.error('Erro:', error);
+            showToast('Erro de conexão', 'error');
+        } finally {
+            // Restaurar botão
+            submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> INICIAR SESSÃO';
+            submitBtn.disabled = false;
+        }
+    });
+    
+    // Verificar se já está logado
+    const token = localStorage.getItem('access_token');
+    if (token) {
+        const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+        if (userData.is_admin) {
+            window.location.href = '/admin';
+        } else {
+            window.location.href = '/painel';
+        }
+    }
+});
+
+function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    const toggle = field.parentElement.querySelector('.password-toggle i');
+    
+    if (field.type === 'password') {
+        field.type = 'text';
+        toggle.className = 'fas fa-eye-slash';
+    } else {
+        field.type = 'password';
+        toggle.className = 'fas fa-eye';
+    }
+}
+</script>
+{% endblock %}
