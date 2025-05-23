@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = ['python311', 'postgresql']
+
+[phases.install]
+cmds = ['pip install fastapi uvicorn sqlalchemy psycopg2-binary python-jose[cryptography] passlib[bcrypt] python-multipart jinja2 aiofiles']
+
+[start]
+cmd = 'uvicorn main:app --host 0.0.0.0 --port $PORT'
