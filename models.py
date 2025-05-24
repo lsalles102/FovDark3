@@ -24,14 +24,35 @@ class Payment(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=True)
     valor = Column(Float, nullable=False)
     data_pagamento = Column(DateTime, default=datetime.utcnow)
     status = Column(String, default="completed")  # completed, pending, failed
     plano = Column(String, nullable=True)  # mensal, trimestral, anual
     gateway_id = Column(String, nullable=True)  # ID do gateway de pagamento
     
-    # Relacionamento com usuário
+    # Relacionamento com usuário e produto
     user = relationship("User", back_populates="payments")
+    product = relationship("Product", back_populates="payments")
+
+
+class Product(Base):
+    __tablename__ = "products"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    price = Column(Float, nullable=False)
+    duration_days = Column(Integer, nullable=False)  # Duração em dias
+    image_url = Column(String, nullable=True)
+    is_active = Column(Boolean, default=True)
+    is_featured = Column(Boolean, default=False)
+    features = Column(Text, nullable=True)  # JSON com lista de recursos
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relacionamento com pagamentos
+    payments = relationship("Payment", back_populates="product")
 
 
 class AdminLog(Base):

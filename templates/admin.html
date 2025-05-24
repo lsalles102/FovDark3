@@ -21,6 +21,10 @@
                 <i class="fas fa-users"></i>
                 USUÁRIOS
             </button>
+            <button class="admin-nav-btn" data-tab="products">
+                <i class="fas fa-box"></i>
+                PRODUTOS
+            </button>
             <button class="admin-nav-btn" data-tab="payments">
                 <i class="fas fa-credit-card"></i>
                 PAGAMENTOS
@@ -76,6 +80,47 @@
             </div>
         </div>
         
+        <!-- Products Tab -->
+        <div id="products-tab" class="admin-tab">
+            <div class="tab-header">
+                <h2>GERENCIAR PRODUTOS</h2>
+                <div class="tab-actions">
+                    <button class="btn btn-primary" onclick="openProductModal()">
+                        <i class="fas fa-plus"></i>
+                        NOVO PRODUTO
+                    </button>
+                    <button class="btn btn-secondary" onclick="refreshProducts()">
+                        <i class="fas fa-sync-alt"></i>
+                        ATUALIZAR
+                    </button>
+                </div>
+            </div>
+            
+            <div class="admin-table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Preço</th>
+                            <th>Duração</th>
+                            <th>Status</th>
+                            <th>Destaque</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                        <tr>
+                            <td colspan="7" class="loading-row">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Carregando produtos...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- Users Tab -->
         <div id="users-tab" class="admin-tab">
             <div class="tab-header">
@@ -182,6 +227,85 @@ Anti-detecção ativo</pre>
     </div>
 </section>
 
+<!-- Product Modal -->
+<div id="productModal" class="modal">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h2 id="productModalTitle">NOVO PRODUTO</h2>
+            <button class="modal-close" onclick="closeModal('productModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="productForm">
+                <input type="hidden" id="productId" name="product_id">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productName">Nome do Produto:</label>
+                        <input type="text" id="productName" name="name" required placeholder="Ex: DarkFov Premium">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productPrice">Preço (R$):</label>
+                        <input type="number" id="productPrice" name="price" step="0.01" min="0" required placeholder="29.90">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productDuration">Duração (dias):</label>
+                        <input type="number" id="productDuration" name="duration_days" min="1" required placeholder="30">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productImage">URL da Imagem:</label>
+                        <input type="url" id="productImage" name="image_url" placeholder="https://exemplo.com/imagem.jpg">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="productDescription">Descrição:</label>
+                    <textarea id="productDescription" name="description" rows="3" placeholder="Descrição detalhada do produto..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="productFeatures">Recursos (um por linha):</label>
+                    <textarea id="productFeatures" name="features" rows="5" placeholder="Aimbot inteligente&#10;ESP & Wallhack&#10;Anti-detecção&#10;Suporte 24/7"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="productActive" name="is_active" checked>
+                            <span class="checkmark"></span>
+                            Produto ativo
+                        </label>
+                    </div>
+                    
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="productFeatured" name="is_featured">
+                            <span class="checkmark"></span>
+                            Produto em destaque
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('productModal')">
+                        CANCELAR
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        SALVAR PRODUTO
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- User Edit Modal -->
 <div id="userEditModal" class="modal">
     <div class="modal-content">
@@ -263,6 +387,9 @@ function switchAdminTab(tabName) {
     switch(tabName) {
         case 'users':
             loadUsers();
+            break;
+        case 'products':
+            loadProducts();
             break;
         case 'payments':
             loadPayments();
@@ -529,6 +656,285 @@ function maintenanceMode() {
 
 function closeModal(modalId) {
     document.getElementById(modalId).style.display = 'none';
+}
+
+// Funções para gerenciar produtos
+async function loadProducts() {
+    const token = localStorage.getItem('access_token');
+    const tbody = document.getElementById('productsTableBody');
+    
+    try {
+        const response = await fetch('/api/admin/products', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const products = await response.json();
+            displayProducts(products);
+        } else {
+            throw new Error('Erro ao carregar produtos');
+        }
+        
+    } catch (error) {
+        console.error('Erro:', error);
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="error-row">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Erro ao carregar produtos
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function displayProducts(products) {
+    const tbody = document.getElementById('productsTableBody');
+    
+    if (products.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="empty-row">
+                    <i class="fas fa-box"></i>
+                    Nenhum produto encontrado
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = products.map(product => {
+        const statusBadge = product.is_active ? 
+            '<span class="badge badge-success">Ativo</span>' : 
+            '<span class="badge badge-danger">Inativo</span>';
+        
+        const featuredBadge = product.is_featured ? 
+            '<span class="badge badge-warning">Sim</span>' : 
+            '<span class="badge badge-secondary">Não</span>';
+        
+        const priceFormatted = `R$ ${product.price.toFixed(2)}`;
+        const durationText = `${product.duration_days} dias`;
+        
+        return `
+            <tr>
+                <td>${product.id}</td>
+                <td>${product.name}</td>
+                <td>${priceFormatted}</td>
+                <td>${durationText}</td>
+                <td>${statusBadge}</td>
+                <td>${featuredBadge}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn-icon btn-edit" onclick="editProduct(${product.id})" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon ${product.is_active ? 'btn-warning' : 'btn-success'}" 
+                                onclick="toggleProductStatus(${product.id}, ${!product.is_active})" 
+                                title="${product.is_active ? 'Pausar' : 'Ativar'}">
+                            <i class="fas ${product.is_active ? 'fa-pause' : 'fa-play'}"></i>
+                        </button>
+                        <button class="btn-icon btn-delete" onclick="deleteProduct(${product.id})" title="Deletar">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function openProductModal(productId = null) {
+    const modal = document.getElementById('productModal');
+    const title = document.getElementById('productModalTitle');
+    const form = document.getElementById('productForm');
+    
+    if (productId) {
+        title.textContent = 'EDITAR PRODUTO';
+        loadProductData(productId);
+    } else {
+        title.textContent = 'NOVO PRODUTO';
+        form.reset();
+        document.getElementById('productId').value = '';
+        document.getElementById('productActive').checked = true;
+    }
+    
+    modal.style.display = 'flex';
+}
+
+async function loadProductData(productId) {
+    const token = localStorage.getItem('access_token');
+    
+    try {
+        const response = await fetch('/api/admin/products', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const products = await response.json();
+            const product = products.find(p => p.id === productId);
+            
+            if (product) {
+                document.getElementById('productId').value = product.id;
+                document.getElementById('productName').value = product.name;
+                document.getElementById('productDescription').value = product.description || '';
+                document.getElementById('productPrice').value = product.price;
+                document.getElementById('productDuration').value = product.duration_days;
+                document.getElementById('productImage').value = product.image_url || '';
+                document.getElementById('productFeatures').value = product.features || '';
+                document.getElementById('productActive').checked = product.is_active;
+                document.getElementById('productFeatured').checked = product.is_featured;
+            }
+        }
+    } catch (error) {
+        console.error('Erro ao carregar dados do produto:', error);
+        showToast('Erro ao carregar dados do produto', 'error');
+    }
+}
+
+async function editProduct(productId) {
+    openProductModal(productId);
+}
+
+async function toggleProductStatus(productId, newStatus) {
+    const token = localStorage.getItem('access_token');
+    
+    try {
+        // Primeiro buscar os dados atuais do produto
+        const getResponse = await fetch('/api/admin/products', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!getResponse.ok) {
+            throw new Error('Erro ao buscar dados do produto');
+        }
+        
+        const products = await getResponse.json();
+        const product = products.find(p => p.id === productId);
+        
+        if (!product) {
+            throw new Error('Produto não encontrado');
+        }
+        
+        // Criar FormData com todos os dados necessários
+        const formData = new FormData();
+        formData.append('name', product.name);
+        formData.append('description', product.description || '');
+        formData.append('price', product.price);
+        formData.append('duration_days', product.duration_days);
+        formData.append('image_url', product.image_url || '');
+        formData.append('features', product.features || '');
+        formData.append('is_active', newStatus);
+        formData.append('is_featured', product.is_featured);
+        
+        const response = await fetch(`/api/admin/products/${productId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+        
+        if (response.ok) {
+            showToast(`Produto ${newStatus ? 'ativado' : 'pausado'} com sucesso`, 'success');
+            loadProducts();
+        } else {
+            const data = await response.json();
+            showToast(data.detail || 'Erro ao alterar status do produto', 'error');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        showToast('Erro ao alterar status do produto', 'error');
+    }
+}
+
+async function deleteProduct(productId) {
+    if (!confirm('Tem certeza que deseja deletar este produto?')) {
+        return;
+    }
+    
+    const token = localStorage.getItem('access_token');
+    
+    try {
+        const response = await fetch(`/api/admin/products/${productId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            showToast('Produto deletado com sucesso', 'success');
+            loadProducts();
+        } else {
+            const data = await response.json();
+            showToast(data.detail || 'Erro ao deletar produto', 'error');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        showToast('Erro ao deletar produto', 'error');
+    }
+}
+
+function refreshProducts() {
+    loadProducts();
+}
+
+// Event listener para o formulário de produtos
+document.addEventListener('DOMContentLoaded', function() {
+    const productForm = document.getElementById('productForm');
+    if (productForm) {
+        productForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await saveProduct();
+        });
+    }
+});
+
+async function saveProduct() {
+    const form = document.getElementById('productForm');
+    const formData = new FormData(form);
+    const token = localStorage.getItem('access_token');
+    const productId = document.getElementById('productId').value;
+    
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SALVANDO...';
+    submitBtn.disabled = true;
+    
+    try {
+        const url = productId ? `/api/admin/products/${productId}` : '/api/admin/products';
+        const method = productId ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+        
+        if (response.ok) {
+            const action = productId ? 'atualizado' : 'criado';
+            showToast(`Produto ${action} com sucesso`, 'success');
+            closeModal('productModal');
+            loadProducts();
+        } else {
+            const data = await response.json();
+            showToast(data.detail || 'Erro ao salvar produto', 'error');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        showToast('Erro ao salvar produto', 'error');
+    } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
 }
 
 // Fechar modal clicando fora

@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 import uvicorn
 
 from database import get_db, engine, Base
-from models import User, Payment
+from models import User, Payment, Product
 from auth import (
     authenticate_user, create_access_token, get_current_user,
     get_password_hash, verify_password, decode_access_token
@@ -251,7 +251,7 @@ if __name__ == "__main__":
     )
 
 
-# Endpoints administrativos
+# Endpoints administrativos - Usuários
 @app.get("/api/admin/users")
 async def get_all_users(
     admin_user: User = Depends(get_admin_user),
@@ -267,6 +267,134 @@ async def get_all_users(
             "created_at": user.created_at.isoformat() if user.created_at else None
         }
         for user in users
+    ]
+
+
+# Endpoints administrativos - Produtos
+@app.get("/api/admin/products")
+async def get_all_products(
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    products = db.query(Product).all()
+    return [
+        {
+            "id": product.id,
+            "name": product.name,
+            "description": product.description,
+            "price": product.price,
+            "duration_days": product.duration_days,
+            "image_url": product.image_url,
+            "is_active": product.is_active,
+            "is_featured": product.is_featured,
+            "features": product.features,
+            "created_at": product.created_at.isoformat() if product.created_at else None,
+            "updated_at": product.updated_at.isoformat() if product.updated_at else None
+        }
+        for product in products
+    ]
+
+
+@app.post("/api/admin/products")
+async def create_product(
+    name: str = Form(...),
+    description: str = Form(""),
+    price: float = Form(...),
+    duration_days: int = Form(...),
+    image_url: str = Form(""),
+    features: str = Form(""),
+    is_featured: bool = Form(False),
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    new_product = Product(
+        name=name,
+        description=description,
+        price=price,
+        duration_days=duration_days,
+        image_url=image_url,
+        features=features,
+        is_featured=is_featured,
+        is_active=True
+    )
+    
+    db.add(new_product)
+    db.commit()
+    db.refresh(new_product)
+    
+    return {"message": "Produto criado com sucesso", "product_id": new_product.id}
+
+
+@app.put("/api/admin/products/{product_id}")
+async def update_product(
+    product_id: int,
+    name: str = Form(...),
+    description: str = Form(""),
+    price: float = Form(...),
+    duration_days: int = Form(...),
+    image_url: str = Form(""),
+    features: str = Form(""),
+    is_active: bool = Form(True),
+    is_featured: bool = Form(False),
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Produto não encontrado"
+        )
+    
+    product.name = name
+    product.description = description
+    product.price = price
+    product.duration_days = duration_days
+    product.image_url = image_url
+    product.features = features
+    product.is_active = is_active
+    product.is_featured = is_featured
+    
+    db.commit()
+    
+    return {"message": "Produto atualizado com sucesso"}
+
+
+@app.delete("/api/admin/products/{product_id}")
+async def delete_product(
+    product_id: int,
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Produto não encontrado"
+        )
+    
+    db.delete(product)
+    db.commit()
+    
+    return {"message": "Produto deletado com sucesso"}
+
+
+# Endpoint público para listar produtos ativos
+@app.get("/api/products")
+async def get_active_products(db: Session = Depends(get_db)):
+    products = db.query(Product).filter(Product.is_active == True).all()
+    return [
+        {
+            "id": product.id,
+            "name": product.name,
+            "description": product.description,
+            "price": product.price,
+            "duration_days": product.duration_days,
+            "image_url": product.image_url,
+            "is_featured": product.is_featured,
+            "features": product.features
+        }
+        for product in products
     ]
 
 
