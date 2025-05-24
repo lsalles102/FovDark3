@@ -958,6 +958,183 @@ h6 { font-size: 1rem; }
     max-width: 700px;
 }
 
+/* Theme Editor Styles */
+.theme-editor {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.theme-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.theme-section {
+    background: hsl(var(--bg-secondary));
+    border: 1px solid hsl(var(--border-primary));
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+}
+
+.theme-section h3 {
+    color: hsl(var(--primary));
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Orbitron', monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.color-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.color-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.color-item label {
+    color: hsl(var(--text-primary));
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 0.5px;
+}
+
+.color-item input[type="color"] {
+    width: 60px;
+    height: 40px;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    background: none;
+}
+
+.color-item input[type="text"] {
+    flex: 1;
+    margin-left: 0.5rem;
+}
+
+.font-controls,
+.image-controls,
+.text-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.theme-section select {
+    width: 100%;
+    padding: 0.75rem;
+    background: hsl(var(--bg-tertiary));
+    border: 2px solid hsl(var(--border-primary));
+    border-radius: var(--radius-md);
+    color: hsl(var(--text-primary));
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.theme-section select:focus {
+    outline: none;
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.2);
+}
+
+.theme-preview {
+    position: sticky;
+    top: 2rem;
+    height: fit-content;
+}
+
+.theme-preview h3 {
+    color: hsl(var(--primary));
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Orbitron', monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.preview-container {
+    background: hsl(var(--bg-secondary));
+    border: 1px solid hsl(var(--border-primary));
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+}
+
+.preview-card {
+    background: linear-gradient(135deg, hsl(var(--bg-primary)) 0%, hsl(var(--bg-secondary)) 100%);
+    border: 1px solid hsl(var(--primary) / 0.3);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    text-align: center;
+    box-shadow: var(--shadow-glow);
+    transition: all var(--transition-medium);
+}
+
+.preview-header h4 {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.5rem;
+    color: hsl(var(--primary));
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.preview-content h5 {
+    font-size: 1.2rem;
+    color: hsl(var(--text-primary));
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.preview-content p {
+    color: hsl(var(--text-secondary));
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.preview-btn {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all var(--transition-medium);
+    box-shadow: var(--shadow-glow);
+}
+
+.preview-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px hsl(var(--primary) / 0.4);
+}
+
+@media (max-width: 1200px) {
+    .theme-editor {
+        grid-template-columns: 1fr;
+    }
+    
+    .theme-preview {
+        position: static;
+    }
+}
+
 @media (max-width: 768px) {
     .form-row {
         grid-template-columns: 1fr;
@@ -971,6 +1148,28 @@ h6 { font-size: 1rem; }
     
     .modal-body {
         padding: 20px;
+    }
+    
+    .color-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .color-item {
+        flex-direction: row;
+        align-items: center;
+    }
+    
+    .color-item input[type="color"] {
+        width: 40px;
+        height: 30px;
+    }
+    
+    .theme-sections {
+        gap: 1.5rem;
+    }
+    
+    .theme-section {
+        padding: 1rem;
     }
 }
 

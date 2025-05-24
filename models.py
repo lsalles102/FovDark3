@@ -55,6 +55,17 @@ class Product(Base):
     payments = relationship("Payment", back_populates="product")
 
 
+class SiteSettings(Base):
+    __tablename__ = "site_settings"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    key = Column(String, unique=True, nullable=False)
+    value = Column(Text, nullable=True)
+    category = Column(String, nullable=False)  # theme, content, images, etc.
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class AdminLog(Base):
     __tablename__ = "admin_logs"
     

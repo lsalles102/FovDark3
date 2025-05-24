@@ -29,6 +29,10 @@
                 <i class="fas fa-credit-card"></i>
                 PAGAMENTOS
             </button>
+            <button class="admin-nav-btn" data-tab="themes">
+                <i class="fas fa-palette"></i>
+                TEMAS
+            </button>
             <button class="admin-nav-btn" data-tab="system">
                 <i class="fas fa-cogs"></i>
                 SISTEMA
@@ -188,6 +192,148 @@
             </div>
         </div>
         
+        <!-- Themes Tab -->
+        <div id="themes-tab" class="admin-tab">
+            <div class="tab-header">
+                <h2>PERSONALIZAÇÃO DE TEMAS</h2>
+                <div class="tab-actions">
+                    <button class="btn btn-primary" onclick="saveThemeSettings()">
+                        <i class="fas fa-save"></i>
+                        SALVAR TEMAS
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadThemeSettings()">
+                        <i class="fas fa-sync-alt"></i>
+                        RECARREGAR
+                    </button>
+                </div>
+            </div>
+            
+            <div class="theme-editor">
+                <div class="theme-sections">
+                    <!-- Cores do Tema -->
+                    <div class="theme-section">
+                        <h3><i class="fas fa-palette"></i> CORES DO TEMA</h3>
+                        <div class="color-grid">
+                            <div class="color-item">
+                                <label>Cor Primária:</label>
+                                <input type="color" id="primary-color" value="#00ffff">
+                                <input type="text" id="primary-color-text" value="#00ffff" placeholder="#00ffff">
+                            </div>
+                            <div class="color-item">
+                                <label>Cor Secundária:</label>
+                                <input type="color" id="secondary-color" value="#e94560">
+                                <input type="text" id="secondary-color-text" value="#e94560" placeholder="#e94560">
+                            </div>
+                            <div class="color-item">
+                                <label>Cor de Fundo:</label>
+                                <input type="color" id="bg-color" value="#0f0f23">
+                                <input type="text" id="bg-color-text" value="#0f0f23" placeholder="#0f0f23">
+                            </div>
+                            <div class="color-item">
+                                <label>Cor do Texto:</label>
+                                <input type="color" id="text-color" value="#ffffff">
+                                <input type="text" id="text-color-text" value="#ffffff" placeholder="#ffffff">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Fontes -->
+                    <div class="theme-section">
+                        <h3><i class="fas fa-font"></i> FONTES</h3>
+                        <div class="font-controls">
+                            <div class="form-group">
+                                <label>Fonte Principal:</label>
+                                <select id="primary-font">
+                                    <option value="Orbitron">Orbitron (Atual)</option>
+                                    <option value="Rajdhani">Rajdhani</option>
+                                    <option value="Exo 2">Exo 2</option>
+                                    <option value="Space Grotesk">Space Grotesk</option>
+                                    <option value="JetBrains Mono">JetBrains Mono</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Fonte Secundária:</label>
+                                <select id="secondary-font">
+                                    <option value="Roboto">Roboto (Atual)</option>
+                                    <option value="Inter">Inter</option>
+                                    <option value="Poppins">Poppins</option>
+                                    <option value="Nunito">Nunito</option>
+                                    <option value="Open Sans">Open Sans</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Imagens -->
+                    <div class="theme-section">
+                        <h3><i class="fas fa-images"></i> IMAGENS E CAPAS</h3>
+                        <div class="image-controls">
+                            <div class="form-group">
+                                <label>Logo Principal:</label>
+                                <input type="url" id="main-logo" placeholder="https://exemplo.com/logo.png">
+                            </div>
+                            <div class="form-group">
+                                <label>Imagem de Fundo Hero:</label>
+                                <input type="url" id="hero-bg" placeholder="https://exemplo.com/hero-bg.jpg">
+                            </div>
+                            <div class="form-group">
+                                <label>Favicon:</label>
+                                <input type="url" id="favicon" placeholder="https://exemplo.com/favicon.ico">
+                            </div>
+                            <div class="form-group">
+                                <label>Imagem do Produto:</label>
+                                <input type="url" id="product-image" placeholder="https://exemplo.com/produto.jpg">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Textos -->
+                    <div class="theme-section">
+                        <h3><i class="fas fa-edit"></i> TEXTOS DO SITE</h3>
+                        <div class="text-controls">
+                            <div class="form-group">
+                                <label>Nome do Site:</label>
+                                <input type="text" id="site-name" value="DarkFov" placeholder="Nome do site">
+                            </div>
+                            <div class="form-group">
+                                <label>Slogan Principal:</label>
+                                <input type="text" id="main-slogan" value="DOMINE O CAMPO DE BATALHA" placeholder="Slogan principal">
+                            </div>
+                            <div class="form-group">
+                                <label>Descrição Hero:</label>
+                                <textarea id="hero-description" rows="3" placeholder="Descrição da seção hero...">O aimbot mais avançado para BloodStrike. Recursos premium, anti-detecção e suporte 24/7.</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Texto do Botão Principal:</label>
+                                <input type="text" id="main-cta" value="COMEÇAR AGORA" placeholder="Texto do botão">
+                            </div>
+                            <div class="form-group">
+                                <label>Copyright/Footer:</label>
+                                <input type="text" id="footer-text" value="© 2024 DarkFov. Todos os direitos reservados." placeholder="Texto do rodapé">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Preview -->
+                <div class="theme-preview">
+                    <h3><i class="fas fa-eye"></i> PREVIEW EM TEMPO REAL</h3>
+                    <div class="preview-container">
+                        <div class="preview-card" id="theme-preview">
+                            <div class="preview-header">
+                                <h4 id="preview-site-name">DarkFov</h4>
+                            </div>
+                            <div class="preview-content">
+                                <h5 id="preview-slogan">DOMINE O CAMPO DE BATALHA</h5>
+                                <p id="preview-description">O aimbot mais avançado para BloodStrike.</p>
+                                <button class="preview-btn" id="preview-cta">COMEÇAR AGORA</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- System Tab -->
         <div id="system-tab" class="admin-tab">
             <div class="tab-header">

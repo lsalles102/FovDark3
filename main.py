@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 import uvicorn
 
 from database import get_db, engine, Base
-from models import User, Payment, Product
+from models import User, Payment, Product, SiteSettings
 from auth import (
     authenticate_user, create_access_token, get_current_user,
     get_password_hash, verify_password, decode_access_token
@@ -463,6 +463,66 @@ async def delete_user(
     db.commit()
     
     return {"message": "Usuário deletado com sucesso"}
+
+
+# Endpoints para configurações do site
+@app.get("/api/admin/settings")
+async def get_site_settings(
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    settings = db.query(SiteSettings).all()
+    settings_dict = {}
+    for setting in settings:
+        if setting.category not in settings_dict:
+            settings_dict[setting.category] = {}
+        settings_dict[setting.category][setting.key] = setting.value
+    return settings_dict
+
+
+@app.post("/api/admin/settings")
+async def update_site_settings(
+    settings_data: dict,
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    for category, settings in settings_data.items():
+        for key, value in settings.items():
+            # Buscar configuração existente
+            setting = db.query(SiteSettings).filter(
+                SiteSettings.key == key,
+                SiteSettings.category == category
+            ).first()
+            
+            if setting:
+                setting.value = value
+                setting.updated_at = datetime.utcnow()
+            else:
+                new_setting = SiteSettings(
+                    key=key,
+                    value=value,
+                    category=category
+                )
+                db.add(new_setting)
+    
+    db.commit()
+    return {"message": "Configurações atualizadas com sucesso"}
+
+
+@app.get("/api/settings/public")
+async def get_public_settings(db: Session = Depends(get_db)):
+    """Endpoint público para obter configurações do site"""
+    settings = db.query(SiteSettings).filter(
+        SiteSettings.category.in_(["theme", "content", "images"])
+    ).all()
+    
+    settings_dict = {}
+    for setting in settings:
+        if setting.category not in settings_dict:
+            settings_dict[setting.category] = {}
+        settings_dict[setting.category][setting.key] = setting.value
+    
+    return settings_dict
 
 
 if __name__ == "__main__":
