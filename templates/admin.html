@@ -540,6 +540,10 @@ function switchAdminTab(tabName) {
         case 'payments':
             loadPayments();
             break;
+        case 'themes':
+            loadThemeSettings();
+            setupThemeEditor();
+            break;
         case 'overview':
             loadOverviewData();
             break;
@@ -1080,6 +1084,184 @@ async function saveProduct() {
     } finally {
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
+    }
+}
+
+// Funções para gerenciar temas
+async function loadThemeSettings() {
+    const token = localStorage.getItem('access_token');
+    
+    try {
+        const response = await fetch('/api/admin/settings', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const settings = await response.json();
+            populateThemeForm(settings);
+        } else {
+            console.log('Nenhuma configuração encontrada, usando valores padrão');
+        }
+    } catch (error) {
+        console.error('Erro ao carregar configurações:', error);
+    }
+}
+
+function populateThemeForm(settings) {
+    // Carregar cores
+    if (settings.theme) {
+        document.getElementById('primary-color').value = settings.theme['primary-color'] || '#00ffff';
+        document.getElementById('primary-color-text').value = settings.theme['primary-color'] || '#00ffff';
+        document.getElementById('secondary-color').value = settings.theme['secondary-color'] || '#e94560';
+        document.getElementById('secondary-color-text').value = settings.theme['secondary-color'] || '#e94560';
+        document.getElementById('bg-color').value = settings.theme['bg-color'] || '#0f0f23';
+        document.getElementById('bg-color-text').value = settings.theme['bg-color'] || '#0f0f23';
+        document.getElementById('text-color').value = settings.theme['text-color'] || '#ffffff';
+        document.getElementById('text-color-text').value = settings.theme['text-color'] || '#ffffff';
+        
+        // Carregar fontes
+        document.getElementById('primary-font').value = settings.theme['primary-font'] || 'Orbitron';
+        document.getElementById('secondary-font').value = settings.theme['secondary-font'] || 'Roboto';
+    }
+    
+    // Carregar imagens
+    if (settings.images) {
+        document.getElementById('main-logo').value = settings.images['main-logo'] || '';
+        document.getElementById('hero-bg').value = settings.images['hero-bg'] || '';
+        document.getElementById('favicon').value = settings.images['favicon'] || '';
+        document.getElementById('product-image').value = settings.images['product-image'] || '';
+    }
+    
+    // Carregar textos
+    if (settings.content) {
+        document.getElementById('site-name').value = settings.content['site-name'] || 'DarkFov';
+        document.getElementById('main-slogan').value = settings.content['main-slogan'] || 'DOMINE O CAMPO DE BATALHA';
+        document.getElementById('hero-description').value = settings.content['hero-description'] || 'O aimbot mais avançado para BloodStrike. Recursos premium, anti-detecção e suporte 24/7.';
+        document.getElementById('main-cta').value = settings.content['main-cta'] || 'COMEÇAR AGORA';
+        document.getElementById('footer-text').value = settings.content['footer-text'] || '© 2024 DarkFov. Todos os direitos reservados.';
+    }
+    
+    updatePreview();
+}
+
+function setupThemeEditor() {
+    // Sincronizar color picker com input text
+    const colorInputs = [
+        ['primary-color', 'primary-color-text'],
+        ['secondary-color', 'secondary-color-text'],
+        ['bg-color', 'bg-color-text'],
+        ['text-color', 'text-color-text']
+    ];
+    
+    colorInputs.forEach(([colorId, textId]) => {
+        const colorInput = document.getElementById(colorId);
+        const textInput = document.getElementById(textId);
+        
+        colorInput.addEventListener('change', function() {
+            textInput.value = this.value;
+            updatePreview();
+        });
+        
+        textInput.addEventListener('input', function() {
+            if (this.value.match(/^#[0-9A-F]{6}$/i)) {
+                colorInput.value = this.value;
+            }
+            updatePreview();
+        });
+    });
+    
+    // Event listeners para outros campos
+    const previewFields = [
+        'primary-font', 'secondary-font', 'site-name', 'main-slogan', 
+        'hero-description', 'main-cta', 'footer-text'
+    ];
+    
+    previewFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('input', updatePreview);
+            field.addEventListener('change', updatePreview);
+        }
+    });
+}
+
+function updatePreview() {
+    const previewCard = document.getElementById('theme-preview');
+    const previewSiteName = document.getElementById('preview-site-name');
+    const previewSlogan = document.getElementById('preview-slogan');
+    const previewDescription = document.getElementById('preview-description');
+    const previewCta = document.getElementById('preview-cta');
+    
+    // Atualizar textos
+    previewSiteName.textContent = document.getElementById('site-name').value || 'DarkFov';
+    previewSlogan.textContent = document.getElementById('main-slogan').value || 'DOMINE O CAMPO DE BATALHA';
+    previewDescription.textContent = document.getElementById('hero-description').value || 'O aimbot mais avançado para BloodStrike.';
+    previewCta.textContent = document.getElementById('main-cta').value || 'COMEÇAR AGORA';
+    
+    // Atualizar cores e fontes
+    const primaryColor = document.getElementById('primary-color-text').value || '#00ffff';
+    const secondaryColor = document.getElementById('secondary-color-text').value || '#e94560';
+    const bgColor = document.getElementById('bg-color-text').value || '#0f0f23';
+    const textColor = document.getElementById('text-color-text').value || '#ffffff';
+    const primaryFont = document.getElementById('primary-font').value || 'Orbitron';
+    
+    previewCard.style.background = `linear-gradient(135deg, ${bgColor} 0%, ${bgColor}aa 100%)`;
+    previewCard.style.borderColor = `${primaryColor}55`;
+    previewSiteName.style.color = primaryColor;
+    previewSiteName.style.fontFamily = `'${primaryFont}', monospace`;
+    previewSlogan.style.color = textColor;
+    previewDescription.style.color = `${textColor}cc`;
+    previewCta.style.background = `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`;
+}
+
+async function saveThemeSettings() {
+    const token = localStorage.getItem('access_token');
+    
+    const settings = {
+        theme: {
+            'primary-color': document.getElementById('primary-color-text').value,
+            'secondary-color': document.getElementById('secondary-color-text').value,
+            'bg-color': document.getElementById('bg-color-text').value,
+            'text-color': document.getElementById('text-color-text').value,
+            'primary-font': document.getElementById('primary-font').value,
+            'secondary-font': document.getElementById('secondary-font').value
+        },
+        images: {
+            'main-logo': document.getElementById('main-logo').value,
+            'hero-bg': document.getElementById('hero-bg').value,
+            'favicon': document.getElementById('favicon').value,
+            'product-image': document.getElementById('product-image').value
+        },
+        content: {
+            'site-name': document.getElementById('site-name').value,
+            'main-slogan': document.getElementById('main-slogan').value,
+            'hero-description': document.getElementById('hero-description').value,
+            'main-cta': document.getElementById('main-cta').value,
+            'footer-text': document.getElementById('footer-text').value
+        }
+    };
+    
+    try {
+        const response = await fetch('/api/admin/settings', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(settings)
+        });
+        
+        if (response.ok) {
+            showToast('Configurações de tema salvas com sucesso', 'success');
+        } else {
+            const data = await response.json();
+            showToast(data.detail || 'Erro ao salvar configurações', 'error');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        showToast('Erro ao salvar configurações', 'error');
     }
 }
 
