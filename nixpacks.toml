@@ -1,8 +1,17 @@
-[phases.setup]
-nixPkgs = ["python310", "python310Packages.pip", "python310Packages.uvicorn"]
-
-[phases.install]
-cmds = ["pip install --user -r requirements.txt"]
+[build]
+nixpkgs = [
+  "python310",
+  "python310Packages.fastapi",
+  "python310Packages.uvicorn",
+  "python310Packages.sqlalchemy",
+  "python310Packages.psycopg2",
+  "python310Packages.python-jose",
+  "python310Packages.passlib",
+  "python310Packages.starlette",
+  "python310Packages.jinja2",
+  "python310Packages.aiofiles",
+  "python310Packages.python-multipart",
+]
 
 [start]
-cmd = "~/.local/bin/uvicorn main:app --host 0.0.0.0 --port $PORT"
+cmd = "uvicorn main:app --host 0.0.0.0 --port $PORT"
