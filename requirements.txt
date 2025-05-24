@@ -1,11 +1,18 @@
-fastapi
-uvicorn
-sqlalchemy
-psycopg2-binary
-python-jose[cryptography]
-passlib[bcrypt]
-python-multipart
-jinja2
-aiofiles
-stripe
-python-dotenv
+[phases.setup]
+nixPkgs = [
+  "python310",
+  "python310Packages.fastapi",
+  "python310Packages.uvicorn",
+  "python310Packages.sqlalchemy",
+  "python310Packages.psycopg2",
+  "python310Packages.jinja2",
+  "python310Packages.passlib",
+  "python310Packages.python-multipart",
+  "python310Packages.aiofiles",
+  "python310Packages.python-dotenv",
+  "python310Packages.stripe",
+  "python310Packages.python-jose"
+]
+
+[start]
+cmd = "uvicorn main:app --host 0.0.0.0 --port $PORT"
