@@ -878,7 +878,8 @@ h6 { font-size: 1rem; }
     letter-spacing: 0.5px;
 }
 
-.form-group input {
+.form-group input,
+.form-group textarea {
     width: 100%;
     padding: 0.75rem 1rem;
     background: hsl(var(--bg-tertiary));
@@ -887,12 +888,90 @@ h6 { font-size: 1rem; }
     color: hsl(var(--text-primary));
     font-size: 1rem;
     transition: all var(--transition-medium);
+    resize: vertical;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group textarea:focus {
     outline: none;
     border-color: hsl(var(--primary));
     box-shadow: 0 0 0 3px hsl(var(--primary) / 0.2);
+}
+
+/* Form Row and Checkbox Styles */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    color: hsl(var(--text-primary));
+    font-size: 0.9rem;
+    user-select: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.checkbox-label input[type="checkbox"] {
+    display: none;
+}
+
+.checkmark {
+    width: 20px;
+    height: 20px;
+    border: 2px solid hsl(var(--primary));
+    border-radius: var(--radius-sm);
+    margin-right: 10px;
+    position: relative;
+    transition: all var(--transition-medium);
+}
+
+.checkbox-label input:checked + .checkmark {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    border-color: hsl(var(--secondary));
+}
+
+.checkbox-label input:checked + .checkmark:after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+/* Modal Large Variant */
+.modal-large {
+    max-width: 700px;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .modal-body {
+        padding: 20px;
+    }
 }
 
 .password-input {
