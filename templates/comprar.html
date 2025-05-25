@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block content %}
@@ -7,17 +8,32 @@
         <div class="pricing-card">
             <h2>Plano Mensal</h2>
             <div class="price">R$ 29,90</div>
-            <button class="select-plan" data-plan="mensal">Selecionar</button>
+            <ul class="features">
+                <li>Acesso Premium</li>
+                <li>Suporte 24/7</li>
+                <li>Atualizações</li>
+            </ul>
+            <button class="select-plan" data-plan="mensal">COMPRAR AGORA</button>
         </div>
         <div class="pricing-card">
             <h2>Plano Trimestral</h2>
             <div class="price">R$ 79,90</div>
-            <button class="select-plan" data-plan="trimestral">Selecionar</button>
+            <ul class="features">
+                <li>Acesso Premium</li>
+                <li>Suporte 24/7</li>
+                <li>Atualizações</li>
+            </ul>
+            <button class="select-plan" data-plan="trimestral">COMPRAR AGORA</button>
         </div>
         <div class="pricing-card">
             <h2>Plano Anual</h2>
             <div class="price">R$ 299,90</div>
-            <button class="select-plan" data-plan="anual">Selecionar</button>
+            <ul class="features">
+                <li>Acesso Premium</li>
+                <li>Suporte 24/7</li>
+                <li>Atualizações</li>
+            </ul>
+            <button class="select-plan" data-plan="anual">COMPRAR AGORA</button>
         </div>
     </div>
 </div>
@@ -40,12 +56,9 @@
                     <span id="totalPrice">R$ 29,90</span>
                 </div>
             </div>
-
             <form id="checkoutForm" onsubmit="processPayment(event)">
                 <input type="hidden" id="selectedPlan" name="plano" value="">
-                <button type="submit" class="button primary">
-                    <i class="fas fa-shield-alt"></i> PROCESSAR PAGAMENTO
-                </button>
+                <button type="submit" class="button primary">PROCESSAR PAGAMENTO</button>
             </form>
         </div>
     </div>
@@ -53,7 +66,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Verificar se está logado
     const token = localStorage.getItem('access_token');
     if (!token) {
         showToast('Você precisa fazer login primeiro', 'warning');
@@ -63,7 +75,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    // Event listeners para seleção de plano
     document.querySelectorAll('.select-plan').forEach(button => {
         button.addEventListener('click', function() {
             const plan = this.dataset.plan;
@@ -98,8 +109,8 @@ async function processPayment(event) {
     const submitBtn = form.querySelector('button[type="submit"]');
     const token = localStorage.getItem('access_token');
 
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSANDO...';
     submitBtn.disabled = true;
+    submitBtn.innerHTML = 'PROCESSANDO...';
 
     try {
         const response = await fetch('/api/criar-checkout', {
@@ -132,12 +143,11 @@ async function processPayment(event) {
         console.error('Erro:', error);
         showToast('Erro ao processar pagamento', 'error');
     } finally {
-        submitBtn.innerHTML = '<i class="fas fa-shield-alt"></i> PROCESSAR PAGAMENTO';
         submitBtn.disabled = false;
+        submitBtn.innerHTML = 'PROCESSAR PAGAMENTO';
     }
 }
 
-// Fechar modal clicando fora
 window.onclick = function(e) {
     const modal = document.getElementById('checkoutModal');
     if (e.target === modal) {
