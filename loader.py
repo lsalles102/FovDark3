@@ -6,13 +6,14 @@ import subprocess
 import os
 import json
 import webbrowser
+import tempfile
 
 # URL do seu projeto no Replit
 API_URL = "https://fovdark-system.replit.app"  # Atualize com sua URL correta
 LOGIN_URL = f"{API_URL}/api/login"
 LICENSE_URL = f"{API_URL}/api/license/check"
 DOWNLOAD_URL = f"{API_URL}/api/download/executable"
-RECOVER_URL = f"{API_URL}/recover"
+RECOVER_URL = f"{API_URL}/recover-password"
 EXECUTAVEL = "Script_Dark.exe"
 CONFIG_FILE = "darkfov_config.json"
 
@@ -86,7 +87,7 @@ def login():
         messagebox.showerror("Erro", "Timeout na conexão. Verifique sua internet.")
         return
     except requests.exceptions.ConnectionError:
-        messagebox.showerror("Erro", "Não foi possível conectar ao servidor. Verifique se a URL está correta.")
+        messagebox.showerror("Erro", "Não foi possível conectar ao servidor.")
         return
     except Exception as e:
         messagebox.showerror("Erro", f"Falha na conexão: {str(e)}")
@@ -112,34 +113,64 @@ def login():
         messagebox.showerror("Erro", f"Erro ao verificar licença: {str(e)}")
         return
 
-    # Procura pelo executável na pasta
+    # Baixar e executar o executável
     try:
-        btn_login.config(text="PROCURANDO SCRIPT...")
+        btn_login.config(text="BAIXANDO SCRIPT...")
         janela.update()
         
-        # Procura por Script_Dark.exe na pasta atual
-        if os.path.exists(EXECUTAVEL):
-            messagebox.showinfo("Sucesso", "Script encontrado! Executando...")
-            executar_script()
-        else:
-            messagebox.showwarning("Arquivo não encontrado", 
-                                 f"O arquivo {EXECUTAVEL} não foi encontrado na pasta atual.\n"
-                                 f"Coloque o arquivo {EXECUTAVEL} na mesma pasta do loader.")
+        res = requests.get(DOWNLOAD_URL, headers=headers, timeout=30)
+        if res.status_code != 200:
+            messagebox.showerror("Erro", "Erro ao baixar o script.")
+            return
+        
+        # Criar arquivo temporário
+        temp_dir = tempfile.gettempdir()
+        temp_file = os.path.join(temp_dir, EXECUTAVEL)
+        
+        with open(temp_file, "wb") as f:
+            f.write(res.content)
+        
+        messagebox.showinfo("Sucesso", "Script baixado! Executando...")
+        executar_e_apagar(temp_file)
+        
     except Exception as e:
-        messagebox.showerror("Erro", f"Erro ao procurar script: {str(e)}")
+        messagebox.showerror("Erro", f"Erro no download: {str(e)}")
     finally:
         btn_login.config(text="ENTRAR", state="normal")
 
-def executar_script():
+def executar_e_apagar(arquivo_path):
+    """Executa o arquivo e o remove após uso"""
     try:
-        # Executa o arquivo
-        subprocess.Popen(EXECUTAVEL)
-        messagebox.showinfo("Sucesso", "Script executado com sucesso!")
-        janela.quit()  # Fecha o loader após execução
+        # Executa o arquivo e aguarda finalização
+        processo = subprocess.Popen(arquivo_path)
+        
+        # Informa ao usuário e minimiza o loader
+        messagebox.showinfo("Executando", "Script executado! O loader será minimizado.\nO arquivo será removido quando você fechar o script.")
+        janela.iconify()  # Minimiza a janela
+        
+        # Aguarda o processo terminar
+        processo.wait()
+        
+        # Remove o arquivo após execução
+        try:
+            os.remove(arquivo_path)
+            messagebox.showinfo("Concluído", "Script finalizado e arquivo removido.")
+        except:
+            pass
+            
+        # Fecha o loader
+        janela.quit()
+        
     except Exception as e:
         messagebox.showerror("Erro", f"Erro ao executar: {str(e)}")
+        # Remove o arquivo mesmo em caso de erro
+        try:
+            os.remove(arquivo_path)
+        except:
+            pass
 
 def abrir_recuperacao():
+    """Abre a página de recuperação de senha"""
     webbrowser.open(RECOVER_URL)
 
 def testar_conexao():
@@ -156,7 +187,7 @@ def testar_conexao():
 # ----- GUI -----
 janela = tk.Tk()
 janela.title("DarkFov Loader")
-janela.geometry("400x420")
+janela.geometry("400x480")
 janela.configure(bg="#0a0a0f")
 janela.resizable(False, False)
 
@@ -195,9 +226,15 @@ btn_login = tk.Button(janela, text="ENTRAR", bg="#00fff7", fg="#000", width=25, 
 btn_login.pack(pady=10)
 
 # Instruções
-instrucoes = tk.Label(janela, text=f"Coloque o arquivo {EXECUTAVEL} na mesma pasta do loader", 
-                     fg="#888", bg="#0a0a0f", font=("Arial", 8), wraplength=350)
-instrucoes.pack(pady=5)
+instrucoes_text = """Como funciona:
+1. Faça login com suas credenciais
+2. O script será baixado temporariamente
+3. Executado automaticamente
+4. Removido após uso para segurança"""
+
+instrucoes = tk.Label(janela, text=instrucoes_text, 
+                     fg="#888", bg="#0a0a0f", font=("Arial", 8), wraplength=350, justify="left")
+instrucoes.pack(pady=10)
 
 # Botão de teste (para debug)
 btn_teste = tk.Button(janela, text="TESTAR CONEXÃO", bg="#ff00c8", fg="#000", width=25, height=1, 
@@ -210,11 +247,23 @@ recup = tk.Label(janela, text="Esqueci minha senha", fg="#ff00c8", bg="#0a0a0f",
 recup.pack(pady=(10, 0))
 recup.bind("<Button-1>", lambda e: abrir_recuperacao())
 
+# Informações de versão
+versao = tk.Label(janela, text="DarkFov Loader v2.0 - Secure Mode", 
+                 fg="#666", bg="#0a0a0f", font=("Arial", 7))
+versao.pack(pady=(5, 10))
+
 # Carregar credenciais salvas
 carregar_credenciais()
 
 # Bind Enter para login
 entry_email.bind("<Return>", lambda e: entry_senha.focus())
 entry_senha.bind("<Return>", lambda e: login())
+
+# Interceptar fechamento da janela
+def on_closing():
+    if messagebox.askokcancel("Sair", "Deseja realmente fechar o DarkFov Loader?"):
+        janela.destroy()
+
+janela.protocol("WM_DELETE_WINDOW", on_closing)
 
 janela.mainloop()
