@@ -16,15 +16,16 @@ from auth import (
     authenticate_user, create_access_token, get_current_user,
     get_password_hash, verify_password, decode_access_token
 )
-from stripe_routes import router as stripe_router
+from mercadopago_routes import router as mercadopago_router
 from license import verify_license, create_payment_record
 from admin import get_admin_user
+from email_utils import send_confirmation_email
 
 # Criar todas as tabelas
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="FovDark - Sistema de Vendas", version="1.0.0")
-app.include_router(stripe_router, prefix="/api")
+app.include_router(mercadopago_router, prefix="/api")
 
 # Configurar arquivos estáticos e templates
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -125,6 +126,19 @@ async def painel_page(request: Request):
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_page(request: Request):
     return templates.TemplateResponse("admin.html", {"request": request})
+
+# Páginas de retorno do Mercado Pago
+@app.get("/sucesso", response_class=HTMLResponse)
+async def pagamento_sucesso(request: Request):
+    return templates.TemplateResponse("success.html", {"request": request})
+
+@app.get("/cancelado", response_class=HTMLResponse)
+async def pagamento_cancelado(request: Request):
+    return templates.TemplateResponse("cancelled.html", {"request": request})
+
+@app.get("/pendente", response_class=HTMLResponse)
+async def pagamento_pendente(request: Request):
+    return templates.TemplateResponse("pending.html", {"request": request})
 
 
 # API Endpoints

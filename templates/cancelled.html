@@ -1,0 +1,44 @@
+
+{% extends "base.html" %}
+
+{% block title %}Pagamento Cancelado - DarkFov{% endblock %}
+
+{% block content %}
+<section class="payment-status-section">
+    <div class="container">
+        <div class="status-card cancelled">
+            <div class="status-icon">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <h1>Pagamento Cancelado</h1>
+            <p>Seu pagamento foi cancelado. Você pode tentar novamente quando quiser.</p>
+            
+            <div class="status-actions">
+                <a href="/comprar" class="btn btn-primary">
+                    <i class="fas fa-shopping-cart"></i>
+                    Tentar Novamente
+                </a>
+                <a href="/" class="btn btn-secondary">
+                    <i class="fas fa-home"></i>
+                    Voltar ao Início
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.status-card.cancelled {
+    border-color: #ef4444;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+}
+
+.status-card.cancelled .status-icon {
+    color: #ef4444;
+}
+
+.status-card.cancelled h1 {
+    color: #ef4444;
+}
+</style>
+{% endblock %}

@@ -32,7 +32,7 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "pip install fastapi uvicorn sqlalchemy psycopg2-binary python-jose[cryptography] passlib[bcrypt] python-multipart jinja2 aiofiles stripe && python main.py"
+args = "pip install fastapi uvicorn sqlalchemy psycopg2-binary python-jose[cryptography] passlib[bcrypt] python-multipart jinja2 aiofiles mercadopago && python main.py"
 
 [deployment]
 run = ["sh", "-c", "Run command"]

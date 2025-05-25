@@ -547,6 +547,44 @@ function checkFeatureSupport() {
     return features;
 }
 
+// Função para processar pagamento
+async function processPayment(plano) {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+        showToast('Você precisa estar logado para comprar', 'error');
+        window.location.href = '/login';
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/criar-preferencia', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ plano: plano })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Redirecionar para o Mercado Pago
+            const initPoint = data.init_point || data.sandbox_init_point;
+            if (initPoint) {
+                window.location.href = initPoint;
+            } else {
+                showToast('Erro ao gerar link de pagamento', 'error');
+            }
+        } else {
+            showToast(data.detail || 'Erro ao processar pagamento', 'error');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        showToast('Erro de conexão', 'error');
+    }
+}
+
 // ===== INITIALIZATION COMPLETE =====
 console.log('FovDark Script carregado com sucesso');
 
