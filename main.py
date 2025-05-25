@@ -60,6 +60,52 @@ async def login_page(request: Request):
 async def register_page(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
+@app.get("/recover-password", response_class=HTMLResponse)
+async def recover_password_page(request: Request):
+    return templates.TemplateResponse("recover.html", {"request": request})
+
+@app.post("/api/recover-password")
+async def recover_password(email: str = Form(...), db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Email não encontrado")
+    
+    # Gerar token de recuperação
+    recovery_token = create_access_token(
+        data={"sub": user.email, "type": "recovery"},
+        expires_delta=timedelta(hours=1)
+    )
+    
+    # Enviar email
+    try:
+        send_recovery_email(email, recovery_token)
+        return {"message": "Email de recuperação enviado com sucesso"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Erro ao enviar email")
+
+@app.get("/reset-password/{token}", response_class=HTMLResponse)
+async def reset_password_page(request: Request, token: str):
+    return templates.TemplateResponse("reset_password.html", {"request": request, "token": token})
+
+@app.post("/api/reset-password/{token}")
+async def reset_password(
+    token: str,
+    new_password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    payload = decode_access_token(token)
+    if not payload or payload.get("type") != "recovery":
+        raise HTTPException(status_code=400, detail="Token inválido ou expirado")
+    
+    user = db.query(User).filter(User.email == payload["sub"]).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    
+    user.senha_hash = get_password_hash(new_password)
+    db.commit()
+    
+    return {"message": "Senha alterada com sucesso"}
+
 
 # Página de compra
 @app.get("/comprar", response_class=HTMLResponse)
