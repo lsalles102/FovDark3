@@ -1,0 +1,46 @@
+async function processPayment() {
+    const form = document.getElementById('checkoutForm');
+    const formData = new FormData(form);
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const token = localStorage.getItem('access_token');
+
+    // Mostrar loading
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSANDO...';
+    submitBtn.disabled = true;
+
+    try {
+        const response = await fetch('/api/criar-checkout', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                plano: formData.get('plano')
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.id) {
+            // Redirecionar para o checkout do Stripe
+            window.location.href = `https://checkout.stripe.com/pay/${data.id}`;
+        } else {
+            if (response.status === 401) {
+                showToast('Sessão expirada. Faça login novamente.', 'error');
+                localStorage.clear();
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 2000);
+            } else {
+                showToast(data.detail || 'Erro ao processar pagamento', 'error');
+            }
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        showToast('Erro ao processar pagamento', 'error');
+    } finally {
+        submitBtn.innerHTML = 'COMPRAR AGORA';
+        submitBtn.disabled = false;
+    }
+}
