@@ -1,4 +1,4 @@
--- DarkFov - Schema completo para Supabase
+-- FovDark - Schema completo para Supabase
 -- Execute este arquivo no Supabase SQL Editor
 
 -- Habilitar extensões necessárias
@@ -108,7 +108,7 @@ CREATE POLICY "Only admins can view logs" ON admin_logs
     );
 
 -- Comentários nas tabelas
-COMMENT ON TABLE users IS 'Tabela de usuários do sistema DarkFov';
+COMMENT ON TABLE users IS 'Tabela de usuários do sistema FovDark';
 COMMENT ON TABLE payments IS 'Histórico de pagamentos e compras';
 COMMENT ON TABLE admin_logs IS 'Logs de ações administrativas';
 

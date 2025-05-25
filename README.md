@@ -1,6 +1,5 @@
-
 Started building your app
-Crie um projeto full-stack chamado "DarkFov" com FastAPI, PostgreSQL e frontend embutido.
+Crie um projeto full-stack chamado "FovDark" com FastAPI, PostgreSQL e frontend embutido.
 
 Objetivo:
 Um sistema de vendas e autenticação de acesso para um produto digital: um script aimbot para o jogo BloodStrike. O sistema deve controlar login, registro, compra, e expiração de licença.
@@ -47,7 +46,7 @@ Usar bcrypt para senhas
 Usar python-jose para tokens JWT
 Frontend acessível em /, /login, /register, etc.
 Loader (.exe) baixado apenas por usuários autenticados com licença ativa
-Nome do projeto: DarkFov
+Nome do projeto: FovDark
 Tema visual: Cyberpunk, escuro, neon, estilo hacker gamer
 fale comigo em portugues
 
@@ -55,13 +54,13 @@ fale comigo em portugues
 DF
 
 lsalles102
-Entendi perfeitamente! Você quer criar o DarkFov, um sistema completo de vendas e autenticação para seu produto digital. Vou analisar seus requisitos e criar um plano detalhado para este projeto full-stack com tema cyberpunk! 🚀
+Entendi perfeitamente! Você quer criar o FovDark, um sistema completo de vendas e autenticação para seu produto digital. Vou analisar seus requisitos e criar um plano detalhado para este projeto full-stack com tema cyberpunk! 🚀
 
 Plan
 Finished 2 days ago
 
 App icon
-DarkFovSecurity
+FovDarkSecurity
 Tech stack
 Integrations
 Initial version
@@ -80,10 +79,10 @@ Checkpoint made
 2 days ago
 •
 Free
-Create core authentication, licensing, and admin features for DarkFov
+Create core authentication, licensing, and admin features for FovDark
 Screenshot
 Load preview
-I've set up the DarkFov sistema completo de vendas e autenticação with FastAPI, PostgreSQL and cyberpunk theme. Here's what I've implemented recently:
+I've set up the FovDark sistema completo de vendas e autenticação with FastAPI, PostgreSQL and cyberpunk theme. Here's what I've implemented recently:
 
 ✓ FastAPI backend with PostgreSQL database integration
 ✓ Complete authentication system with JWT tokens
@@ -145,7 +144,7 @@ Faça login com sua conta GitHub
 Clique em "New Project"
 3. Importar do GitHub
 Selecione "Deploy from GitHub repo"
-Escolha o repositório com o código do DarkFov
+Escolha o repositório com o código do FovDark
 Railway detectará automaticamente os arquivos de configuração
 4. Adicionar PostgreSQL
 No dashboard do projeto, clique em "New Service"
@@ -163,7 +162,7 @@ Aguarde alguns minutos para conclusão
 Não precisa criar requirements.txt - já está configurado no nixpacks.toml
 A porta é automática - Railway configura o $PORT
 PostgreSQL é criado automaticamente - sem configuração manual
-Admin já está pronto - email: admin@darkfov.com, senha: secret
+Admin já está pronto - email: admin@fovdark.com, senha: secret
 📋 Checklist Final:
 ✅ Código no GitHub
 ✅ Projeto criado no Railway
@@ -202,7 +201,7 @@ Railway vai detectar automaticamente os arquivos
 PostgreSQL será configurado automaticamente
 Deploy vai ser feito sem erros
 Seu sistema estará online em minutos!
-O DarkFov está incrível com esse tema cyberpunk e todas as funcionalidades! Vai ficar perfeito no Railway.
+O FovDark está incrível com esse tema cyberpunk e todas as funcionalidades! Vai ficar perfeito no Railway.
 
 Precisa de ajuda com algum passo específico do GitHub ou Railway?
 
@@ -285,7 +284,7 @@ Load preview
 ✓ Sistema de autenticação JWT seguro
 ✓ Interface cyberpunk responsiva
 
-O sistema DarkFov está 100% pronto para deploy! Consegue acessar o painel admin e ver todas as funcionalidades, incluindo a nova aba "TEMAS" para personalização completa?
+O sistema FovDark está 100% pronto para deploy! Consegue acessar o painel admin e ver todas as funcionalidades, incluindo a nova aba "TEMAS" para personalização completa?
 
 quais comando para adcionar no github?
 
@@ -293,7 +292,7 @@ quais comando para adcionar no github?
 DF
 
 lsalles102
-Perfeito! Vou te dar os comandos para subir seu projeto DarkFov completo para o GitHub e depois fazer deploy no Railway!
+Perfeito! Vou te dar os comandos para subir seu projeto FovDark completo para o GitHub e depois fazer deploy no Railway!
 
 Comandos para GitHub:
 # 1. Inicializar repositório Git
@@ -301,9 +300,9 @@ git init
 # 2. Adicionar todos os arquivos
 git add .
 # 3. Fazer o primeiro commit
-git commit -m "🚀 DarkFov - Sistema completo de vendas com painel admin e personalização de temas"
+git commit -m "🚀 FovDark - Sistema completo de vendas com painel admin e personalização de temas"
 # 4. Conectar ao repositório remoto (substitua pelo seu repositório)
-git remote add origin https://github.com/SEU_USUARIO/darkfov.git
+git remote add origin https://github.com/SEU_USUARIO/fovdark.git
 # 5. Enviar para o GitHub
 git push -u origin main
 Arquivos principais que serão enviados:
@@ -343,7 +342,7 @@ O erro mostra que o Railway não consegue conectar ao PostgreSQL. Isso é normal
 Created .gitignore
 
 Edited README.md
-🎯 Comandos para GitHub - DarkFov Sistema Completo
+🎯 Comandos para GitHub - FovDark Sistema Completo
 Agora que criamos todos os arquivos necessários, aqui estão os comandos para subir seu projeto completo para o GitHub:
 
 # 1. Inicializar repositório Git
@@ -351,9 +350,9 @@ git init
 # 2. Adicionar todos os arquivos
 git add .
 # 3. Fazer o primeiro commit
-git commit -m "🚀 DarkFov - Sistema completo de vendas com painel admin e editor de temas"
+git commit -m "🚀 FovDark - Sistema completo de vendas com painel admin e editor de temas"
 # 4. Conectar ao seu repositório GitHub (substitua pela sua URL)
-git remote add origin https://github.com/SEU_USUARIO/darkfov.git
+git remote add origin https://github.com/SEU_USUARIO/fovdark.git
 # 5. Enviar para o GitHub
 git push -u origin main
 🚀 Para corrigir o erro do Railway:
@@ -451,7 +450,7 @@ Thumbs.db
 replit.nix
 .pythonlibs/
 .upm/
-🎯 DarkFov - Sistema de Vendas Premium
+🎯 FovDark - Sistema de Vendas Premium
 Sistema completo de vendas e licenciamento para produtos digitais com painel administrativo avançado e personalização total.
 
 ⚡ Funcionalidades
@@ -487,8 +486,8 @@ Integração pronta para gateways
 1. Preparar Repositório
 git init
 git add .
-git commit -m "🚀 DarkFov - Sistema completo"
-git remote add origin https://github.com/SEU_USUARIO/darkfov.git
+git commit -m "🚀 FovDark - Sistema completo"
+git remote add origin https://github.com/SEU_USUARIO/fovdark.git
 git push -u origin main
 2. Configurar Railway
 Conecte seu GitHub ao Railway
@@ -509,7 +508,7 @@ Deploy: Railway optimized
 👤 Acesso Admin
 Após deploy, acesse /admin e use:
 
-Email: admin@darkfov.com
+Email: admin@fovdark.com
 Senha: secret
 ⚠️ Importante: Altere as credenciais admin após primeiro acesso!
 
@@ -519,4 +518,4 @@ Personalização total sem código
 Preview em tempo real
 Sistema de produtos flexível
 Deploy em 1 clique
-DarkFov - Transforme sua venda de produtos digitais com estilo! 🚀
+FovDark - Transforme sua venda de produtos digitais com estilo! 🚀

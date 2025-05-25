@@ -14,11 +14,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ===== APP INITIALIZATION =====
 function initializeApp() {
-    console.log('DarkFov System Initialized');
-    
+    console.log('FovDark System Initialized');
+
     // Add loading animations to cards
     animateElements();
-    
+
     // Setup auth state
     updateAuthenticationUI();
 }
@@ -27,16 +27,16 @@ function initializeApp() {
 function setupNavigation() {
     navToggle = document.getElementById('navToggle');
     navMenu = document.getElementById('navMenu');
-    
+
     if (navToggle && navMenu) {
         navToggle.addEventListener('click', toggleMobileMenu);
     }
-    
+
     // Close mobile menu when clicking on links
     document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', closeMobileMenu);
     });
-    
+
     // Close mobile menu when clicking outside
     document.addEventListener('click', function(e) {
         if (navMenu && navMenu.classList.contains('active') && 
@@ -50,7 +50,7 @@ function toggleMobileMenu() {
     if (navMenu) {
         navMenu.classList.toggle('active');
         navToggle.classList.toggle('active');
-        
+
         // Animate hamburger bars
         const bars = navToggle.querySelectorAll('.bar');
         bars.forEach((bar, index) => {
@@ -70,7 +70,7 @@ function closeMobileMenu() {
     if (navMenu && navToggle) {
         navMenu.classList.remove('active');
         navToggle.classList.remove('active');
-        
+
         // Reset hamburger bars
         const bars = navToggle.querySelectorAll('.bar');
         bars.forEach(bar => {
@@ -84,7 +84,7 @@ function closeMobileMenu() {
 function checkAuthenticationStatus() {
     const token = localStorage.getItem('access_token');
     const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
-    
+
     if (token && userData) {
         // Verificar se o token ainda é válido
         fetch('/api/license/check', {
@@ -100,25 +100,25 @@ function checkAuthenticationStatus() {
             console.log('Erro ao verificar token:', error);
         });
     }
-    
+
     updateAuthenticationUI();
 }
 
 function updateAuthenticationUI() {
     const token = localStorage.getItem('access_token');
     const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
-    
+
     const loginLink = document.getElementById('loginLink');
     const logoutLink = document.getElementById('logoutLink');
     const painelLink = document.getElementById('painelLink');
     const adminLink = document.getElementById('adminLink');
-    
+
     if (token && userData.email) {
         // Usuário logado
         if (loginLink) loginLink.style.display = 'none';
         if (logoutLink) logoutLink.style.display = 'flex';
         if (painelLink) painelLink.style.display = 'flex';
-        
+
         // Mostrar link admin apenas para administradores
         if (adminLink) {
             adminLink.style.display = userData.is_admin ? 'flex' : 'none';
@@ -135,9 +135,9 @@ function updateAuthenticationUI() {
 function logout() {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user_data');
-    
+
     showToast('Logout realizado com sucesso', 'success');
-    
+
     // Redirecionar para home após 1 segundo
     setTimeout(() => {
         window.location.href = '/';
@@ -159,17 +159,17 @@ function showToast(message, type = 'info', duration = 5000) {
     if (!toastContainer) {
         setupToastContainer();
     }
-    
+
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    
+
     const icons = {
         success: 'fas fa-check-circle',
         error: 'fas fa-exclamation-circle',
         warning: 'fas fa-exclamation-triangle',
         info: 'fas fa-info-circle'
     };
-    
+
     toast.innerHTML = `
         <i class="toast-icon ${icons[type] || icons.info}"></i>
         <span class="toast-message">${message}</span>
@@ -177,14 +177,14 @@ function showToast(message, type = 'info', duration = 5000) {
             <i class="fas fa-times"></i>
         </button>
     `;
-    
+
     toastContainer.appendChild(toast);
-    
+
     // Auto remove after duration
     setTimeout(() => {
         removeToast(toast);
     }, duration);
-    
+
     // Add click to close
     toast.addEventListener('click', function(e) {
         if (e.target.classList.contains('toast-close') || e.target.parentElement.classList.contains('toast-close')) {
@@ -242,7 +242,7 @@ function animateElements() {
         },
         { threshold: 0.1 }
     );
-    
+
     // Observe cards and sections
     document.querySelectorAll('.feature-card, .pricing-card, .dashboard-card').forEach(el => {
         observer.observe(el);
@@ -251,14 +251,14 @@ function animateElements() {
 
 function addLoadingSpinner(element, text = 'Carregando...') {
     if (!element) return;
-    
+
     const originalContent = element.innerHTML;
     element.innerHTML = `
         <i class="fas fa-spinner fa-spin"></i>
         ${text}
     `;
     element.disabled = true;
-    
+
     return () => {
         element.innerHTML = originalContent;
         element.disabled = false;
@@ -268,27 +268,27 @@ function addLoadingSpinner(element, text = 'Carregando...') {
 // ===== API UTILITIES =====
 async function makeAuthenticatedRequest(url, options = {}) {
     const token = localStorage.getItem('access_token');
-    
+
     if (!token) {
         throw new Error('Usuário não autenticado');
     }
-    
+
     const headers = {
         'Authorization': `Bearer ${token}`,
         ...options.headers
     };
-    
+
     const response = await fetch(url, {
         ...options,
         headers
     });
-    
+
     if (response.status === 401) {
         // Token expirado
         logout();
         throw new Error('Sessão expirada');
     }
-    
+
     return response;
 }
 
@@ -333,7 +333,7 @@ function copyToClipboard(text) {
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
-        
+
         try {
             document.execCommand('copy');
             showToast('Copiado para a área de transferência', 'success');
@@ -378,30 +378,30 @@ function setLocalStorageItem(key, value, expirationMinutes = null) {
         value: value,
         timestamp: Date.now()
     };
-    
+
     if (expirationMinutes) {
         item.expiration = Date.now() + (expirationMinutes * 60 * 1000);
     }
-    
+
     localStorage.setItem(key, JSON.stringify(item));
 }
 
 function getLocalStorageItem(key) {
     const itemStr = localStorage.getItem(key);
-    
+
     if (!itemStr) {
         return null;
     }
-    
+
     try {
         const item = JSON.parse(itemStr);
-        
+
         // Verificar expiração
         if (item.expiration && Date.now() > item.expiration) {
             localStorage.removeItem(key);
             return null;
         }
-        
+
         return item.value;
     } catch (e) {
         // Se não conseguir fazer parse, assumir que é um valor simples
@@ -415,9 +415,9 @@ function measurePerformance(name, fn) {
         const start = performance.now();
         const result = fn.apply(this, args);
         const end = performance.now();
-        
+
         console.log(`${name} executado em ${end - start} millisegundos`);
-        
+
         return result;
     };
 }
@@ -444,7 +444,7 @@ function setupKeyboardShortcuts() {
             // Implementar busca se necessário
             console.log('Busca ativada');
         }
-        
+
         // ESC para fechar modals
         if (e.key === 'Escape') {
             const modals = document.querySelectorAll('.modal');
@@ -463,7 +463,7 @@ function handleGlobalErrors() {
         console.error('Erro global capturado:', e.error);
         showToast('Ocorreu um erro inesperado', 'error');
     });
-    
+
     window.addEventListener('unhandledrejection', function(e) {
         console.error('Promise rejeitada:', e.reason);
         showToast('Erro de conexão', 'error');
@@ -490,7 +490,7 @@ function monitorConnection() {
             showToast('Conexão perdida', 'warning', 5000);
         }
     }
-    
+
     window.addEventListener('online', updateConnectionStatus);
     window.addEventListener('offline', updateConnectionStatus);
 }
@@ -499,20 +499,20 @@ function monitorConnection() {
 function setupGlobalEventListeners() {
     // Setup keyboard shortcuts
     setupKeyboardShortcuts();
-    
+
     // Setup error handling
     handleGlobalErrors();
-    
+
     // Monitor connection
     monitorConnection();
-    
+
     // Update auth UI on storage changes
     window.addEventListener('storage', function(e) {
         if (e.key === 'access_token' || e.key === 'user_data') {
             updateAuthenticationUI();
         }
     });
-    
+
     // Smooth scroll for anchor links
     document.addEventListener('click', function(e) {
         const link = e.target.closest('a[href^="#"]');
@@ -522,7 +522,7 @@ function setupGlobalEventListeners() {
             smoothScrollTo(targetId);
         }
     });
-    
+
     // Auto-resize textareas
     document.addEventListener('input', function(e) {
         if (e.target.tagName === 'TEXTAREA') {
@@ -542,13 +542,13 @@ function checkFeatureSupport() {
         geolocation: 'geolocation' in navigator,
         notifications: 'Notification' in window
     };
-    
+
     console.log('Recursos suportados:', features);
     return features;
 }
 
 // ===== INITIALIZATION COMPLETE =====
-console.log('DarkFov Script carregado com sucesso');
+console.log('FovDark Script carregado com sucesso');
 
 // ===== EXPORT FOR TESTING =====
 if (typeof module !== 'undefined' && module.exports) {

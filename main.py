@@ -22,7 +22,7 @@ from admin import get_admin_user
 # Criar todas as tabelas
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="DarkFov - Sistema de Vendas", version="1.0.0")
+app = FastAPI(title="FovDark - Sistema de Vendas", version="1.0.0")
 
 # Configurar arquivos estáticos e templates
 app.mount("/static", StaticFiles(directory="static"), name="static")
