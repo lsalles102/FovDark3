@@ -4,6 +4,7 @@ from tkinter import messagebox
 import requests
 import subprocess
 import os
+import json
 
 # URL do seu projeto atual
 API_URL = "https://replit.com/@seunome/seuprojetorepl"  # Substitua pela URL correta
@@ -11,6 +12,38 @@ LOGIN_URL = f"{API_URL}/api/login"
 LICENSE_URL = f"{API_URL}/api/license/check"
 DOWNLOAD_URL = f"{API_URL}/api/download/executable"
 EXECUTAVEL = "Script_Dark.exe"
+CONFIG_FILE = "darkfov_config.json"
+
+def carregar_credenciais():
+    """Carrega credenciais salvas se existirem"""
+    try:
+        if os.path.exists(CONFIG_FILE):
+            with open(CONFIG_FILE, 'r') as f:
+                config = json.load(f)
+                if config.get("salvar_login", False):
+                    entry_email.insert(0, config.get("email", ""))
+                    entry_senha.insert(0, config.get("senha", ""))
+                    var_salvar.set(True)
+    except Exception:
+        pass
+
+def salvar_credenciais(email, senha, salvar):
+    """Salva ou remove credenciais baseado na checkbox"""
+    try:
+        config = {}
+        if salvar:
+            config = {
+                "email": email,
+                "senha": senha,
+                "salvar_login": True
+            }
+        else:
+            config = {"salvar_login": False}
+            
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump(config, f)
+    except Exception:
+        pass
 
 def login():
     email = entry_email.get()
@@ -19,6 +52,9 @@ def login():
     if not email or not senha:
         messagebox.showwarning("Campos obrigatórios", "Preencha email e senha.")
         return
+
+    # Salvar credenciais se solicitado
+    salvar_credenciais(email, senha, var_salvar.get())
 
     # Mostrar loading
     btn_login.config(text="CONECTANDO...", state="disabled")
@@ -98,7 +134,7 @@ def executar_e_apagar():
         except:
             pass
 
-def abrir_link():
+def abrir_recuperacao():
     import webbrowser
     webbrowser.open(f"{API_URL}/recover-password")
 
@@ -139,7 +175,15 @@ entry_email.grid(row=1, column=0, pady=(0, 15))
 # Senha
 tk.Label(frame, text="Senha", bg="#0a0a0f", fg="#e0e0e0", font=("Arial", 10)).grid(row=2, column=0, sticky="w", pady=(0, 5))
 entry_senha = tk.Entry(frame, show="*", width=35, bg="#1a1a2e", fg="#e0e0e0", insertbackground="#00fff7", relief="flat", bd=5)
-entry_senha.grid(row=3, column=0, pady=(0, 20))
+entry_senha.grid(row=3, column=0, pady=(0, 15))
+
+# Checkbox salvar login
+var_salvar = tk.BooleanVar()
+check_salvar = tk.Checkbutton(frame, text="Salvar login", variable=var_salvar, 
+                             bg="#0a0a0f", fg="#e0e0e0", selectcolor="#1a1a2e", 
+                             activebackground="#0a0a0f", activeforeground="#00fff7",
+                             font=("Arial", 9))
+check_salvar.grid(row=4, column=0, sticky="w", pady=(0, 20))
 
 # Botão de login
 btn_login = tk.Button(janela, text="ENTRAR", bg="#00fff7", fg="#000", width=25, height=2, 
@@ -155,7 +199,10 @@ btn_teste.pack(pady=5)
 recup = tk.Label(janela, text="Esqueci minha senha", fg="#ff00c8", bg="#0a0a0f", 
                 cursor="hand2", font=("Arial", 9, "underline"))
 recup.pack(pady=(10, 0))
-recup.bind("<Button-1>", lambda e: abrir_link())
+recup.bind("<Button-1>", lambda e: abrir_recuperacao())
+
+# Carregar credenciais salvas
+carregar_credenciais()
 
 # Bind Enter para login
 entry_email.bind("<Return>", lambda e: entry_senha.focus())
