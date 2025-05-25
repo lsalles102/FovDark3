@@ -301,10 +301,13 @@ async function processPayment() {
             window.location.href = `https://checkout.stripe.com/pay/${data.id}`;
         } else {
             showToast(data.detail || 'Erro ao processar pagamento', 'error');
-        }
-            
-        } else {
             if (response.status === 401) {
+                localStorage.clear();
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 2000);
+            }
+        }
                 showToast('Sessão expirada. Faça login novamente.', 'error');
                 localStorage.clear();
                 setTimeout(() => {
