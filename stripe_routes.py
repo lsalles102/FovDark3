@@ -2,6 +2,7 @@
 import os
 import stripe
 from fastapi import APIRouter, Request, HTTPException, Depends
+from auth import decode_access_token
 from fastapi.responses import JSONResponse
 from typing import Optional
 from datetime import datetime, timedelta

@@ -1,4 +1,5 @@
-async function processPayment() {
+async function processPayment(event) {
+    event.preventDefault();
     const form = document.getElementById('checkoutForm');
     const formData = new FormData(form);
     const submitBtn = form.querySelector('button[type="submit"]');
