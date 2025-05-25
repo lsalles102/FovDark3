@@ -94,7 +94,7 @@
                     <div class="download-items">
                         <div class="download-item">
                             <div class="download-info">
-                                <h4>DarkFov Loader</h4>
+                                <h4>FovDark Loader</h4>
                                 <p>Aplicativo desktop para login e execução</p>
                             </div>
                             <button class="btn btn-outline btn-small" onclick="downloadLoader()">
@@ -105,34 +105,12 @@
                         
                         <div class="download-item">
                             <div class="download-info">
-                                <h4>Script Python</h4>
-                                <p>Código fonte do aimbot</p>
-                            </div>
-                            <button class="btn btn-outline btn-small" onclick="downloadScript()">
-                                <i class="fas fa-code"></i>
-                                BAIXAR SCRIPT
-                            </button>
-                        </div>
-                        
-                        <div class="download-item">
-                            <div class="download-info">
                                 <h4>Manual de Uso</h4>
                                 <p>Guia completo de configuração</p>
                             </div>
                             <button class="btn btn-outline btn-small" onclick="downloadManual()">
                                 <i class="fas fa-book"></i>
-                                BAIXAR
-                            </button>
-                        </div>
-                        
-                        <div class="download-item">
-                            <div class="download-info">
-                                <h4>Configurações Pré-definidas</h4>
-                                <p>Perfis otimizados para diferentes situações</p>
-                            </div>
-                            <button class="btn btn-outline btn-small" onclick="downloadConfigs()">
-                                <i class="fas fa-cog"></i>
-                                BAIXAR
+                                BAIXAR MANUAL
                             </button>
                         </div>
                     </div>
@@ -491,7 +469,7 @@ def abrir_link():
 
 # ----- GUI -----
 janela = tk.Tk()
-janela.title("DarkFov Loader")
+janela.title("FovDark Loader")
 janela.geometry("400x320")
 janela.configure(bg="#0a0a0f")
 janela.resizable(False, False)
@@ -500,7 +478,7 @@ janela.resizable(False, False)
 janela.eval('tk::PlaceWindow . center')
 
 # Título
-tk.Label(janela, text="DarkFov", fg="#00fff7", bg="#0a0a0f", font=("Orbitron", 24, "bold")).pack(pady=15)
+tk.Label(janela, text="FovDark", fg="#00fff7", bg="#0a0a0f", font=("Orbitron", 24, "bold")).pack(pady=15)
 tk.Label(janela, text="LOADER", fg="#ff00c8", bg="#0a0a0f", font=("Orbitron", 12)).pack(pady=(0, 20))
 
 # Frame principal
@@ -541,16 +519,124 @@ janela.mainloop()
     const a = document.createElement('a');
     a.style.display = 'none';
     a.href = url;
-    a.download = 'darkfov_loader.py';
+    a.download = 'fovdark_loader.py';
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
     
-    showToast('Loader Python baixado! Execute com: python darkfov_loader.py', 'success');
+    showToast('FovDark Loader baixado! Execute com: python fovdark_loader.py', 'success');
 }
 
 function downloadManual() {
-    showToast('Manual será disponibilizado em breve', 'info');
+    const manualContent = `# FOVDARK - MANUAL DE USO
+
+## INSTALAÇÃO E CONFIGURAÇÃO
+
+### 1. Requisitos do Sistema
+- Windows 10/11 (64-bit)
+- Python 3.8 ou superior
+- 4GB de RAM mínimo
+- Conexão com internet
+
+### 2. Instalação do Python
+1. Baixe o Python em: https://python.org/downloads/
+2. Durante a instalação, marque "Add Python to PATH"
+3. Execute o comando: pip install tkinter requests
+
+### 3. Download e Execução
+1. Baixe o FovDark Loader do painel
+2. Execute: python fovdark_loader.py
+3. Faça login com suas credenciais
+4. O script será baixado e executado automaticamente
+
+## COMO USAR
+
+### 1. Login no Loader
+- Digite seu email e senha
+- Marque "Salvar login" se desejar
+- Clique em "ENTRAR"
+
+### 2. Verificação de Licença
+- O sistema verifica automaticamente sua licença
+- Se válida, o script será baixado
+- Caso expirada, renove no painel web
+
+### 3. Execução do Script
+- O script é executado automaticamente
+- Configurações são aplicadas
+- Após fechar, arquivos temporários são removidos
+
+## CONFIGURAÇÕES
+
+### Teclas Padrão:
+- F1: Ativar/Desativar aimbot
+- F2: Alternar modo de mira
+- F3: Ajustar sensibilidade
+- ESC: Fechar script
+
+### Modos de Mira:
+- **Automático**: Mira automaticamente nos inimigos
+- **Semi-automático**: Assistência de mira
+- **Manual**: Apenas indicadores visuais
+
+## TROUBLESHOOTING
+
+### Problemas Comuns:
+
+**Erro de conexão:**
+- Verifique sua internet
+- Desative temporariamente o antivírus
+- Execute como administrador
+
+**Script não executa:**
+- Verifique se o BloodStrike está em tela cheia
+- Execute o jogo antes do script
+- Verifique se a licença está ativa
+
+**Licença expirada:**
+- Acesse o painel web
+- Clique em "Renovar Licença"
+- Efetue o pagamento
+
+### Suporte Técnico:
+- Discord: [Link do Discord]
+- Telegram: [Link do Telegram]
+- Email: suporte@fovdark.com
+
+## AVISOS IMPORTANTES
+
+⚠️ **ATENÇÃO:**
+- Use apenas em modos de treino
+- Não use em partidas ranqueadas
+- Respeite os termos de uso do jogo
+- O uso é por sua conta e risco
+
+🔒 **SEGURANÇA:**
+- Nunca compartilhe suas credenciais
+- Mantenha o loader sempre atualizado
+- Use apenas o loader oficial
+
+## ATUALIZAÇÕES
+
+O sistema verifica automaticamente por atualizações.
+Sempre use a versão mais recente para melhor compatibilidade.
+
+---
+© 2024 FovDark - Todos os direitos reservados
+`;
+    
+    // Criar blob e fazer download
+    const blob = new Blob([manualContent], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = 'FovDark_Manual.txt';
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    
+    showToast('Manual de uso baixado!', 'success');
 }
 
 function downloadConfigs() {
