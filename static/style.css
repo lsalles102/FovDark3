@@ -1206,6 +1206,13 @@ h6 { font-size: 1rem; }
 .password-strength.strong { color: hsl(var(--success)); }
 .password-strength.very-strong { color: hsl(var(--accent)); }
 
+.auth-footer-divider {
+    width: 100%;
+    height: 1px;
+    background: hsl(var(--border));
+    margin: 1rem 0;
+}
+
 .checkbox-group {
     display: flex;
     align-items: flex-start;
