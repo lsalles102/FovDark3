@@ -1,0 +1,131 @@
+Starting Container
+
+🚀 Iniciando DarkFov...
+
+✅ Modo desenvolvimento - usando SQLite
+
+✅ Conectando ao PostgreSQL em produção
+
+✅ Tabelas do banco criadas/verificadas
+
+✅ Usuário admin já existe
+
+🎯 Iniciando servidor DarkFov...
+
+Traceback (most recent call last):
+
+  File "/app/start.py", line 97, in <module>
+
+    from main import app
+
+  File "/app/main.py", line 19, in <module>
+
+    from stripe_routes import router as stripe_router
+
+  File "/app/stripe_routes.py", line 5, in <module>
+
+    from stripe_integration import create_checkout_session, handle_payment_success
+
+  File "/app/stripe_integration.py", line 3, in <module>
+
+    import stripe
+
+ModuleNotFoundError: No module named 'stripe'
+
+🚀 Iniciando DarkFov...
+
+✅ Modo desenvolvimento - usando SQLite
+
+✅ Conectando ao PostgreSQL em produção
+
+✅ Tabelas do banco criadas/verificadas
+
+✅ Usuário admin já existe
+
+🎯 Iniciando servidor DarkFov...
+
+Traceback (most recent call last):
+
+  File "/app/start.py", line 97, in <module>
+
+    from main import app
+
+  File "/app/main.py", line 19, in <module>
+
+    from stripe_routes import router as stripe_router
+
+  File "/app/stripe_routes.py", line 5, in <module>
+
+    from stripe_integration import create_checkout_session, handle_payment_success
+
+  File "/app/stripe_integration.py", line 3, in <module>
+
+    import stripe
+
+ModuleNotFoundError: No module named 'stripe'
+
+🚀 Iniciando DarkFov...
+
+✅ Modo desenvolvimento - usando SQLite
+
+✅ Conectando ao PostgreSQL em produção
+
+✅ Tabelas do banco criadas/verificadas
+
+✅ Usuário admin já existe
+
+🎯 Iniciando servidor DarkFov...
+
+Traceback (most recent call last):
+
+  File "/app/start.py", line 97, in <module>
+
+    from main import app
+
+  File "/app/main.py", line 19, in <module>
+
+    from stripe_routes import router as stripe_router
+
+  File "/app/stripe_routes.py", line 5, in <module>
+
+    from stripe_integration import create_checkout_session, handle_payment_success
+
+  File "/app/stripe_integration.py", line 3, in <module>
+
+    import stripe
+
+ModuleNotFoundError: No module named 'stripe'
+
+🚀 Iniciando DarkFov...
+
+✅ Modo desenvolvimento - usando SQLite
+
+✅ Conectando ao PostgreSQL em produção
+
+✅ Tabelas do banco criadas/verificadas
+
+✅ Usuário admin já existe
+
+🎯 Iniciando servidor DarkFov...
+
+Traceback (most recent call last):
+
+  File "/app/start.py", line 97, in <module>
+
+    from main import app
+
+  File "/app/main.py", line 19, in <module>
+
+    from stripe_routes import router as stripe_router
+
+  File "/app/stripe_routes.py", line 5, in <module>
+
+    from stripe_integration import create_checkout_session, handle_payment_success
+
+  File "/app/stripe_integration.py", line 3, in <module>
+
+    import stripe
+
+ModuleNotFoundError: No module named 'stripe'
+
+🚀 Iniciando DarkFov...
