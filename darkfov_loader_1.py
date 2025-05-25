@@ -1,14 +1,14 @@
 
 # DarkFov Aimbot Script
-# Licenciado para: admin@darkfov.com
-# Válido até: 2026-03-31 23:59:59
+# Licenciado para: lsalles102@gmail.com
+# Válido até: 2025-07-23 21:30:39.543006
 
 import os
 import sys
 
 def main():
     print("DarkFov Aimbot carregado com sucesso!")
-    print(f"Usuário: admin@darkfov.com")
+    print(f"Usuário: lsalles102@gmail.com")
     print("Status: Licença ativa")
     
     # Aqui seria implementada a lógica do aimbot
