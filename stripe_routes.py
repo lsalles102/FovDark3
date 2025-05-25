@@ -30,12 +30,17 @@ async def criar_checkout(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
 
     try:
+        if not stripe.api_key:
+            raise HTTPException(status_code=400, detail="Chave do Stripe não configurada")
+        
         checkout_session = create_checkout_session(plano, user.id, user.email)
         if 'error' in checkout_session:
             raise HTTPException(status_code=400, detail=checkout_session['error'])
         return {"id": checkout_session.id}
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=400, detail=f"Erro do Stripe: {str(e)}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
 
 @router.post("/webhook")
 async def stripe_webhook(request: Request):

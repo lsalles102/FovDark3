@@ -7,6 +7,8 @@ from database import get_db
 
 # Configuração da API do Stripe
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+if not stripe.api_key:
+    raise ValueError("STRIPE_SECRET_KEY não configurada. Configure a chave no Secrets.")
 
 # Definição dos produtos
 PRODUCTS = {
