@@ -287,7 +287,7 @@ async function processPayment() {
     submitBtn.disabled = true;
 
     try {
-        const response = await fetch('/api/criar-checkout', {
+        const response = await fetch('/api/criar-preferencia', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -300,9 +300,14 @@ async function processPayment() {
 
         const data = await response.json();
 
-        if (response.ok && data.id) {
-            // Redirecionar para o checkout do Stripe
-            window.location.href = `https://checkout.stripe.com/pay/${data.id}`;
+        if (response.ok) {
+            // Redirecionar para o Mercado Pago
+            const initPoint = data.init_point || data.sandbox_init_point;
+            if (initPoint) {
+                window.location.href = initPoint;
+            } else {
+                showToast('Erro ao gerar link de pagamento', 'error');
+            }
         } else {
             if (response.status === 401) {
                 showToast('Sessão expirada. Faça login novamente.', 'error');
