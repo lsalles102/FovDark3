@@ -5,8 +5,8 @@ import requests
 import subprocess
 import os
 
-# URL do seu projeto no Replit
-API_URL = "https://darkfov.repl.co"
+# URL do seu projeto atual
+API_URL = "https://replit.com/@seunome/seuprojetorepl"  # Substitua pela URL correta
 LOGIN_URL = f"{API_URL}/api/login"
 LICENSE_URL = f"{API_URL}/api/license/check"
 DOWNLOAD_URL = f"{API_URL}/api/download/executable"
@@ -20,24 +20,40 @@ def login():
         messagebox.showwarning("Campos obrigatórios", "Preencha email e senha.")
         return
 
+    # Mostrar loading
+    btn_login.config(text="CONECTANDO...", state="disabled")
+    janela.update()
+
     try:
         # Login usando Form data conforme o sistema atual
         data = {"email": email, "password": senha}
-        res = requests.post(LOGIN_URL, data=data)
+        res = requests.post(LOGIN_URL, data=data, timeout=10)
         
         if res.status_code != 200:
-            messagebox.showerror("Erro", "Login inválido.")
+            error_msg = "Login inválido."
+            try:
+                error_data = res.json()
+                error_msg = error_data.get("detail", error_msg)
+            except:
+                pass
+            messagebox.showerror("Erro", error_msg)
             return
             
         token = res.json()["access_token"]
+    except requests.exceptions.Timeout:
+        messagebox.showerror("Erro", "Timeout na conexão. Verifique sua internet.")
+        return
+    except requests.exceptions.ConnectionError:
+        messagebox.showerror("Erro", "Não foi possível conectar ao servidor. Verifique se a URL está correta.")
+        return
     except Exception as e:
-        messagebox.showerror("Erro", f"Falha na conexão com o servidor: {str(e)}")
+        messagebox.showerror("Erro", f"Falha na conexão: {str(e)}")
         return
 
     # Verifica licença
     headers = {"Authorization": f"Bearer {token}"}
     try:
-        lic = requests.get(LICENSE_URL, headers=headers)
+        lic = requests.get(LICENSE_URL, headers=headers, timeout=10)
         if lic.status_code != 200:
             messagebox.showwarning("Licença inválida", "Sua licença está expirada ou inválida.")
             return
@@ -53,7 +69,10 @@ def login():
 
     # Baixa o executável
     try:
-        res = requests.get(DOWNLOAD_URL, headers=headers)
+        btn_login.config(text="BAIXANDO...")
+        janela.update()
+        
+        res = requests.get(DOWNLOAD_URL, headers=headers, timeout=30)
         if res.status_code == 200:
             with open(EXECUTAVEL, "wb") as f:
                 f.write(res.content)
@@ -63,6 +82,8 @@ def login():
             messagebox.showerror("Erro", "Erro ao baixar o script.")
     except Exception as e:
         messagebox.showerror("Erro", f"Erro no download: {str(e)}")
+    finally:
+        btn_login.config(text="ENTRAR", state="normal")
 
 def executar_e_apagar():
     try:
@@ -81,10 +102,21 @@ def abrir_link():
     import webbrowser
     webbrowser.open(f"{API_URL}/recover-password")
 
+def testar_conexao():
+    """Função para testar a conexão com o servidor"""
+    try:
+        response = requests.get(API_URL, timeout=5)
+        if response.status_code == 200:
+            messagebox.showinfo("Teste", "Conexão com servidor OK!")
+        else:
+            messagebox.showwarning("Teste", f"Servidor respondeu com código: {response.status_code}")
+    except Exception as e:
+        messagebox.showerror("Teste", f"Erro na conexão: {str(e)}")
+
 # ----- GUI -----
 janela = tk.Tk()
 janela.title("DarkFov Loader")
-janela.geometry("400x320")
+janela.geometry("400x380")
 janela.configure(bg="#0a0a0f")
 janela.resizable(False, False)
 
@@ -113,6 +145,11 @@ entry_senha.grid(row=3, column=0, pady=(0, 20))
 btn_login = tk.Button(janela, text="ENTRAR", bg="#00fff7", fg="#000", width=25, height=2, 
                      font=("Arial", 12, "bold"), relief="flat", cursor="hand2", command=login)
 btn_login.pack(pady=10)
+
+# Botão de teste (para debug)
+btn_teste = tk.Button(janela, text="TESTAR CONEXÃO", bg="#ff00c8", fg="#000", width=25, height=1, 
+                     font=("Arial", 10), relief="flat", cursor="hand2", command=testar_conexao)
+btn_teste.pack(pady=5)
 
 # Link de recuperação
 recup = tk.Label(janela, text="Esqueci minha senha", fg="#ff00c8", bg="#0a0a0f", 
