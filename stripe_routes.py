@@ -10,33 +10,29 @@ from models import User
 from stripe_integration import create_checkout_session, process_webhook_payment
 
 router = APIRouter()
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 endpoint_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
 
 @router.post("/criar-checkout")
 async def criar_checkout(request: Request, db: Session = Depends(get_db)):
-    try:
-        body = await request.json()
-        plano = body.get('plano')
+    body = await request.json()
+    plano = body.get('plano')
+    
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        raise HTTPException(status_code=401, detail="Token não fornecido")
         
-        auth_header = request.headers.get('Authorization')
-        if not auth_header or not auth_header.startswith('Bearer '):
-            raise HTTPException(status_code=401, detail="Token não fornecido")
-            
-        token = auth_header.split(' ')[1]
-        payload = decode_access_token(token)
-        if not payload:
-            raise HTTPException(status_code=401, detail="Token inválido")
-        
-        email = payload.get('sub')
-        user = db.query(User).filter(User.email == email).first()
-        if not user:
-            raise HTTPException(status_code=404, detail="Usuário não encontrado")
-        
-        checkout_session = create_checkout_session(user, plano)
-        return {"id": checkout_session.id}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    token = auth_header.split(' ')[1]
+    payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Token inválido")
+    
+    email = payload.get('sub')
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    
+    checkout_session = create_checkout_session(user, plano)
+    return {"id": checkout_session.id}
 
 @router.post("/webhook")
 async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
