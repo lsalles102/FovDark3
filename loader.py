@@ -5,12 +5,14 @@ import requests
 import subprocess
 import os
 import json
+import webbrowser
 
-# URL do seu projeto atual
-API_URL = "https://replit.com/@seunome/seuprojetorepl"  # Substitua pela URL correta
+# URL do seu projeto no Replit
+API_URL = "https://fovdark-system.replit.app"  # Atualize com sua URL correta
 LOGIN_URL = f"{API_URL}/api/login"
 LICENSE_URL = f"{API_URL}/api/license/check"
 DOWNLOAD_URL = f"{API_URL}/api/download/executable"
+RECOVER_URL = f"{API_URL}/recover"
 EXECUTAVEL = "Script_Dark.exe"
 CONFIG_FILE = "darkfov_config.json"
 
@@ -62,8 +64,10 @@ def login():
 
     try:
         # Login usando Form data conforme o sistema atual
-        data = {"email": email, "password": senha}
-        res = requests.post(LOGIN_URL, data=data, timeout=10)
+        data = {"username": email, "password": senha}
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        
+        res = requests.post(LOGIN_URL, data=data, headers=headers, timeout=10)
         
         if res.status_code != 200:
             error_msg = "Login inválido."
@@ -75,7 +79,9 @@ def login():
             messagebox.showerror("Erro", error_msg)
             return
             
-        token = res.json()["access_token"]
+        response_data = res.json()
+        token = response_data["access_token"]
+        
     except requests.exceptions.Timeout:
         messagebox.showerror("Erro", "Timeout na conexão. Verifique sua internet.")
         return
@@ -89,6 +95,9 @@ def login():
     # Verifica licença
     headers = {"Authorization": f"Bearer {token}"}
     try:
+        btn_login.config(text="VERIFICANDO LICENÇA...")
+        janela.update()
+        
         lic = requests.get(LICENSE_URL, headers=headers, timeout=10)
         if lic.status_code != 200:
             messagebox.showwarning("Licença inválida", "Sua licença está expirada ou inválida.")
@@ -103,40 +112,35 @@ def login():
         messagebox.showerror("Erro", f"Erro ao verificar licença: {str(e)}")
         return
 
-    # Baixa o executável
+    # Procura pelo executável na pasta
     try:
-        btn_login.config(text="BAIXANDO...")
+        btn_login.config(text="PROCURANDO SCRIPT...")
         janela.update()
         
-        res = requests.get(DOWNLOAD_URL, headers=headers, timeout=30)
-        if res.status_code == 200:
-            with open(EXECUTAVEL, "wb") as f:
-                f.write(res.content)
-            messagebox.showinfo("Sucesso", "Script baixado com sucesso! Executando...")
-            executar_e_apagar()
+        # Procura por Script_Dark.exe na pasta atual
+        if os.path.exists(EXECUTAVEL):
+            messagebox.showinfo("Sucesso", "Script encontrado! Executando...")
+            executar_script()
         else:
-            messagebox.showerror("Erro", "Erro ao baixar o script.")
+            messagebox.showwarning("Arquivo não encontrado", 
+                                 f"O arquivo {EXECUTAVEL} não foi encontrado na pasta atual.\n"
+                                 f"Coloque o arquivo {EXECUTAVEL} na mesma pasta do loader.")
     except Exception as e:
-        messagebox.showerror("Erro", f"Erro no download: {str(e)}")
+        messagebox.showerror("Erro", f"Erro ao procurar script: {str(e)}")
     finally:
         btn_login.config(text="ENTRAR", state="normal")
 
-def executar_e_apagar():
+def executar_script():
     try:
         # Executa o arquivo
-        subprocess.Popen(EXECUTAVEL).wait()
+        subprocess.Popen(EXECUTAVEL)
+        messagebox.showinfo("Sucesso", "Script executado com sucesso!")
+        janela.quit()  # Fecha o loader após execução
     except Exception as e:
         messagebox.showerror("Erro", f"Erro ao executar: {str(e)}")
-    finally:
-        # Remove o arquivo após execução
-        try:
-            os.remove(EXECUTAVEL)
-        except:
-            pass
 
 def abrir_recuperacao():
-    import webbrowser
-    webbrowser.open(f"{API_URL}/recover-password")
+    webbrowser.open(RECOVER_URL)
 
 def testar_conexao():
     """Função para testar a conexão com o servidor"""
@@ -152,7 +156,7 @@ def testar_conexao():
 # ----- GUI -----
 janela = tk.Tk()
 janela.title("DarkFov Loader")
-janela.geometry("400x380")
+janela.geometry("400x420")
 janela.configure(bg="#0a0a0f")
 janela.resizable(False, False)
 
@@ -189,6 +193,11 @@ check_salvar.grid(row=4, column=0, sticky="w", pady=(0, 20))
 btn_login = tk.Button(janela, text="ENTRAR", bg="#00fff7", fg="#000", width=25, height=2, 
                      font=("Arial", 12, "bold"), relief="flat", cursor="hand2", command=login)
 btn_login.pack(pady=10)
+
+# Instruções
+instrucoes = tk.Label(janela, text=f"Coloque o arquivo {EXECUTAVEL} na mesma pasta do loader", 
+                     fg="#888", bg="#0a0a0f", font=("Arial", 8), wraplength=350)
+instrucoes.pack(pady=5)
 
 # Botão de teste (para debug)
 btn_teste = tk.Button(janela, text="TESTAR CONEXÃO", bg="#ff00c8", fg="#000", width=25, height=1, 
