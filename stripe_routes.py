@@ -37,7 +37,20 @@ PLANOS = {
 }
 
 @router.post("/criar-checkout")
-async def criar_checkout(plano: str, user_id: int, db: Session = Depends(get_db)):
+async def criar_checkout(request: Request, db: Session = Depends(get_db)):
+    body = await request.json()
+    plano = body.get('plano')
+    
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        raise HTTPException(status_code=401, detail="Token não fornecido")
+        
+    token = auth_header.split(' ')[1]
+    payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Token inválido")
+        
+    user_id = payload.get('sub')
     if plano not in PLANOS:
         raise HTTPException(status_code=400, detail="Plano inválido")
     

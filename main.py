@@ -16,6 +16,7 @@ from auth import (
     authenticate_user, create_access_token, get_current_user,
     get_password_hash, verify_password, decode_access_token
 )
+from stripe_routes import router as stripe_router
 from license import verify_license, create_payment_record
 from admin import get_admin_user
 
@@ -23,6 +24,7 @@ from admin import get_admin_user
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="FovDark - Sistema de Vendas", version="1.0.0")
+app.include_router(stripe_router, prefix="/api")
 
 # Configurar arquivos estáticos e templates
 app.mount("/static", StaticFiles(directory="static"), name="static")
