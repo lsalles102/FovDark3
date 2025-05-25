@@ -1,0 +1,135 @@
+import os
+import stripe
+from datetime import datetime, timedelta
+from flask_app import db, License, Payment, User
+
+# Configuração da API do Stripe
+stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+
+# Definição dos produtos
+PRODUCTS = {
+    '7_dias': {
+        'name': 'Licença 7 dias',
+        'price': 1500,  # R$ 15,00
+        'days': 7
+    },
+    '30_dias': {
+        'name': 'Licença 30 dias',
+        'price': 4000,  # R$ 40,00
+        'days': 30
+    },
+    '90_dias': {
+        'name': 'Licença 90 dias',
+        'price': 9900,  # R$ 99,00
+        'days': 90
+    }
+}
+
+def get_domain():
+    """Obtém o domínio para redirecionamento"""
+    # Verifica se está no Railway
+    railway_domain = os.environ.get('RAILWAY_STATIC_URL')
+    if railway_domain:
+        return railway_domain.rstrip('/')
+    
+    # Verifica se está no Replit
+    replit_domain = os.environ.get('REPLIT_DOMAINS')
+    if replit_domain:
+        return "https://" + replit_domain.split(',')[0]
+    
+    # Fallback para ambiente local
+    return "http://127.0.0.1:5000"
+
+def create_checkout_session(plan_id, user_id):
+    """Cria uma sessão de checkout no Stripe"""
+    if plan_id not in PRODUCTS:
+        raise ValueError(f"Plano {plan_id} não encontrado")
+    
+    product = PRODUCTS[plan_id]
+    domain_url = get_domain()
+    
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[
+                {
+                    'price_data': {
+                        'currency': 'brl',
+                        'product_data': {
+                            'name': product['name'],
+                            'description': f'DarkFov - {product["name"]} - {product["days"]} dias',
+                        },
+                        'unit_amount': product['price'],
+                    },
+                    'quantity': 1,
+                },
+            ],
+            mode='payment',
+            success_url=domain_url + f'/payment/success?session_id={{CHECKOUT_SESSION_ID}}&plan_id={plan_id}&user_id={user_id}',
+            cancel_url=domain_url + '/payment/cancel',
+            client_reference_id=str(user_id),
+            metadata={
+                'plan_id': plan_id,
+                'days': str(product['days']),
+                'user_id': str(user_id)
+            }
+        )
+        return checkout_session
+    except Exception as e:
+        return {'error': str(e)}
+
+def handle_payment_success(session_id, plan_id, user_id):
+    """Processa um pagamento bem-sucedido"""
+    try:
+        # Recupera a sessão de checkout para verificar os detalhes
+        checkout_session = stripe.checkout.Session.retrieve(session_id)
+        
+        if checkout_session.payment_status != 'paid':
+            return False, "Pagamento ainda não foi confirmado"
+        
+        # Verificar se o usuário existe
+        user = User.query.get(user_id)
+        if not user:
+            return False, "Usuário não encontrado"
+        
+        # Criar o registro de pagamento
+        payment = Payment(
+            user_id=user_id,
+            amount=PRODUCTS[plan_id]['price'] / 100,  # Converte centavos para reais
+            payment_method='stripe',
+            transaction_id=checkout_session.id
+        )
+        db.session.add(payment)
+        
+        # Verificar se o usuário já tem uma licença
+        from flask_app import License
+        
+        existing_license = License.query.filter_by(user_id=user_id).order_by(License.expiration_date.desc()).first()
+        
+        if existing_license and existing_license.is_active and existing_license.expiration_date > datetime.utcnow():
+            # Estender licença existente
+            days_to_add = PRODUCTS[plan_id]['days']
+            existing_license.expiration_date = existing_license.expiration_date + timedelta(days=days_to_add)
+        else:
+            # Criar nova licença
+            from flask_app import generate_license_key
+            new_license = License(
+                user_id=user_id,
+                license_key=generate_license_key(),
+                expiration_date=datetime.utcnow() + timedelta(days=PRODUCTS[plan_id]['days']),
+                is_active=True
+            )
+            db.session.add(new_license)
+        
+        db.session.commit()
+        return True, "Pagamento processado com sucesso"
+    
+    except Exception as e:
+        db.session.rollback()
+        return False, str(e)
+
+def get_plan_details(plan_id):
+    """Retorna os detalhes de um plano"""
+    if plan_id in PRODUCTS:
+        return PRODUCTS[plan_id]
+    return None
