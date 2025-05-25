@@ -4,6 +4,32 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+def send_confirmation_email(email: str):
+    sender_email = os.getenv("SMTP_EMAIL")
+    sender_password = os.getenv("SMTP_PASSWORD")
+    
+    message = MIMEMultipart("alternative")
+    message["Subject"] = "Bem-vindo ao DarkFov"
+    message["From"] = sender_email
+    message["To"] = email
+    
+    html = f"""
+    <html>
+        <body>
+            <h2>Bem-vindo ao DarkFov</h2>
+            <p>Sua conta foi criada com sucesso!</p>
+            <p>Acesse nosso site para fazer login e começar a usar:</p>
+            <p><a href="https://darkfov.repl.co/login">Fazer Login</a></p>
+        </body>
+    </html>
+    """
+    
+    message.attach(MIMEText(html, "html"))
+    
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, email, message.as_string())
+
 def send_recovery_email(email: str, token: str):
     sender_email = os.getenv("SMTP_EMAIL")
     sender_password = os.getenv("SMTP_PASSWORD")

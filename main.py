@@ -163,6 +163,12 @@ async def register_user(
     db.commit()
     db.refresh(new_user)
     
+    # Enviar email de confirmação
+    try:
+        send_confirmation_email(email)
+    except Exception as e:
+        print(f"Erro ao enviar email: {e}")
+    
     return {"message": "Usuário criado com sucesso", "user_id": new_user.id}
 
 
