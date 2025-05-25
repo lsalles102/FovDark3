@@ -2,85 +2,114 @@
 import os
 import stripe
 from datetime import datetime, timedelta
-from fastapi import HTTPException
+from models import User, Payment
+from database import get_db
 
-# Configurar a chave da API do Stripe
+# Configuração da API do Stripe
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
-PLANOS = {
-    "mensal": {
-        "price_id": os.getenv("STRIPE_PRICE_MENSAL", "price_mensal"),
-        "valor": 7990,  # R$ 79,90
-        "dias": 30,
-        "nome": "Plano Mensal",
-        "moeda": "brl"
+# Definição dos produtos
+PRODUCTS = {
+    'mensal': {
+        'name': 'Plano Mensal',
+        'price': 7990,  # R$ 79,90
+        'days': 30,
+        'currency': 'brl'
     },
-    "trimestral": {
-        "price_id": os.getenv("STRIPE_PRICE_TRIMESTRAL", "price_trimestral"), 
-        "valor": 19990,  # R$ 199,90
-        "dias": 90,
-        "nome": "Plano Trimestral",
-        "moeda": "brl"
+    'trimestral': {
+        'name': 'Plano Trimestral',
+        'price': 19990,  # R$ 199,90
+        'days': 90,
+        'currency': 'brl'
     },
-    "anual": {
-        "price_id": os.getenv("STRIPE_PRICE_ANUAL", "price_anual"),
-        "valor": 29990,  # R$ 299,90
-        "dias": 365,
-        "nome": "Plano Anual", 
-        "moeda": "brl"
+    'anual': {
+        'name': 'Plano Anual',
+        'price': 29990,  # R$ 299,90
+        'days': 365,
+        'currency': 'brl'
     }
 }
 
-async def criar_sessao_checkout(plano: str, user_email: str, success_url: str, cancel_url: str):
-    """Criar sessão de checkout do Stripe"""
-    if plano not in PLANOS:
-        raise HTTPException(status_code=400, detail="Plano inválido")
-        
-    plano_info = PLANOS[plano]
+def get_domain():
+    """Obtém o domínio para redirecionamento"""
+    return "https://fovdark.repl.co"
+
+def create_checkout_session(plan_id, user_id, user_email):
+    """Cria uma sessão de checkout no Stripe"""
+    if plan_id not in PRODUCTS:
+        raise ValueError(f"Plano {plan_id} não encontrado")
+    
+    product = PRODUCTS[plan_id]
+    domain_url = get_domain()
     
     try:
         checkout_session = stripe.checkout.Session.create(
             customer_email=user_email,
+            payment_method_types=['card'],
             line_items=[{
-                'price': plano_info['price_id'],
+                'price_data': {
+                    'currency': product['currency'],
+                    'product_data': {
+                        'name': product['name'],
+                        'description': f'DarkFov - {product["name"]} - {product["days"]} dias',
+                    },
+                    'unit_amount': product['price'],
+                },
                 'quantity': 1,
             }],
             mode='payment',
-            success_url=success_url,
-            cancel_url=cancel_url,
+            success_url=domain_url + '/sucesso',
+            cancel_url=domain_url + '/cancelado',
+            client_reference_id=str(user_id),
             metadata={
-                'plano': plano,
-                'email': user_email
-            },
-            currency=plano_info['moeda'],
-            locale='pt-BR',
-            payment_method_types=['card'],
-            billing_address_collection='required',
-            customer_creation='always'
+                'plan_id': plan_id,
+                'days': str(product['days']),
+                'user_id': str(user_id)
+            }
         )
         return checkout_session
-        
-    except stripe.error.StripeError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-async def processar_webhook(payload, sig_header, endpoint_secret):
-    """Processar webhook do Stripe"""
-    try:
-        evento = stripe.Webhook.construct_event(
-            payload, sig_header, endpoint_secret
-        )
-        return evento
     except Exception as e:
-        raise HTTPException(status_code=400, detail="Webhook inválido")
+        return {'error': str(e)}
 
-def calcular_data_expiracao(plano: str, data_atual_expiracao: datetime = None):
-    """Calcular nova data de expiração"""
-    if plano not in PLANOS:
-        raise HTTPException(status_code=400, detail="Plano inválido")
+def handle_payment_success(session):
+    """Processa um pagamento bem-sucedido"""
+    try:
+        db = next(get_db())
+        user_id = int(session.metadata['user_id'])
+        plan_id = session.metadata['plan_id']
         
-    dias = PLANOS[plano]['dias']
-    
-    if data_atual_expiracao and data_atual_expiracao > datetime.utcnow():
-        return data_atual_expiracao + timedelta(days=dias)
-    else:
-        return datetime.utcnow() + timedelta(days=dias)
+        # Verificar se o usuário existe
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return False, "Usuário não encontrado"
+        
+        # Criar registro de pagamento
+        payment = Payment(
+            user_id=user_id,
+            valor=PRODUCTS[plan_id]['price'] / 100,  # Converte centavos para reais
+            status='completed',
+            plano=plan_id,
+            gateway_id=session.id
+        )
+        db.add(payment)
+        
+        # Atualizar licença
+        if user.data_expiracao and user.data_expiracao > datetime.utcnow():
+            # Estender licença existente
+            user.data_expiracao = user.data_expiracao + timedelta(days=PRODUCTS[plan_id]['days'])
+        else:
+            # Nova licença
+            user.data_expiracao = datetime.utcnow() + timedelta(days=PRODUCTS[plan_id]['days'])
+        
+        db.commit()
+        return True, "Pagamento processado com sucesso"
+        
+    except Exception as e:
+        db.session.rollback()
+        return False, str(e)
+
+def get_plan_details(plan_id):
+    """Retorna os detalhes de um plano"""
+    if plan_id in PRODUCTS:
+        return PRODUCTS[plan_id]
+    return None
