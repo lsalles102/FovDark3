@@ -19,17 +19,20 @@ PLANOS = {
     "mensal": {
         "price_id": "price_XXXXX",  # Substitua pelo seu ID real do Stripe
         "dias": 30,
-        "valor": 9900
+        "valor": 9900,  # R$ 99,00
+        "currency": "brl"
     },
     "trimestral": {
         "price_id": "price_YYYYY",  # Substitua pelo seu ID real do Stripe
         "dias": 90,
-        "valor": 24900
+        "valor": 24900,  # R$ 249,00
+        "currency": "brl"
     },
     "anual": {
         "price_id": "price_ZZZZZ",  # Substitua pelo seu ID real do Stripe
         "dias": 365,
-        "valor": 89900
+        "valor": 89900,  # R$ 899,00
+        "currency": "brl"
     }
 }
 
@@ -50,8 +53,10 @@ async def criar_checkout(plano: str, user_id: int, db: Session = Depends(get_db)
                 'quantity': 1,
             }],
             mode='payment',
-            success_url='https://darkfov.repl.co/sucesso',
-            cancel_url='https://darkfov.repl.co/cancelado',
+            currency=plano_info['currency'],
+            locale='pt-BR',
+            success_url='https://fovdark.repl.co/sucesso',
+            cancel_url='https://fovdark.repl.co/cancelado',
             metadata={
                 'user_id': user_id,
                 'plano': plano
