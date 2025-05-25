@@ -5,7 +5,7 @@ run = "Run command"
 channel = "stable-24_05"
 
 [workflows]
-runButton = "Project"
+runButton = "FovDark Server"
 
 [[workflows.workflow]]
 name = "Project"
@@ -24,6 +24,15 @@ author = "agent"
 task = "shell.exec"
 args = "pip install fastapi uvicorn sqlalchemy psycopg2-binary python-jose[cryptography] passlib[bcrypt] python-multipart jinja2 aiofiles && python main.py"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "FovDark Server"
+author = 43093619
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pip install fastapi uvicorn sqlalchemy psycopg2-binary python-jose[cryptography] passlib[bcrypt] python-multipart jinja2 aiofiles stripe && python main.py"
 
 [deployment]
 run = ["sh", "-c", "Run command"]
