@@ -171,6 +171,7 @@ def executar_e_apagar(arquivo_path):
 
 def abrir_recuperacao():
     """Abre a página de recuperação de senha"""
+    webbrowser.open(f"{API_URL}/recover-password")
     webbrowser.open(RECOVER_URL)
 
 def testar_conexao():
