@@ -142,6 +142,7 @@ async function processPayment(event) {
     } catch (error) {
         console.error('Erro:', error);
         showToast('Erro ao processar pagamento', 'error');
+    });
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = 'PROCESSAR PAGAMENTO';
