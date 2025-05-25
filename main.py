@@ -319,6 +319,32 @@ if __name__ == "__main__":
     )
 
 
+# Download do executável (protegido) - Para o loader
+@app.get("/api/download/executable")
+async def download_executable(
+    current_user: User = Depends(get_current_user)
+):
+    if not verify_license(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Licença expirada ou inexistente"
+        )
+    
+    # Verificar se o arquivo existe
+    executable_path = "attached_assets/Script_Dark.exe"
+    if not os.path.exists(executable_path):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Executável não encontrado"
+        )
+    
+    return FileResponse(
+        executable_path,
+        media_type="application/octet-stream",
+        filename="Script_Dark.exe"
+    )
+
+
 # Endpoints administrativos - Usuários
 @app.get("/api/admin/users")
 async def get_all_users(
