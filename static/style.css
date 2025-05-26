@@ -1956,6 +1956,319 @@ h6 { font-size: 1rem; }
     color: hsl(var(--success));
 }
 
+/* === License Status === */
+.license-active, .license-inactive {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.license-active {
+  color: var(--success);
+}
+
+.license-inactive {
+  color: var(--danger);
+}
+
+.license-details p {
+  margin: 5px 0;
+}
+
+.license-details code {
+  background-color: var(--background-darker);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+}
+
+.days-remaining {
+  color: var(--secondary);
+  font-weight: bold;
+}
+
+.license-cta {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.download-active, .download-inactive {
+  text-align: center;
+}
+
+.download-info {
+  margin-top: 15px;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+}
+
+/* === Cyberpunk Buttons === */
+.cyberpunk-button {
+  background-color: var(--primary-dark);
+  color: var(--text);
+  border: 1px solid var(--primary);
+  padding: 10px 20px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  border-radius: var(--border-radius);
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  text-align: center;
+}
+
+.cyberpunk-button:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: all 0.6s;
+}
+
+.cyberpunk-button:hover:before {
+  left: 100%;
+}
+
+.cyberpunk-button:hover {
+  background-color: var(--primary);
+  box-shadow: 0 0 15px var(--primary);
+  transform: translateY(-2px);
+}
+
+.cyberpunk-button.primary {
+  background-color: var(--primary);
+  border-color: var(--primary-light);
+}
+
+.cyberpunk-button.secondary {
+  background-color: transparent;
+  border-color: var(--secondary);
+  color: var(--secondary);
+}
+
+.cyberpunk-button.secondary:hover {
+  background-color: var(--secondary-dark);
+  color: var(--text);
+  box-shadow: 0 0 15px var(--secondary-dark);
+}
+
+.cyberpunk-button.small {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.cyberpunk-button.glow {
+  box-shadow: 0 0 15px var(--primary);
+  animation: button-glow 2s infinite alternate;
+}
+
+@keyframes button-glow {
+  0% {
+    box-shadow: 0 0 5px var(--primary);
+  }
+  100% {
+    box-shadow: 0 0 20px var(--primary), 0 0 30px var(--primary-light);
+  }
+}
+
+/* === Tutorial Steps === */
+.tutorial-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.tutorial-step {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.step-number {
+  background-color: var(--primary);
+  color: var(--text);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.step-content h3 {
+  margin: 0 0 5px 0;
+  font-size: 1rem;
+}
+
+.step-content p {
+  margin: 0;
+  color: var(--text-dark);
+  font-size: 0.9rem;
+}
+
+/* === Support Options === */
+.support-options {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.support-option {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  background-color: var(--background-darker);
+  border-radius: var(--border-radius);
+}
+
+.support-option i {
+  font-size: 1.5rem;
+  color: var(--secondary);
+  width: 30px;
+  text-align: center;
+}
+
+.support-info {
+  flex: 1;
+}
+
+.support-info h3 {
+  margin: 0 0 5px 0;
+  font-size: 1rem;
+}
+
+.support-info p {
+  margin: 0;
+  color: var(--text-dark);
+  font-size: 0.9rem;
+}
+
+/* === System Status === */
+.system-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  background-color: var(--background-darker);
+  border-radius: var(--border-radius);
+}
+
+.stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  color: white;
+}
+
+.stat-icon.online {
+  background-color: var(--success);
+}
+
+.stat-icon.uptime {
+  background-color: var(--secondary);
+}
+
+.stat-icon.active {
+  background-color: var(--primary);
+}
+
+.stat-icon.version {
+  background-color: var(--warning);
+}
+
+.stat-info h3 {
+  margin: 0 0 5px 0;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.stat-info p {
+  margin: 0;
+  color: var(--text-dark);
+  font-size: 0.9rem;
+}
+
+/* === Download List === */
+.download-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.download-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  background-color: var(--background-darker);
+  border-radius: var(--border-radius);
+}
+
+.download-icon {
+  width: 40px;
+  height: 40px;
+  background-color: var(--primary);
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  font-size: 1.2rem;
+}
+
+.download-info h3 {
+  margin: 0 0 5px 0;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.download-info p {
+  margin: 0;
+  color: var(--text-dark);
+  font-size: 0.9rem;
+}
+
+/* === Success Message === */
+.success-message {
+  background-color: rgba(0, 255, 140, 0.1);
+  border: 1px solid var(--success);
+  color: var(--success);
+  padding: 15px;
+  border-radius: var(--border-radius);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .badge-warning {
     background: hsl(var(--warning) / 0.2);
     color: hsl(var(--warning));
@@ -2571,11 +2884,54 @@ h6 { font-size: 1rem; }
         gap: 2rem;
     }
 
+/* ====== DARKFOV - CYBERPUNK THEME ====== */
+
+/* === Variáveis Cyberpunk === */
+:root {
+  --background-dark: hsl(260, 15%, 10%); /* #1a1726 */
+  --background-darker: hsl(260, 20%, 5%); /* #0d0a13 */
+  --background-light: hsl(260, 15%, 15%); /* #272139 */
+  --background-lighter: hsl(260, 15%, 20%); /* #34294c */
+  --primary: hsl(270, 80%, 60%); /* #a041f4 */
+  --primary-dark: hsl(270, 70%, 50%); /* #8a30d8 */
+  --primary-light: hsl(270, 80%, 70%); /* #bf7ffc */
+  --secondary: hsl(180, 100%, 50%); /* #00ffff */
+  --secondary-dark: hsl(180, 100%, 40%); /* #00cdcd */
+  --secondary-light: hsl(180, 100%, 60%); /* #54ffff */
+  --accent: hsl(320, 100%, 60%); /* #ff33bb */
+  --text: hsl(260, 10%, 90%); /* #e6e4eb */
+  --text-dark: hsl(260, 10%, 70%); /* #b1adb9 */
+  --success: hsl(140, 100%, 50%); /* #00ff8c */
+  --warning: hsl(40, 100%, 50%); /* #ffaa00 */
+  --danger: hsl(0, 100%, 50%); /* #ff0000 */
+  --border-radius: 4px;
+  --glow-strength: 5px;
+  --transition-speed: 0.3s;
+}
+
+/* === Layout Cyberpunk === */
+.cyberpunk-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--background-darker);
+  background-image: 
+    linear-gradient(0deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.3)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 800 800'%3E%3Cg fill='none' stroke='%23331D47' stroke-width='1'%3E%3Cpath d='M769 229L1037 260.9M927 880L731 737 520 660 309 538 40 599 295 764 126.5 879.5 40 599-197 493 102 382-31 229 126.5 79.5-69-63'/%3E%3Cpath d='M-31 229L237 261 390 382 603 493 308.5 537.5 101.5 381.5M370 905L295 764'/%3E%3Cpath d='M520 660L578 842 731 737 840 599 603 493 520 660 295 764 309 538 390 382 539 269 769 229 577.5 41.5 370 105 295 -36 126.5 79.5 237 261 102 382 40 599 -69 737 127 880'/%3E%3Cpath d='M520-140L578.5 42.5 731-63M603 493L539 269 237 261 370 105M902 382L539 269M390 382L102 382'/%3E%3Cpath d='M-222 42L126.5 79.5 370 105 539 269 577.5 41.5 927 80 769 229 902 382 603 493 731 737M295-36L577.5 41.5M578 842L295 764M40-201L127 80M102 382L-261 269'/%3E%3C/g%3E%3C/svg%3E");
+  background-attachment: fixed;
+  color: var(--text);
+}
+
+.cyberpunk-main {
+  flex: 1;
+  padding: 20px 0;
+}
+
 /* ===== DASHBOARD SECTION ===== */
 .dashboard-section {
-    padding: 2rem 0;
-    min-height: 100vh;
-    background: linear-gradient(135deg, hsl(var(--bg-primary)) 0%, hsl(var(--bg-secondary)) 100%);
+    padding: 20px 30px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 /* ===== DASHBOARD HEADER ===== */
@@ -2583,13 +2939,96 @@ h6 { font-size: 1rem; }
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
-    padding: 2rem;
-    background: hsl(var(--bg-glass));
-    backdrop-filter: blur(10px);
-    border: 1px solid hsl(var(--border-primary));
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-lg);
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--primary);
+}
+
+.glitch-text {
+  font-size: 2.5rem;
+  font-weight: 900;
+  position: relative;
+  color: var(--text);
+  letter-spacing: 3px;
+  animation: text-shadow-pop 5s infinite alternate;
+  margin: 0;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.glitch-text::before {
+  color: var(--primary);
+  z-index: -1;
+  animation: glitch-animation 3s infinite;
+}
+
+.glitch-text::after {
+  color: var(--secondary);
+  z-index: -2;
+  animation: glitch-animation 2s infinite reverse;
+}
+
+@keyframes glitch-animation {
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-3px, 3px);
+  }
+  40% {
+    transform: translate(-3px, -3px);
+  }
+  60% {
+    transform: translate(3px, 3px);
+  }
+  80% {
+    transform: translate(3px, -3px);
+  }
+  100% {
+    transform: translate(0);
+  }
+}
+
+@keyframes text-shadow-pop {
+  0% {
+    text-shadow: 0 0 5px var(--primary), 0 0 10px var(--primary-dark);
+  }
+  50% {
+    text-shadow: 0 0 5px var(--primary), 0 0 10px var(--primary-dark), 0 0 15px var(--secondary);
+  }
+  100% {
+    text-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary-dark), 0 0 30px var(--secondary);
+  }
+}
+
+.highlight {
+  color: var(--secondary);
+  position: relative;
+  z-index: 1;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.1rem;
+}
+
+.admin-badge {
+  background-color: var(--secondary);
+  color: var(--background-darker);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
 }
 
 .dashboard-header h1 {
@@ -3334,14 +3773,49 @@ h6 { font-size: 1rem; }
     color: white;
 }
 
+/* === Dashboard Cards === */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
 .dashboard-card {
-    background: hsl(var(--bg-glass));
-    backdrop-filter: blur(10px);
-    border: 1px solid hsl(var(--border-primary));
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow-md);
-    transition: all var(--transition-medium);
+  background-color: var(--background-light);
+  border: 1px solid var(--primary);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  transition: all var(--transition-speed);
+}
+
+.dashboard-card:hover {
+  box-shadow: 0 0 15px rgba(160, 65, 244, 0.3);
+}
+
+.card-header {
+  background-color: var(--background-darker);
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--primary);
+}
+
+.card-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-family: 'Orbitron', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.card-header i {
+  font-size: 1.5rem;
+  color: var(--secondary);
+}
+
+.card-content {
+  padding: 20px;
 }
 
 .dashboard-card:hover {
