@@ -609,31 +609,131 @@ async def get_site_settings(
 
 @app.post("/api/admin/settings")
 async def update_site_settings(
-    settings_data: dict,
+    request: Request,
     admin_user: User = Depends(get_admin_user),
     db: Session = Depends(get_db)
 ):
-    for category, settings in settings_data.items():
-        for key, value in settings.items():
-            # Buscar configuração existente
-            setting = db.query(SiteSettings).filter(
-                SiteSettings.key == key,
-                SiteSettings.category == category
-            ).first()
-            
-            if setting:
-                setting.value = value
-                setting.updated_at = datetime.utcnow()
-            else:
-                new_setting = SiteSettings(
-                    key=key,
-                    value=value,
-                    category=category
-                )
-                db.add(new_setting)
-    
-    db.commit()
-    return {"message": "Configurações atualizadas com sucesso"}
+    try:
+        settings_data = await request.json()
+        
+        for category, settings in settings_data.items():
+            for key, value in settings.items():
+                # Buscar configuração existente
+                setting = db.query(SiteSettings).filter(
+                    SiteSettings.key == key,
+                    SiteSettings.category == category
+                ).first()
+                
+                if setting:
+                    setting.value = str(value)
+                    setting.updated_at = datetime.utcnow()
+                else:
+                    new_setting = SiteSettings(
+                        key=key,
+                        value=str(value),
+                        category=category
+                    )
+                    db.add(new_setting)
+        
+        db.commit()
+        return {"message": "Configurações atualizadas com sucesso"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao salvar configurações: {str(e)}"
+        )
+
+
+@app.post("/api/admin/settings/general")
+async def save_general_settings(
+    site_name: str = Form("DarkFov"),
+    site_url: str = Form(""),
+    support_email: str = Form(""),
+    site_description: str = Form(""),
+    mp_token: str = Form(""),
+    smtp_host: str = Form(""),
+    smtp_port: int = Form(587),
+    smtp_email: str = Form(""),
+    smtp_password: str = Form(""),
+    enable_captcha: bool = Form(False),
+    enable_two_factor: bool = Form(False),
+    enable_email_verification: bool = Form(False),
+    min_password_length: int = Form(8),
+    main_download_url: str = Form(""),
+    current_version: str = Form("1.0.0"),
+    enable_download_auth: bool = Form(True),
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        # Configurações gerais
+        general_settings = {
+            "site_name": site_name,
+            "site_url": site_url,
+            "support_email": support_email,
+            "site_description": site_description,
+            "current_version": current_version
+        }
+        
+        # Configurações de API
+        api_settings = {
+            "mp_token": mp_token,
+            "smtp_host": smtp_host,
+            "smtp_port": str(smtp_port),
+            "smtp_email": smtp_email,
+            "smtp_password": smtp_password
+        }
+        
+        # Configurações de segurança
+        security_settings = {
+            "enable_captcha": str(enable_captcha),
+            "enable_two_factor": str(enable_two_factor),
+            "enable_email_verification": str(enable_email_verification),
+            "min_password_length": str(min_password_length)
+        }
+        
+        # Configurações de download
+        download_settings = {
+            "main_download_url": main_download_url,
+            "enable_download_auth": str(enable_download_auth)
+        }
+        
+        # Salvar todas as configurações
+        all_settings = {
+            "general": general_settings,
+            "api": api_settings,
+            "security": security_settings,
+            "downloads": download_settings
+        }
+        
+        for category, settings in all_settings.items():
+            for key, value in settings.items():
+                setting = db.query(SiteSettings).filter(
+                    SiteSettings.key == key,
+                    SiteSettings.category == category
+                ).first()
+                
+                if setting:
+                    setting.value = value
+                    setting.updated_at = datetime.utcnow()
+                else:
+                    new_setting = SiteSettings(
+                        key=key,
+                        value=value,
+                        category=category
+                    )
+                    db.add(new_setting)
+        
+        db.commit()
+        return {"message": "Configurações gerais salvas com sucesso"}
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao salvar configurações: {str(e)}"
+        )
 
 
 @app.post("/api/admin/maintenance")
