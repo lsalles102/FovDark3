@@ -14,28 +14,36 @@
         <!-- Admin Navigation -->
         <div class="admin-nav">
             <button class="admin-nav-btn active" data-tab="overview">
-                <i class="fas fa-chart-pie"></i>
-                VISÃO GERAL
+                <i class="fas fa-tachometer-alt"></i>
+                <span>DASHBOARD</span>
             </button>
             <button class="admin-nav-btn" data-tab="users">
                 <i class="fas fa-users"></i>
-                USUÁRIOS
+                <span>USUÁRIOS</span>
             </button>
             <button class="admin-nav-btn" data-tab="products">
                 <i class="fas fa-box"></i>
-                PRODUTOS
+                <span>PRODUTOS</span>
             </button>
             <button class="admin-nav-btn" data-tab="payments">
                 <i class="fas fa-credit-card"></i>
-                PAGAMENTOS
+                <span>PAGAMENTOS</span>
             </button>
             <button class="admin-nav-btn" data-tab="themes">
                 <i class="fas fa-palette"></i>
-                TEMAS
+                <span>PERSONALIZAÇÃO</span>
+            </button>
+            <button class="admin-nav-btn" data-tab="settings">
+                <i class="fas fa-cog"></i>
+                <span>CONFIGURAÇÕES</span>
+            </button>
+            <button class="admin-nav-btn" data-tab="logs">
+                <i class="fas fa-file-alt"></i>
+                <span>LOGS</span>
             </button>
             <button class="admin-nav-btn" data-tab="system">
-                <i class="fas fa-cogs"></i>
-                SISTEMA
+                <i class="fas fa-server"></i>
+                <span>SISTEMA</span>
             </button>
         </div>
         
@@ -459,15 +467,226 @@
             </div>
         </div>
 
+        <!-- Settings Tab -->
+        <div id="settings-tab" class="admin-tab">
+            <div class="tab-header">
+                <h2>CONFIGURAÇÕES GERAIS</h2>
+            </div>
+            
+            <div class="settings-grid">
+                <div class="settings-section">
+                    <h3><i class="fas fa-globe"></i> CONFIGURAÇÕES DO SITE</h3>
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label>Nome do Site:</label>
+                            <input type="text" id="siteName" value="DarkFov" placeholder="Nome do site">
+                        </div>
+                        <div class="form-group">
+                            <label>URL do Site:</label>
+                            <input type="url" id="siteUrl" value="https://darkfov.com" placeholder="https://exemplo.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Email de Suporte:</label>
+                            <input type="email" id="supportEmail" value="suporte@darkfov.com" placeholder="suporte@exemplo.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Descrição do Site:</label>
+                            <textarea id="siteDescription" rows="3" placeholder="Descrição do site para SEO...">O aimbot mais avançado para BloodStrike</textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3><i class="fas fa-key"></i> CHAVES API</h3>
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label>MercadoPago Access Token:</label>
+                            <input type="password" id="mpToken" placeholder="TEST-1234567890...">
+                        </div>
+                        <div class="form-group">
+                            <label>SMTP Host:</label>
+                            <input type="text" id="smtpHost" placeholder="smtp.gmail.com">
+                        </div>
+                        <div class="form-group">
+                            <label>SMTP Port:</label>
+                            <input type="number" id="smtpPort" value="587" placeholder="587">
+                        </div>
+                        <div class="form-group">
+                            <label>SMTP Email:</label>
+                            <input type="email" id="smtpEmail" placeholder="noreply@exemplo.com">
+                        </div>
+                        <div class="form-group">
+                            <label>SMTP Password:</label>
+                            <input type="password" id="smtpPassword" placeholder="senha do email">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3><i class="fas fa-shield-alt"></i> SEGURANÇA</h3>
+                    <div class="settings-form">
+                        <div class="form-group checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="enableCaptcha" checked>
+                                <span class="checkmark"></span>
+                                Habilitar CAPTCHA no registro
+                            </label>
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="enableTwoFactor">
+                                <span class="checkmark"></span>
+                                Habilitar autenticação 2FA
+                            </label>
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="enableEmailVerification" checked>
+                                <span class="checkmark"></span>
+                                Verificação obrigatória de email
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>Duração mínima da senha:</label>
+                            <input type="number" id="minPasswordLength" value="8" min="6" max="50">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3><i class="fas fa-download"></i> DOWNLOADS</h3>
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label>URL do Download Principal:</label>
+                            <input type="url" id="mainDownloadUrl" placeholder="https://exemplo.com/download.exe">
+                        </div>
+                        <div class="form-group">
+                            <label>Versão Atual:</label>
+                            <input type="text" id="currentVersion" value="1.0.0" placeholder="1.0.0">
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="enableDownloadAuth" checked>
+                                <span class="checkmark"></span>
+                                Exigir login para download
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-actions">
+                <button class="btn btn-primary" onclick="saveGeneralSettings()">
+                    <i class="fas fa-save"></i>
+                    SALVAR CONFIGURAÇÕES
+                </button>
+                <button class="btn btn-secondary" onclick="loadGeneralSettings()">
+                    <i class="fas fa-undo"></i>
+                    RESETAR
+                </button>
+            </div>
+        </div>
+        
+        <!-- Logs Tab -->
+        <div id="logs-tab" class="admin-tab">
+            <div class="tab-header">
+                <h2>LOGS DO SISTEMA</h2>
+                <div class="tab-actions">
+                    <button class="btn btn-secondary" onclick="refreshLogs()">
+                        <i class="fas fa-sync-alt"></i>
+                        ATUALIZAR
+                    </button>
+                    <button class="btn btn-primary" onclick="downloadLogs()">
+                        <i class="fas fa-download"></i>
+                        BAIXAR LOGS
+                    </button>
+                    <button class="btn btn-warning" onclick="clearLogs()">
+                        <i class="fas fa-trash"></i>
+                        LIMPAR LOGS
+                    </button>
+                </div>
+            </div>
+            
+            <div class="logs-container">
+                <div class="logs-filters">
+                    <div class="filter-group">
+                        <label>Filtrar por tipo:</label>
+                        <select id="logTypeFilter">
+                            <option value="all">Todos os Logs</option>
+                            <option value="info">Informação</option>
+                            <option value="warning">Avisos</option>
+                            <option value="error">Erros</option>
+                            <option value="admin">Ações Admin</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Data:</label>
+                        <input type="date" id="logDateFilter">
+                    </div>
+                    <div class="filter-group">
+                        <label>Buscar:</label>
+                        <input type="text" id="logSearchFilter" placeholder="Buscar nos logs...">
+                    </div>
+                </div>
+                
+                <div class="log-viewer">
+                    <div class="log-header">
+                        <span class="log-time">TIMESTAMP</span>
+                        <span class="log-level">NÍVEL</span>
+                        <span class="log-message">MENSAGEM</span>
+                        <span class="log-user">USUÁRIO</span>
+                    </div>
+                    <div class="log-content" id="logContent">
+                        <div class="log-entry log-info">
+                            <span class="log-time">2024-01-26 10:30:15</span>
+                            <span class="log-level">INFO</span>
+                            <span class="log-message">Sistema iniciado com sucesso</span>
+                            <span class="log-user">SISTEMA</span>
+                        </div>
+                        <div class="log-entry log-info">
+                            <span class="log-time">2024-01-26 10:30:16</span>
+                            <span class="log-level">INFO</span>
+                            <span class="log-message">Conexão com banco de dados estabelecida</span>
+                            <span class="log-user">SISTEMA</span>
+                        </div>
+                        <div class="log-entry log-admin">
+                            <span class="log-time">2024-01-26 10:35:22</span>
+                            <span class="log-level">ADMIN</span>
+                            <span class="log-message">Login de administrador realizado</span>
+                            <span class="log-user">admin@darkfov.com</span>
+                        </div>
+                        <div class="log-entry log-warning">
+                            <span class="log-time">2024-01-26 10:40:33</span>
+                            <span class="log-level">WARNING</span>
+                            <span class="log-message">Tentativa de login falhada (IP: 192.168.1.100)</span>
+                            <span class="log-user">usuario@teste.com</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="log-pagination">
+                    <button class="btn btn-small btn-secondary" onclick="previousLogPage()">
+                        <i class="fas fa-chevron-left"></i>
+                        Anterior
+                    </button>
+                    <span class="page-info">Página 1 de 10</span>
+                    <button class="btn btn-small btn-secondary" onclick="nextLogPage()">
+                        Próximo
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
         <!-- System Tab -->
         <div id="system-tab" class="admin-tab">
             <div class="tab-header">
-                <h2>CONFIGURAÇÕES DO SISTEMA</h2>
+                <h2>MANUTENÇÃO E SISTEMA</h2>
             </div>
             
             <div class="system-controls">
                 <div class="control-group">
-                    <h3>Manutenção do Site</h3>
+                    <h3><i class="fas fa-tools"></i> MANUTENÇÃO DO SITE</h3>
                     <div class="maintenance-controls">
                         <div class="maintenance-status">
                             <div class="status-indicator">
@@ -493,26 +712,94 @@
                 </div>
                 
                 <div class="control-group">
-                    <h3>Outras Ações</h3>
+                    <h3><i class="fas fa-server"></i> STATUS DOS SERVIÇOS</h3>
+                    <div class="services-status">
+                        <div class="service-item">
+                            <div class="service-info">
+                                <i class="fas fa-database"></i>
+                                <span>Banco de Dados</span>
+                            </div>
+                            <div class="service-status status-online">
+                                <div class="status-dot"></div>
+                                ONLINE
+                            </div>
+                        </div>
+                        <div class="service-item">
+                            <div class="service-info">
+                                <i class="fas fa-envelope"></i>
+                                <span>Serviço de Email</span>
+                            </div>
+                            <div class="service-status status-online">
+                                <div class="status-dot"></div>
+                                ONLINE
+                            </div>
+                        </div>
+                        <div class="service-item">
+                            <div class="service-info">
+                                <i class="fas fa-credit-card"></i>
+                                <span>MercadoPago</span>
+                            </div>
+                            <div class="service-status status-warning">
+                                <div class="status-dot"></div>
+                                CONFIGURAÇÃO PENDENTE
+                            </div>
+                        </div>
+                        <div class="service-item">
+                            <div class="service-info">
+                                <i class="fas fa-cloud"></i>
+                                <span>Servidor Web</span>
+                            </div>
+                            <div class="service-status status-online">
+                                <div class="status-dot"></div>
+                                ONLINE
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3><i class="fas fa-cogs"></i> FERRAMENTAS DE SISTEMA</h3>
                     <div class="control-items">
                         <button class="btn btn-outline" onclick="clearCache()">
                             <i class="fas fa-broom"></i>
                             LIMPAR CACHE
                         </button>
-                        <button class="btn btn-outline" onclick="exportData()">
+                        <button class="btn btn-outline" onclick="backupDatabase()">
                             <i class="fas fa-download"></i>
-                            EXPORTAR DADOS
+                            BACKUP BANCO
+                        </button>
+                        <button class="btn btn-outline" onclick="optimizeDatabase()">
+                            <i class="fas fa-wrench"></i>
+                            OTIMIZAR BANCO
+                        </button>
+                        <button class="btn btn-outline" onclick="checkUpdates()">
+                            <i class="fas fa-sync-alt"></i>
+                            VERIFICAR ATUALIZAÇÕES
                         </button>
                     </div>
                 </div>
                 
                 <div class="control-group">
-                    <h3>Logs do Sistema</h3>
-                    <div class="log-viewer">
-                        <pre id="systemLogs">Sistema iniciado com sucesso
-Conexão com banco estabelecida
-Todos os serviços online
-Anti-detecção ativo</pre>
+                    <h3><i class="fas fa-chart-line"></i> INFORMAÇÕES DO SISTEMA</h3>
+                    <div class="system-info">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="label">Versão do Sistema:</span>
+                                <span class="value">1.0.0</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Tempo Online:</span>
+                                <span class="value" id="uptime">2 dias, 5 horas</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Última Atualização:</span>
+                                <span class="value">26/01/2024 10:30</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Uso de Memória:</span>
+                                <span class="value">145 MB</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -694,8 +981,15 @@ function switchAdminTab(tabName) {
         case 'overview':
             loadOverviewData();
             break;
+        case 'settings':
+            loadGeneralSettings();
+            break;
+        case 'logs':
+            loadSystemLogs();
+            break;
         case 'system':
             loadMaintenanceStatus();
+            loadSystemInfo();
             break;
     }
 }
@@ -1551,8 +1845,71 @@ async function toggleMaintenance(enable) {
     }
 }
 
+// Funções para aba de Configurações
+async function loadGeneralSettings() {
+    // Implementar carregamento das configurações gerais
+    console.log('Carregando configurações gerais...');
+}
+
+async function saveGeneralSettings() {
+    showToast('Configurações salvas com sucesso', 'success');
+}
+
+// Funções para aba de Logs
+async function loadSystemLogs() {
+    const logContent = document.getElementById('logContent');
+    // Implementar carregamento dos logs
+    console.log('Carregando logs do sistema...');
+}
+
+function refreshLogs() {
+    loadSystemLogs();
+    showToast('Logs atualizados', 'info');
+}
+
+function downloadLogs() {
+    showToast('Download dos logs iniciado', 'info');
+}
+
+function clearLogs() {
+    if (confirm('Tem certeza que deseja limpar todos os logs?')) {
+        showToast('Logs limpos com sucesso', 'success');
+    }
+}
+
+function previousLogPage() {
+    console.log('Página anterior dos logs');
+}
+
+function nextLogPage() {
+    console.log('Próxima página dos logs');
+}
+
+// Funções para aba de Sistema
+async function loadSystemInfo() {
+    // Implementar carregamento das informações do sistema
+    console.log('Carregando informações do sistema...');
+}
+
 function clearCache() {
     showToast('Cache limpo com sucesso', 'success');
+}
+
+function backupDatabase() {
+    showToast('Backup do banco iniciado', 'info');
+}
+
+function optimizeDatabase() {
+    if (confirm('Deseja otimizar o banco de dados? Esta operação pode demorar alguns minutos.')) {
+        showToast('Otimização do banco iniciada', 'info');
+    }
+}
+
+function checkUpdates() {
+    showToast('Verificando atualizações...', 'info');
+    setTimeout(() => {
+        showToast('Sistema está atualizado', 'success');
+    }, 2000);
 }
 
 function exportData() {
