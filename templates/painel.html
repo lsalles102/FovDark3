@@ -578,7 +578,9 @@ function updateLicenseStatus(data) {
         
         // Adicionar alerta se crítico
         if (data.license_status === 'critico') {
-            showLicenseAlert('Atenção! Sua licença expira muito em breve. Renove agora para evitar interrupções.', 'warning');
+            showLicenseAlert('⚠️ Atenção! Sua licença expira muito em breve. Renove agora para evitar interrupções.', 'warning');
+        } else if (data.license_status === 'expirando') {
+            showLicenseAlert('⏰ Sua licença expira em breve. Considere renovar para continuar usando o DarkFov.', 'warning');
         }
         
     } else {
@@ -728,6 +730,51 @@ function createToastContainer() {
 
 .toast-info {
     background: linear-gradient(135deg, var(--primary), #0099cc);
+}
+
+/* License Alerts */
+.license-alert {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    position: relative;
+}
+
+.license-alert.alert-warning {
+    background: linear-gradient(135deg, rgba(255, 170, 0, 0.2), rgba(255, 170, 0, 0.1));
+    border: 1px solid rgba(255, 170, 0, 0.4);
+    color: #ffaa00;
+}
+
+.license-alert.alert-danger {
+    background: linear-gradient(135deg, rgba(255, 68, 68, 0.2), rgba(255, 68, 68, 0.1));
+    border: 1px solid rgba(255, 68, 68, 0.4);
+    color: #ff4444;
+}
+
+.license-alert i {
+    font-size: 1.2rem;
+}
+
+.license-alert .alert-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1.2rem;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.license-alert .alert-close:hover {
+    opacity: 1;
 }
 </style>
 {% endblock %}
