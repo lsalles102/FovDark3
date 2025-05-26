@@ -538,25 +538,91 @@ function updateLicenseStatus(data) {
     const infoElement = document.getElementById('licenseInfo');
     const downloadBtn = document.getElementById('downloadBtn');
 
-    if (data.valid) {
-        statusElement.className = 'status-active';
-        statusElement.innerHTML = '<i class="fas fa-check-circle"></i> Licença Ativa';
+    console.log('Dados da licença:', data);
+
+    if (data.valid && data.can_download) {
+        // Definir classe baseada no status
+        let statusClass = 'status-active';
+        let statusIcon = 'fas fa-check-circle';
+        let statusText = 'Licença Ativa';
         
-        const expirationDate = new Date(data.data_expiracao);
-        infoElement.textContent = `Sua licença expira em: ${expirationDate.toLocaleDateString('pt-BR')}`;
+        if (data.license_status === 'critico') {
+            statusClass = 'status-critical';
+            statusIcon = 'fas fa-exclamation-triangle';
+            statusText = 'Licença Expirando!';
+        } else if (data.license_status === 'expirando') {
+            statusClass = 'status-warning';
+            statusIcon = 'fas fa-clock';
+            statusText = 'Licença Expirando';
+        } else if (data.license_status === 'aviso') {
+            statusClass = 'status-warning';
+            statusIcon = 'fas fa-info-circle';
+            statusText = 'Renovação Sugerida';
+        }
+        
+        statusElement.className = statusClass;
+        statusElement.innerHTML = `<i class="${statusIcon}"></i> ${statusText}`;
+        
+        // Mostrar informações detalhadas
+        let infoText = data.message;
+        if (data.expires_at) {
+            const expirationDate = new Date(data.expires_at);
+            infoText += ` (${expirationDate.toLocaleDateString('pt-BR')} às ${expirationDate.toLocaleTimeString('pt-BR')})`;
+        }
+        infoElement.textContent = infoText;
         
         downloadBtn.innerHTML = '<i class="fas fa-download"></i> BAIXAR DARKFOV';
         downloadBtn.disabled = false;
+        downloadBtn.className = 'btn btn-success';
         downloadBtn.onclick = downloadSoftware;
+        
+        // Adicionar alerta se crítico
+        if (data.license_status === 'critico') {
+            showLicenseAlert('Atenção! Sua licença expira muito em breve. Renove agora para evitar interrupções.', 'warning');
+        }
+        
     } else {
-        statusElement.className = 'status-expired';
-        statusElement.innerHTML = '<i class="fas fa-times-circle"></i> Sem Licença Ativa';
-        infoElement.textContent = 'Adquira uma licença para acessar o DarkFov Aimbot';
+        let statusClass = 'status-expired';
+        let statusText = 'Sem Licença Ativa';
+        let infoText = 'Adquira uma licença para acessar o DarkFov Aimbot';
+        
+        if (data.license_status === 'expirada') {
+            statusText = 'Licença Expirada';
+            infoText = 'Sua licença expirou. Renove para continuar usando o DarkFov';
+        }
+        
+        statusElement.className = statusClass;
+        statusElement.innerHTML = `<i class="fas fa-times-circle"></i> ${statusText}`;
+        infoElement.textContent = infoText;
         
         downloadBtn.innerHTML = '<i class="fas fa-shopping-cart"></i> ADQUIRIR LICENÇA';
         downloadBtn.disabled = false;
+        downloadBtn.className = 'btn btn-primary';
         downloadBtn.onclick = function() { window.location.href = '/comprar'; };
+        
+        if (data.license_status === 'expirada') {
+            showLicenseAlert('Sua licença expirou! Clique em "Adquirir Licença" para renovar.', 'danger');
+        }
     }
+}
+
+function showLicenseAlert(message, type) {
+    // Remover alertas existentes
+    const existingAlert = document.querySelector('.license-alert');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+    
+    const alert = document.createElement('div');
+    alert.className = `license-alert alert-${type}`;
+    alert.innerHTML = `
+        <i class="fas fa-${type === 'warning' ? 'exclamation-triangle' : 'times-circle'}"></i>
+        <span>${message}</span>
+        <button onclick="this.parentElement.remove()" class="alert-close">×</button>
+    `;
+    
+    const cardContent = document.querySelector('.painel-card .card-content');
+    cardContent.insertBefore(alert, cardContent.firstChild);
 }
 
 async function downloadSoftware() {

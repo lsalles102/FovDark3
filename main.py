@@ -18,7 +18,7 @@ from auth import (
     get_password_hash, verify_password, decode_access_token
 )
 from mercadopago_routes import router as mercadopago_router
-from license import verify_license, create_payment_record
+from license import verify_license, create_payment_record, get_license_status
 from admin import get_admin_user
 from email_utils import send_confirmation_email, send_recovery_email
 
@@ -251,11 +251,19 @@ async def login_user(
 async def check_license(
     current_user: User = Depends(get_current_user)
 ):
+    license_status = get_license_status(current_user)
     is_valid = verify_license(current_user)
+    
     return {
         "valid": is_valid,
         "email": current_user.email,
-        "data_expiracao": current_user.data_expiracao.isoformat() if current_user.data_expiracao else None
+        "data_expiracao": current_user.data_expiracao.isoformat() if current_user.data_expiracao else None,
+        "license_status": license_status["status"],
+        "message": license_status["message"],
+        "days_remaining": license_status["days_remaining"],
+        "hours_remaining": license_status["hours_remaining"],
+        "can_download": license_status["can_download"],
+        "expires_at": license_status["expires_at"]
     }
 
 
