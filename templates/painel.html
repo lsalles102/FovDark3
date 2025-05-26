@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Painel - FovDark{% endblock %}
@@ -262,10 +261,6 @@
         background: #5865f2;
     }
 
-    .telegram-icon {
-        background: #0088cc;
-    }
-
     .email-icon {
         background: #ea4335;
     }
@@ -311,28 +306,28 @@
             grid-template-columns: 1fr;
             gap: 1.5rem;
         }
-        
+
         .painel-title {
             font-size: 1.6rem;
             letter-spacing: 1px;
         }
-        
+
         .card-content {
             padding: 1.2rem;
         }
-        
+
         .card-title {
             font-size: 0.9rem;
         }
-        
+
         .step-content h4 {
             font-size: 0.75rem;
         }
-        
+
         .step-content p {
             font-size: 0.8rem;
         }
-        
+
         .btn {
             font-size: 0.75rem;
             padding: 0.5rem 1rem;
@@ -410,7 +405,7 @@
                         <p>Baixe o arquivo do FovDark</p>
                     </div>
                 </div>
-                
+
                 <div class="tutorial-step">
                     <div class="step-number">2</div>
                     <div class="step-content">
@@ -418,7 +413,7 @@
                         <p>Execute como administrador</p>
                     </div>
                 </div>
-                
+
                 <div class="tutorial-step">
                     <div class="step-number">3</div>
                     <div class="step-content">
@@ -426,7 +421,7 @@
                         <p>Ajuste conforme necessário</p>
                     </div>
                 </div>
-                
+
                 <div class="tutorial-step">
                     <div class="step-number">4</div>
                     <div class="step-content">
@@ -444,19 +439,18 @@
                 <h2 class="card-title">SUPORTE</h2>
             </div>
             <div class="card-content">
+                
                 <a href="#" class="support-option" onclick="openDiscord()">
                     <div class="support-icon discord-icon">
                         <i class="fab fa-discord"></i>
                     </div>
                     <div class="support-info">
                         <h4>DISCORD</h4>
-                        <p>Suporte em tempo real</p>
+                        <p>Comunidade oficial e FAQ</p>
+                        <span class="status-online">● Online</span>
                     </div>
                     <div class="support-action">ENTRAR</div>
                 </a>
-
-                
-
                 <a href="#" class="support-option" onclick="openEmail()">
                     <div class="support-icon email-icon">
                         <i class="fas fa-envelope"></i>
@@ -464,6 +458,7 @@
                     <div class="support-info">
                         <h4>EMAIL</h4>
                         <p>suporte@darkfov.com</p>
+                        <span class="status-available">● 24h</span>
                     </div>
                     <div class="support-action">CONTATO</div>
                 </a>
@@ -507,7 +502,7 @@ async function checkAuth() {
 
         const data = await response.json();
         updateLicenseStatus(data);
-        
+
     } catch (error) {
         console.error('Erro ao verificar licença:', error);
     }
@@ -545,7 +540,7 @@ function updateLicenseStatus(data) {
         let statusClass = 'status-active';
         let statusIcon = 'fas fa-check-circle';
         let statusText = 'Licença Ativa';
-        
+
         if (data.license_status === 'critico') {
             statusClass = 'status-critical';
             statusIcon = 'fas fa-exclamation-triangle';
@@ -559,10 +554,10 @@ function updateLicenseStatus(data) {
             statusIcon = 'fas fa-info-circle';
             statusText = 'Renovação Sugerida';
         }
-        
+
         statusElement.className = statusClass;
         statusElement.innerHTML = `<i class="${statusIcon}"></i> ${statusText}`;
-        
+
         // Mostrar informações detalhadas
         let infoText = data.message;
         if (data.expires_at) {
@@ -570,38 +565,38 @@ function updateLicenseStatus(data) {
             infoText += ` (${expirationDate.toLocaleDateString('pt-BR')} às ${expirationDate.toLocaleTimeString('pt-BR')})`;
         }
         infoElement.textContent = infoText;
-        
+
         downloadBtn.innerHTML = '<i class="fas fa-download"></i> BAIXAR FOVDARK';
         downloadBtn.disabled = false;
         downloadBtn.className = 'btn btn-success';
         downloadBtn.onclick = downloadSoftware;
-        
+
         // Adicionar alerta se crítico
         if (data.license_status === 'critico') {
             showLicenseAlert('⚠️ Atenção! Sua licença expira muito em breve. Renove agora para evitar interrupções.', 'warning');
         } else if (data.license_status === 'expirando') {
             showLicenseAlert('⏰ Sua licença expira em breve. Considere renovar para continuar usando o FovDark.', 'warning');
         }
-        
+
     } else {
         let statusClass = 'status-expired';
         let statusText = 'Sem Licença Ativa';
         let infoText = 'Adquira uma licença para acessar o DarkFov Aimbot';
-        
+
         if (data.license_status === 'expirada') {
             statusText = 'Licença Expirada';
             infoText = 'Sua licença expirou. Renove para continuar usando o FovDark';
         }
-        
+
         statusElement.className = statusClass;
         statusElement.innerHTML = `<i class="fas fa-times-circle"></i> ${statusText}`;
         infoElement.textContent = infoText;
-        
+
         downloadBtn.innerHTML = '<i class="fas fa-shopping-cart"></i> ADQUIRIR LICENÇA';
         downloadBtn.disabled = false;
         downloadBtn.className = 'btn btn-primary';
         downloadBtn.onclick = function() { window.location.href = '/comprar'; };
-        
+
         if (data.license_status === 'expirada') {
             showLicenseAlert('Sua licença expirou! Clique em "Adquirir Licença" para renovar.', 'danger');
         }
@@ -614,7 +609,7 @@ function showLicenseAlert(message, type) {
     if (existingAlert) {
         existingAlert.remove();
     }
-    
+
     const alert = document.createElement('div');
     alert.className = `license-alert alert-${type}`;
     alert.innerHTML = `
@@ -622,14 +617,14 @@ function showLicenseAlert(message, type) {
         <span>${message}</span>
         <button onclick="this.parentElement.remove()" class="alert-close">×</button>
     `;
-    
+
     const cardContent = document.querySelector('.painel-card .card-content');
     cardContent.insertBefore(alert, cardContent.firstChild);
 }
 
 async function downloadSoftware() {
     const token = localStorage.getItem('access_token');
-    
+
     try {
         const response = await fetch('/api/download/executable', {
             headers: {
@@ -647,7 +642,7 @@ async function downloadSoftware() {
             a.click();
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
-            
+
             showToast('Download iniciado com sucesso!', 'success');
         } else {
             const error = await response.json();
@@ -671,16 +666,16 @@ function openEmail() {
 
 function showToast(message, type = 'info') {
     const container = document.getElementById('toast-container') || createToastContainer();
-    
+
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.innerHTML = `
         <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'}-circle"></i>
         <span>${message}</span>
     `;
-    
+
     container.appendChild(toast);
-    
+
     setTimeout(() => {
         toast.style.opacity = '0';
         setTimeout(() => {

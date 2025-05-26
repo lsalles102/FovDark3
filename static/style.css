@@ -3703,10 +3703,6 @@ h6 { font-size: 1rem; }
     border-left: 4px solid #5865f2;
 }
 
-.support-option.telegram:hover {
-    border-left: 4px solid #0088cc;
-}
-
 .support-option.email:hover {
     border-left: 4px solid hsl(var(--warning));
 }
@@ -3725,10 +3721,6 @@ h6 { font-size: 1rem; }
 
 .support-option.discord .support-icon {
     background: #5865f2;
-}
-
-.support-option.telegram .support-icon {
-    background: #0088cc;
 }
 
 .support-option.email .support-icon {
@@ -4177,10 +4169,6 @@ h6 { font-size: 1rem; }
 
 .support-icon.discord {
     background: linear-gradient(135deg, #5865F2, #4752C4);
-}
-
-.support-icon.telegram {
-    background: linear-gradient(135deg, #0088cc, #0066aa);
 }
 
 .support-icon.email {
