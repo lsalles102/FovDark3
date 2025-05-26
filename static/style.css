@@ -650,6 +650,8 @@ h6 { font-size: 1rem; }
     overflow: hidden;
     border-top: 2px solid hsl(var(--secondary));
     border-bottom: 2px solid hsl(var(--secondary));
+    margin: 3rem 0;
+    border-radius: var(--radius-lg);
 }
 
 .cyber-grid-overlay {
