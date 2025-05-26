@@ -1,0 +1,228 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site em Manutenção - DarkFov</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .maintenance-container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 600px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .maintenance-icon {
+            font-size: 4rem;
+            color: #00ffff;
+            margin-bottom: 2rem;
+            animation: pulse 2s infinite;
+        }
+
+        .maintenance-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #00ffff, #e94560);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .maintenance-subtitle {
+            font-size: 1.2rem;
+            color: #b0b0b0;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .maintenance-details {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .maintenance-details h3 {
+            color: #00ffff;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .maintenance-details p {
+            color: #d0d0d0;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .contact-info {
+            background: rgba(233, 69, 96, 0.1);
+            border: 1px solid rgba(233, 69, 96, 0.3);
+            border-radius: 10px;
+            padding: 1.5rem;
+        }
+
+        .contact-info h4 {
+            color: #e94560;
+            margin-bottom: 1rem;
+        }
+
+        .contact-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .contact-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #00ffff;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .contact-link:hover {
+            background: rgba(0, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Animações */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Efeito de fundo animado */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.1;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, #00ffff 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: rotate 20s linear infinite;
+        }
+
+        .bg-animation::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, #e94560 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: rotate 15s linear infinite reverse;
+        }
+
+        @keyframes rotate {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .maintenance-title {
+                font-size: 2rem;
+            }
+            
+            .maintenance-icon {
+                font-size: 3rem;
+            }
+            
+            .contact-links {
+                gap: 1rem;
+            }
+            
+            .contact-link {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    
+    <div class="maintenance-container">
+        <div class="maintenance-icon">
+            <i class="fas fa-tools"></i>
+        </div>
+        
+        <h1 class="maintenance-title">SITE EM MANUTENÇÃO</h1>
+        
+        <p class="maintenance-subtitle">
+            Estamos trabalhando para melhorar sua experiência. O site voltará ao ar em breve.
+        </p>
+        
+        <div class="maintenance-details">
+            <h3><i class="fas fa-info-circle"></i> O que está acontecendo?</h3>
+            <p>
+                Estamos realizando uma manutenção programada para implementar melhorias no sistema,
+                corrigir bugs e adicionar novos recursos ao DarkFov.
+            </p>
+            <p>
+                <strong>Tempo estimado:</strong> A manutenção deve durar algumas horas. Agradecemos sua paciência.
+            </p>
+        </div>
+        
+        <div class="contact-info">
+            <h4><i class="fas fa-headset"></i> Precisa de Suporte?</h4>
+            <div class="contact-links">
+                <a href="https://discord.gg/darkfov" class="contact-link" target="_blank">
+                    <i class="fab fa-discord"></i>
+                    Discord
+                </a>
+                <a href="https://t.me/darkfov" class="contact-link" target="_blank">
+                    <i class="fab fa-telegram"></i>
+                    Telegram
+                </a>
+                <a href="mailto:suporte@darkfov.com" class="contact-link">
+                    <i class="fas fa-envelope"></i>
+                    Email
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -2001,6 +2001,61 @@ h6 { font-size: 1rem; }
     margin: 0;
 }
 
+/* ===== MAINTENANCE CONTROLS ===== */
+.maintenance-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 1.5rem;
+    background: hsl(240 6% 8%);
+    border: 1px solid hsl(var(--border-primary));
+    border-radius: var(--radius-md);
+}
+
+.maintenance-status {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #4CAF50;
+    animation: pulse 2s infinite;
+}
+
+.status-indicator span {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #4CAF50;
+}
+
+.status-description {
+    color: hsl(var(--text-muted));
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.maintenance-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
 /* ===== SUPPORT MODAL ===== */
 .support-options {
     display: flex;

@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
+from fastapi.middleware.base import BaseHTTPMiddleware
 import uvicorn
 
 from database import get_db, engine, Base
@@ -32,6 +33,38 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 security = HTTPBearer()
+
+
+class MaintenanceMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        # Verificar se o modo manutenção está ativo
+        if request.url.path.startswith("/static") or request.url.path.startswith("/admin") or request.url.path.startswith("/api/admin"):
+            # Permitir acesso a arquivos estáticos e painel admin
+            response = await call_next(request)
+            return response
+        
+        # Verificar configuração de manutenção no banco
+        try:
+            from database import SessionLocal
+            db = SessionLocal()
+            maintenance_setting = db.query(SiteSettings).filter(
+                SiteSettings.key == "maintenance_mode",
+                SiteSettings.category == "system"
+            ).first()
+            
+            if maintenance_setting and maintenance_setting.value == "true":
+                return templates.TemplateResponse("maintenance.html", {"request": request}, status_code=503)
+            
+            db.close()
+        except Exception:
+            pass  # Se houver erro no banco, continua normalmente
+        
+        response = await call_next(request)
+        return response
+
+
+# Adicionar middleware
+app.add_middleware(MaintenanceMiddleware)
 
 
 # Middleware para verificar token em rotas protegidas
@@ -601,6 +634,49 @@ async def update_site_settings(
     
     db.commit()
     return {"message": "Configurações atualizadas com sucesso"}
+
+
+@app.post("/api/admin/maintenance")
+async def toggle_maintenance_mode(
+    enabled: bool = Form(...),
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    # Buscar configuração de manutenção
+    maintenance_setting = db.query(SiteSettings).filter(
+        SiteSettings.key == "maintenance_mode",
+        SiteSettings.category == "system"
+    ).first()
+    
+    if maintenance_setting:
+        maintenance_setting.value = "true" if enabled else "false"
+        maintenance_setting.updated_at = datetime.utcnow()
+    else:
+        new_setting = SiteSettings(
+            key="maintenance_mode",
+            value="true" if enabled else "false",
+            category="system"
+        )
+        db.add(new_setting)
+    
+    db.commit()
+    
+    status_text = "ativado" if enabled else "desativado"
+    return {"message": f"Modo manutenção {status_text} com sucesso", "enabled": enabled}
+
+
+@app.get("/api/admin/maintenance/status")
+async def get_maintenance_status(
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    maintenance_setting = db.query(SiteSettings).filter(
+        SiteSettings.key == "maintenance_mode",
+        SiteSettings.category == "system"
+    ).first()
+    
+    enabled = maintenance_setting and maintenance_setting.value == "true"
+    return {"enabled": enabled}
 
 
 @app.get("/api/settings/public")

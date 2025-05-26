@@ -342,7 +342,33 @@
             
             <div class="system-controls">
                 <div class="control-group">
-                    <h3>Manutenção</h3>
+                    <h3>Manutenção do Site</h3>
+                    <div class="maintenance-controls">
+                        <div class="maintenance-status">
+                            <div class="status-indicator">
+                                <div class="status-dot" id="maintenanceStatusDot"></div>
+                                <span id="maintenanceStatusText">Verificando...</span>
+                            </div>
+                            <p class="status-description">
+                                O modo manutenção coloca o site fora do ar para todos os usuários, exceto administradores.
+                            </p>
+                        </div>
+                        
+                        <div class="maintenance-actions">
+                            <button class="btn btn-danger" id="enableMaintenanceBtn" onclick="toggleMaintenance(true)">
+                                <i class="fas fa-power-off"></i>
+                                ATIVAR MANUTENÇÃO
+                            </button>
+                            <button class="btn btn-success" id="disableMaintenanceBtn" onclick="toggleMaintenance(false)" style="display: none;">
+                                <i class="fas fa-play"></i>
+                                REATIVAR SITE
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Outras Ações</h3>
                     <div class="control-items">
                         <button class="btn btn-outline" onclick="clearCache()">
                             <i class="fas fa-broom"></i>
@@ -351,10 +377,6 @@
                         <button class="btn btn-outline" onclick="exportData()">
                             <i class="fas fa-download"></i>
                             EXPORTAR DADOS
-                        </button>
-                        <button class="btn btn-warning" onclick="maintenanceMode()">
-                            <i class="fas fa-tools"></i>
-                            MODO MANUTENÇÃO
                         </button>
                     </div>
                 </div>
@@ -546,6 +568,9 @@ function switchAdminTab(tabName) {
             break;
         case 'overview':
             loadOverviewData();
+            break;
+        case 'system':
+            loadMaintenanceStatus();
             break;
     }
 }
@@ -790,18 +815,92 @@ function refreshPayments() {
     loadPayments();
 }
 
+async function loadMaintenanceStatus() {
+    const token = localStorage.getItem('access_token');
+    
+    try {
+        const response = await fetch('/api/admin/maintenance/status', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            updateMaintenanceUI(data.enabled);
+        } else {
+            console.error('Erro ao carregar status de manutenção');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+    }
+}
+
+function updateMaintenanceUI(isEnabled) {
+    const statusDot = document.getElementById('maintenanceStatusDot');
+    const statusText = document.getElementById('maintenanceStatusText');
+    const enableBtn = document.getElementById('enableMaintenanceBtn');
+    const disableBtn = document.getElementById('disableMaintenanceBtn');
+    
+    if (isEnabled) {
+        statusDot.style.background = '#e94560';
+        statusText.textContent = 'SITE FORA DO AR';
+        statusText.style.color = '#e94560';
+        enableBtn.style.display = 'none';
+        disableBtn.style.display = 'inline-flex';
+    } else {
+        statusDot.style.background = '#4CAF50';
+        statusText.textContent = 'SITE ONLINE';
+        statusText.style.color = '#4CAF50';
+        enableBtn.style.display = 'inline-flex';
+        disableBtn.style.display = 'none';
+    }
+}
+
+async function toggleMaintenance(enable) {
+    const action = enable ? 'ativar' : 'desativar';
+    const confirmMessage = enable 
+        ? 'Tem certeza que deseja colocar o site em modo manutenção? Isso impedirá o acesso de todos os usuários (exceto admins).'
+        : 'Tem certeza que deseja reativar o site?';
+    
+    if (!confirm(confirmMessage)) {
+        return;
+    }
+    
+    const token = localStorage.getItem('access_token');
+    
+    try {
+        const formData = new FormData();
+        formData.append('enabled', enable);
+        
+        const response = await fetch('/api/admin/maintenance', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            showToast(data.message, enable ? 'warning' : 'success');
+            updateMaintenanceUI(enable);
+        } else {
+            const data = await response.json();
+            showToast(data.detail || `Erro ao ${action} modo manutenção`, 'error');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        showToast(`Erro ao ${action} modo manutenção`, 'error');
+    }
+}
+
 function clearCache() {
     showToast('Cache limpo com sucesso', 'success');
 }
 
 function exportData() {
     showToast('Exportação iniciada', 'info');
-}
-
-function maintenanceMode() {
-    if (confirm('Ativar modo de manutenção? Isso impedirá novos logins.')) {
-        showToast('Modo de manutenção ativado', 'warning');
-    }
 }
 
 function closeModal(modalId) {
