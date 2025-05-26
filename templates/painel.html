@@ -33,203 +33,153 @@
         </div>
 
         <!-- Dashboard Grid -->
-        <div class="dashboard-grid">
-            <!-- Status da Licença - Card Principal -->
-            <div class="dashboard-card license-status-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-shield-alt"></i> Status da Licença</h2>
+        <div class="panel-grid">
+            <!-- STATUS DA LICENÇA -->
+            <div class="panel-card status-card">
+                <div class="panel-header">
+                    <h2><i class="fas fa-key"></i> STATUS DA LICENÇA</h2>
+                    <div class="header-icon">
+                        <i class="fas fa-pen"></i>
+                    </div>
                 </div>
-                <div class="card-content">
-                    <div class="license-header">
-                        <div class="license-icon">
-                            <i class="fas fa-key"></i>
-                        </div>
-                        <div class="license-info">
-                            <div class="license-status" id="licenseStatus">
-                                <div class="status-indicator status-loading">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                    <span>Verificando...</span>
-                                </div>
-                            </div>
-                        </div>
+                <div class="panel-content">
+                    <div id="licenseStatusIcon" class="status-icon-container">
+                        <i class="fas fa-shield-alt status-icon status-warning"></i>
+                        <span class="status-text" id="licenseStatusText">Sem Licença Ativa</span>
                     </div>
+                    <p class="status-description" id="licenseDescription">Adquira uma licença para acessar o DarkFov Aimbot</p>
+                    <button class="panel-button" id="licenseButton" onclick="window.location.href='/comprar'">
+                        CONSEGUIR LICENÇA
+                    </button>
 
-                    <div class="license-details" id="licenseDetails" style="display: none;">
-                        <div class="license-grid">
-                            <div class="license-item">
-                                <span class="label">Expira em:</span>
-                                <span class="value" id="expirationDate">-</span>
+                    <!-- Detalhes da licença ativa (oculto inicialmente) -->
+                    <div id="licenseActiveDetails" style="display: none;">
+                        <div class="license-details-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">Expira em:</span>
+                                <span class="detail-value" id="expirationDate">-</span>
                             </div>
-                            <div class="license-item">
-                                <span class="label">Dias restantes:</span>
-                                <span class="value" id="daysRemaining">-</span>
-                            </div>
-                            <div class="license-item">
-                                <span class="label">Chave da Licença:</span>
-                                <span class="value license-key" id="licenseKey">-</span>
-                            </div>
-                            <div class="license-item">
-                                <span class="label">Última verificação:</span>
-                                <span class="value" id="lastCheck">Agora</span>
+                            <div class="detail-item">
+                                <span class="detail-label">Dias restantes:</span>
+                                <span class="detail-value" id="daysRemaining">-</span>
                             </div>
                         </div>
-
-                        <!-- Botão de Renovação -->
-                        <div class="license-actions" id="licenseActions" style="display: none;">
-                            <a href="/comprar" class="btn btn-warning btn-full">
-                                <i class="fas fa-clock"></i>
-                                Renovar Licença
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="license-inactive" id="licenseInactive" style="display: none;">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <div class="inactive-content">
-                            <h3>Sem Licença Ativa</h3>
-                            <p>Adquira uma licença para acessar o DarkFov</p>
-                            <a href="/comprar" class="btn btn-primary">
-                                <i class="fas fa-shopping-cart"></i>
-                                Comprar Agora
-                            </a>
-                        </div>
+                        <button class="panel-button renew-button" id="renewButton" onclick="window.location.href='/comprar'" style="display: none;">
+                            RENOVAR LICENÇA
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Downloads Card -->
-            <div class="dashboard-card download-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-download"></i> Downloads</h2>
-                </div>
-                <div class="card-content">
-                    <div class="download-section" id="downloadSection">
-                        <div class="download-item">
-                            <div class="download-icon">
-                                <i class="fas fa-desktop"></i>
-                            </div>
-                            <div class="download-info">
-                                <h3>Desktop Loader</h3>
-                                <p>Aplicativo principal para Windows</p>
-                                <span class="version">v2.1.0</span>
-                            </div>
-                            <button class="btn btn-primary" onclick="downloadLoader()">
-                                <i class="fas fa-download"></i>
-                                Baixar
-                            </button>
-                        </div>
-
-                        <div class="download-item">
-                            <div class="download-icon">
-                                <i class="fas fa-book"></i>
-                            </div>
-                            <div class="download-info">
-                                <h3>Manual de Uso</h3>
-                                <p>Guia completo de instalação e uso</p>
-                                <span class="version">Atualizado</span>
-                            </div>
-                            <button class="btn btn-outline" onclick="downloadManual()">
-                                <i class="fas fa-file-download"></i>
-                                Baixar
-                            </button>
-                        </div>
+            <!-- DOWNLOAD -->
+            <div class="panel-card download-card">
+                <div class="panel-header">
+                    <h2><i class="fas fa-download"></i> DOWNLOAD</h2>
+                    <div class="header-icon">
+                        <i class="fas fa-arrow-down"></i>
                     </div>
-
-                    <div class="download-locked" id="downloadLocked" style="display: none;">
-                        <i class="fas fa-lock"></i>
-                        <h3>Downloads Bloqueados</h3>
-                        <p>Download disponível apenas para usuários com licença ativa</p>
-                        <a href="/comprar" class="btn btn-secondary">Adquirir Licença</a>
+                </div>
+                <div class="panel-content">
+                    <div class="download-section" id="downloadAvailable" style="display: none;">
+                        <p class="download-description">Download disponível apenas para usuários com licença ativa</p>
+                        <button class="panel-button" onclick="downloadLoader()">
+                            DOWNLOAD LOADER
+                        </button>
+                    </div>
+                    
+                    <div class="download-locked-section" id="downloadLocked">
+                        <div class="locked-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <p class="locked-description">Download disponível apenas para usuários com licença ativa</p>
+                        <button class="panel-button disabled" disabled>
+                            ADQUIRIR LICENÇA
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Dicas Importantes Card -->
-            <div class="dashboard-card tips-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-lightbulb"></i> Dicas Importantes</h2>
+            <!-- COMO USAR -->
+            <div class="panel-card usage-card">
+                <div class="panel-header">
+                    <h2><i class="fas fa-question-circle"></i> COMO USAR</h2>
+                    <div class="header-icon">
+                        <i class="fas fa-info"></i>
+                    </div>
                 </div>
-                <div class="card-content">
-                    <div class="tips-list">
-                        <div class="tip-item">
-                            <div class="tip-icon">
-                                <i class="fas fa-shield-alt"></i>
-                            </div>
-                            <div class="tip-content">
-                                <h4>Execute sempre como administrador</h4>
-                                <p>Clique com botão direito e "Executar como administrador"</p>
+                <div class="panel-content">
+                    <div class="usage-steps">
+                        <div class="usage-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>DOWNLOAD</h4>
+                                <p>Baixe o loader DarkFov</p>
                             </div>
                         </div>
-
-                        <div class="tip-item">
-                            <div class="tip-icon">
-                                <i class="fas fa-virus-slash"></i>
-                            </div>
-                            <div class="tip-content">
-                                <h4>Desative antivírus temporariamente</h4>
-                                <p>Adicione à lista de exceções ou desative durante o uso</p>
+                        <div class="usage-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>EXECUÇÃO</h4>
+                                <p>Execute como administrador</p>
                             </div>
                         </div>
-
-                        <div class="tip-item">
-                            <div class="tip-icon">
-                                <i class="fas fa-wifi-slash"></i>
-                            </div>
-                            <div class="tip-content">
-                                <h4>Use apenas em modo offline</h4>
-                                <p>Desconecte da internet para evitar detecção</p>
+                        <div class="usage-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>CONFIGURAÇÃO</h4>
+                                <p>Ajuste conforme necessário</p>
                             </div>
                         </div>
-
-                        <div class="tip-item">
-                            <div class="tip-icon">
-                                <i class="fas fa-sync-alt"></i>
-                            </div>
-                            <div class="tip-content">
-                                <h4>Mantenha o loader sempre atualizado</h4>
-                                <p>Baixe a versão mais recente regularmente</p>
+                        <div class="usage-step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h4>JOGO</h4>
+                                <p>Inicie o BloodStrike</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Status do Sistema Card -->
-            <div class="dashboard-card system-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-server"></i> Status do Sistema</h2>
-                    <span class="status-badge online">Online</span>
+            <!-- SUPORTE -->
+            <div class="panel-card support-card">
+                <div class="panel-header">
+                    <h2><i class="fas fa-headset"></i> SUPORTE</h2>
+                    <div class="header-icon">
+                        <i class="fas fa-life-ring"></i>
+                    </div>
                 </div>
-                <div class="card-content">
-                    <div class="system-metrics">
-                        <div class="metric-item">
-                            <div class="metric-icon">
-                                <i class="fas fa-tachometer-alt"></i>
+                <div class="panel-content">
+                    <div class="support-options">
+                        <div class="support-option discord">
+                            <div class="support-icon">
+                                <i class="fab fa-discord"></i>
                             </div>
-                            <div class="metric-info">
-                                <span class="metric-value">98%</span>
-                                <span class="metric-label">Uptime</span>
+                            <div class="support-info">
+                                <h4>DISCORD</h4>
+                                <p>Suporte em tempo real</p>
                             </div>
+                            <button class="support-button">ACESSAR</button>
                         </div>
-
-                        <div class="metric-item">
-                            <div class="metric-icon">
-                                <i class="fas fa-shield-alt"></i>
+                        <div class="support-option telegram">
+                            <div class="support-icon">
+                                <i class="fab fa-telegram"></i>
                             </div>
-                            <div class="metric-info">
-                                <span class="metric-value">Ativo</span>
-                                <span class="metric-label">Anti-Detecção</span>
+                            <div class="support-info">
+                                <h4>TELEGRAM</h4>
+                                <p>Grupo exclusivo</p>
                             </div>
+                            <button class="support-button">ACESSAR</button>
                         </div>
-
-                        <div class="metric-item">
-                            <div class="metric-icon">
-                                <i class="fas fa-code-branch"></i>
+                        <div class="support-option email">
+                            <div class="support-icon">
+                                <i class="fas fa-envelope"></i>
                             </div>
-                            <div class="metric-info">
-                                <span class="metric-value">v2.1.0</span>
-                                <span class="metric-label">Versão Atual</span>
+                            <div class="support-info">
+                                <h4>EMAIL</h4>
+                                <p>suporte@darkfov.com</p>
                             </div>
+                            <button class="support-button">ACESSAR</button>
                         </div>
                     </div>
                 </div>
@@ -302,64 +252,54 @@ async function checkLicenseStatus() {
 }
 
 function updateLicenseDisplay(licenseData) {
-    const statusContainer = document.getElementById('licenseStatus');
-    const detailsContainer = document.getElementById('licenseDetails');
-    const inactiveContainer = document.getElementById('licenseInactive');
-    const downloadSection = document.getElementById('downloadSection');
+    const statusIcon = document.querySelector('.status-icon');
+    const statusText = document.getElementById('licenseStatusText');
+    const statusDescription = document.getElementById('licenseDescription');
+    const licenseButton = document.getElementById('licenseButton');
+    const licenseActiveDetails = document.getElementById('licenseActiveDetails');
+    const renewButton = document.getElementById('renewButton');
+    const downloadAvailable = document.getElementById('downloadAvailable');
     const downloadLocked = document.getElementById('downloadLocked');
-    const licenseActions = document.getElementById('licenseActions');
 
     if (licenseData.valid) {
         const expirationDate = new Date(licenseData.data_expiracao);
         const now = new Date();
         const daysRemaining = Math.ceil((expirationDate - now) / (1000 * 60 * 60 * 24));
 
-        let statusClass = 'status-active';
-        let statusText = 'ATIVA';
-        let statusIcon = 'fas fa-check-circle';
-
-        if (daysRemaining <= 3) {
-            statusClass = 'status-critical';
-            statusText = 'CRÍTICO - EXPIRA EM BREVE';
-            statusIcon = 'fas fa-exclamation-triangle';
-            licenseActions.style.display = 'block';
-        } else if (daysRemaining <= 7) {
-            statusClass = 'status-warning';
-            statusText = 'ATENÇÃO - EXPIRA EM BREVE';
-            statusIcon = 'fas fa-exclamation-circle';
-            licenseActions.style.display = 'block';
-        } else {
-            licenseActions.style.display = 'none';
-        }
-
-        statusContainer.innerHTML = `
-            <div class="${statusClass}">
-                <i class="${statusIcon}"></i>
-                <span>Licença ${statusText}</span>
-            </div>
-        `;
-
+        // Atualizar status
+        statusIcon.className = 'fas fa-shield-alt status-icon status-active';
+        statusText.textContent = 'Licença Ativa';
+        statusDescription.textContent = 'Sua licença está ativa e funcionando perfeitamente';
+        
+        // Mostrar detalhes da licença
+        licenseActiveDetails.style.display = 'block';
         document.getElementById('expirationDate').textContent = expirationDate.toLocaleDateString('pt-BR');
         document.getElementById('daysRemaining').textContent = daysRemaining + ' dias';
-        document.getElementById('licenseKey').textContent = licenseData.chave_licenca ? 
-            licenseData.chave_licenca.substring(0, 8) + '...' + licenseData.chave_licenca.slice(-8) : 'N/A';
-        document.getElementById('lastCheck').textContent = 'Agora';
 
-        detailsContainer.style.display = 'block';
-        inactiveContainer.style.display = 'none';
-        downloadSection.style.display = 'block';
+        // Verificar se precisa renovar
+        if (daysRemaining <= 7) {
+            statusIcon.className = 'fas fa-shield-alt status-icon status-warning';
+            statusText.textContent = 'Licença Expirando';
+            statusDescription.textContent = 'Sua licença expira em breve, renove agora';
+            renewButton.style.display = 'block';
+        } else {
+            renewButton.style.display = 'none';
+        }
+
+        // Ocultar botão principal e mostrar downloads
+        licenseButton.style.display = 'none';
+        downloadAvailable.style.display = 'block';
         downloadLocked.style.display = 'none';
 
     } else {
-        statusContainer.innerHTML = `
-            <div class="status-expired">
-                <i class="fas fa-times-circle"></i>
-                <span>SEM LICENÇA ATIVA</span>
-            </div>
-        `;
-        detailsContainer.style.display = 'none';
-        inactiveContainer.style.display = 'block';
-        downloadSection.style.display = 'none';
+        // Licença inativa
+        statusIcon.className = 'fas fa-shield-alt status-icon status-warning';
+        statusText.textContent = 'Sem Licença Ativa';
+        statusDescription.textContent = 'Adquira uma licença para acessar o DarkFov Aimbot';
+        
+        licenseActiveDetails.style.display = 'none';
+        licenseButton.style.display = 'block';
+        downloadAvailable.style.display = 'none';
         downloadLocked.style.display = 'block';
     }
 }
