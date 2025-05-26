@@ -1,12 +1,16 @@
-
 import os
 import mercadopago
 from datetime import datetime, timedelta
 from models import User, Payment
 from database import get_db
 
-# Configuração da API do Mercado Pago
-mp = mercadopago.SDK(os.getenv("MERCADOPAGO_ACCESS_TOKEN"))
+# Inicializar SDK do MercadoPago
+MERCADOPAGO_TOKEN = os.getenv("MERCADOPAGO_ACCESS_TOKEN")
+if MERCADOPAGO_TOKEN:
+    mp = mercadopago.SDK(MERCADOPAGO_TOKEN)
+else:
+    print("⚠️ MercadoPago token não configurado - Pagamentos desabilitados")
+    mp = None
 
 if not os.getenv("MERCADOPAGO_ACCESS_TOKEN"):
     raise ValueError("MERCADOPAGO_ACCESS_TOKEN não configurada. Configure a chave no Secrets.")
@@ -39,12 +43,14 @@ def get_domain():
 
 def create_payment_preference(plan_id, user_id, user_email):
     """Cria uma preferência de pagamento no Mercado Pago"""
+    if not mp:
+        return {"error": "Pagamentos temporariamente indisponíveis"}
     if plan_id not in PRODUCTS:
         raise ValueError(f"Plano {plan_id} não encontrado")
-    
+
     product = PRODUCTS[plan_id]
     domain_url = get_domain()
-    
+
     try:
         preference_data = {
             "items": [
@@ -77,14 +83,14 @@ def create_payment_preference(plan_id, user_id, user_email):
             },
             "notification_url": domain_url + "/api/webhook/mercadopago"
         }
-        
+
         preference_response = mp.preference().create(preference_data)
-        
+
         if preference_response["status"] == 201:
             return preference_response["response"]
         else:
             return {'error': preference_response["response"]}
-            
+
     except Exception as e:
         return {'error': str(e)}
 
@@ -95,39 +101,39 @@ def handle_payment_notification(payment_data):
         payment_id = payment_data.get("data", {}).get("id")
         if not payment_id:
             return False, "ID do pagamento não encontrado"
-        
+
         # Buscar informações do pagamento
         payment_info = mp.payment().get(payment_id)
-        
+
         if payment_info["status"] != 200:
             return False, "Erro ao buscar informações do pagamento"
-        
+
         payment_details = payment_info["response"]
-        
+
         # Verificar se o pagamento foi aprovado
         if payment_details["status"] != "approved":
             return True, f"Pagamento com status: {payment_details['status']}"
-        
+
         # Obter dados do usuário
         external_reference = payment_details.get("external_reference")
         if not external_reference:
             return False, "Referência externa não encontrada"
-        
+
         user_id = int(external_reference)
-        
+
         db = next(get_db())
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
             return False, "Usuário não encontrado"
-        
+
         # Verificar se o pagamento já foi processado
         existing_payment = db.query(Payment).filter(
             Payment.gateway_id == str(payment_id)
         ).first()
-        
+
         if existing_payment:
             return True, "Pagamento já processado"
-        
+
         # Obter metadados da preferência original
         preference_id = payment_details.get("preference_id")
         if preference_id:
@@ -143,7 +149,7 @@ def handle_payment_notification(payment_data):
         else:
             plan_id = "mensal"
             days = 30
-        
+
         # Criar registro de pagamento
         payment = Payment(
             user_id=user_id,
@@ -153,7 +159,7 @@ def handle_payment_notification(payment_data):
             gateway_id=str(payment_id)
         )
         db.add(payment)
-        
+
         # Atualizar licença do usuário
         if user.data_expiracao and user.data_expiracao > datetime.utcnow():
             # Estender licença existente
@@ -161,10 +167,10 @@ def handle_payment_notification(payment_data):
         else:
             # Nova licença
             user.data_expiracao = datetime.utcnow() + timedelta(days=days)
-        
+
         db.commit()
         return True, "Pagamento processado com sucesso"
-        
+
     except Exception as e:
         if 'db' in locals():
             db.rollback()
