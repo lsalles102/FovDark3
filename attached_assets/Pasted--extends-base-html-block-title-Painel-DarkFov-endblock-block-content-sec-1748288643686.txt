@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Painel - DarkFov{% endblock %}
+
+{% block content %}
+<section class="dashboard-section">
+    <div class="dashboard-header">
+        <h1>Painel <span class="highlight">DarkFov</span></h1>
+        <div class="user-info">
+            <i class="fas fa-user-circle"></i>
+            <span>{{ current_user.username }}</span>
+            {% if current_user.is_admin %}
+            <span class="admin-badge">ADMIN</span>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if request.args.get('compra') == 'sucesso' %}
+    <div class="success-message">
+        <i class="fas fa-check-circle"></i>
+        Compra realizada com sucesso! Sua licença foi ativada.
+    </div>
+    {% endif %}
+
+    <div class="dashboard-grid">
+        <!-- Status da Licença -->
+        <div class="dashboard-card license-status-card">
+            <div class="card-header">
+                <h2>Status da Licença</h2>
+                <i class="fas fa-key"></i>
+            </div>
+            <div class="card-content">
+                {% if license_info.is_active %}
+                <div class="license-active">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Licença Ativa</span>
+                </div>
+                <div class="license-details">
+                    <p><strong>Expira em:</strong> {{ license_info.expiration_date.strftime('%d/%m/%Y às %H:%M') }}</p>
+                    <p><strong>Chave:</strong> <code>{{ license_info.license_key[:8] }}...{{ license_info.license_key[-8:] }}</code></p>
+                    <p><strong>Dias restantes:</strong> <span class="days-remaining">{{ license_info.days_remaining }}</span></p>
+                </div>
+                {% else %}
+                <div class="license-inactive">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Sem Licença Ativa</span>
+                </div>
+                <div class="license-cta">
+                    <p>Adquira uma licença para acessar o DarkFov Aimbot</p>
+                    <a href="/comprar" class="cyberpunk-button">Comprar Agora</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Download -->
+        <div class="dashboard-card download-card">
+            <div class="card-header">
+                <h2>Download</h2>
+                <i class="fas fa-download"></i>
+            </div>
+            <div class="card-content">
+                {% if license_info.is_active %}
+                <div class="download-active">
+                    <p>Você pode baixar a versão mais recente do DarkFov Aimbot</p>
+                    <a href="/api/download" class="cyberpunk-button download-button">
+                        <i class="fas fa-download"></i>
+                        Baixar Loader
+                    </a>
+                    <div class="download-info">
+                        <p><strong>Versão:</strong> 2.7.3</p>
+                        <p><strong>Última atualização:</strong> {{ license_info.expiration_date.strftime('%d/%m/%Y') }}</p>
+                    </div>
+                </div>
+                {% else %}
+                <div class="download-inactive">
+                    <i class="fas fa-lock"></i>
+                    <p>Download disponível apenas para usuários com licença ativa</p>
+                    <a href="/comprar" class="cyberpunk-button secondary">Adquirir Licença</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Tutorial -->
+        <div class="dashboard-card tutorial-card">
+            <div class="card-header">
+                <h2>Como Usar</h2>
+                <i class="fas fa-book"></i>
+            </div>
+            <div class="card-content">
+                <div class="tutorial-steps">
+                    <div class="tutorial-step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h3>Download</h3>
+                            <p>Baixe o loader do DarkFov</p>
+                        </div>
+                    </div>
+                    <div class="tutorial-step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h3>Execução</h3>
+                            <p>Execute como administrador</p>
+                        </div>
+                    </div>
+                    <div class="tutorial-step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <h3>Configuração</h3>
+                            <p>Ajuste conforme necessário</p>
+                        </div>
+                    </div>
+                    <div class="tutorial-step">
+                        <span class="step-number">4</span>
+                        <div class="step-content">
+                            <h3>Jogo</h3>
+                            <p>Inicie o BloodStrike</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suporte -->
+        <div class="dashboard-card support-card">
+            <div class="card-header">
+                <h2>Suporte</h2>
+                <i class="fas fa-headset"></i>
+            </div>
+            <div class="card-content">
+                <div class="support-options">
+                    <div class="support-option">
+                        <i class="fab fa-discord"></i>
+                        <div class="support-info">
+                            <h3>Discord</h3>
+                            <p>Suporte em tempo real</p>
+                        </div>
+                        <a href="#" class="cyberpunk-button small">Entrar</a>
+                    </div>
+                    <div class="support-option">
+                        <i class="fab fa-telegram"></i>
+                        <div class="support-info">
+                            <h3>Telegram</h3>
+                            <p>Grupo exclusivo</p>
+                        </div>
+                        <a href="#" class="cyberpunk-button small">Acessar</a>
+                    </div>
+                    <div class="support-option">
+                        <i class="fas fa-envelope"></i>
+                        <div class="support-info">
+                            <h3>Email</h3>
+                            <p>suporte@darkfov.com</p>
+                        </div>
+                        <a href="mailto:suporte@darkfov.com" class="cyberpunk-button small">Enviar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
