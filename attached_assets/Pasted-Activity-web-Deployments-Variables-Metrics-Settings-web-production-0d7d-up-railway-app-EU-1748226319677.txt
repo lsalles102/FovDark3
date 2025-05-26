@@ -1,0 +1,198 @@
+Activity
+
+
+web
+Deployments
+Variables
+Metrics
+Settings
+web-production-0d7d.up.railway.app
+EU West
+1 Replica
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+History
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+web
+/
+5aa14f9
+May 25, 2025 11:19 PM
+
+Failed
+
+web-production-0d7d.up.railway.app
+Get Help
+
+Details
+Build Logs
+Deploy Logs
+HTTP Logs
+
+Filter
+Filter logs using "", (), AND, OR, -
+
+
+
+You reached the start of the range → May 25, 2025 11:19 PM
+
+Starting Container
+
+🚀 Iniciando DarkFov...
+
+✅ Modo desenvolvimento - usando SQLite
+
+✅ Conectando ao PostgreSQL em produção
+
+✅ Tabelas do banco criadas/verificadas
+
+✅ Usuário admin já existe
+
+🎯 Iniciando servidor DarkFov...
+
+⚠️ MercadoPago token não configurado - Pagamentos desabilitados
+
+Traceback (most recent call last):
+
+  File "/app/start.py", line 97, in <module>
+
+    from main import app
+
+  File "/app/main.py", line 19, in <module>
+
+    from mercadopago_routes import router as mercadopago_router
+
+  File "/app/mercadopago_routes.py", line 6, in <module>
+
+    from mercadopago_integration import create_payment_preference, handle_payment_notification
+
+  File "/app/mercadopago_integration.py", line 16, in <module>
+
+    raise ValueError("MERCADOPAGO_ACCESS_TOKEN não configurada. Configure a chave no Secrets.")
+
+ValueError: MERCADOPAGO_ACCESS_TOKEN não configurada. Configure a chave no Secrets.
+
+🚀 Iniciando DarkFov...
+
+✅ Modo desenvolvimento - usando SQLite
+
+✅ Conectando ao PostgreSQL em produção
+
+✅ Tabelas do banco criadas/verificadas
+
+✅ Usuário admin já existe
+
+🎯 Iniciando servidor DarkFov...
+
+⚠️ MercadoPago token não configurado - Pagamentos desabilitados
+
+Traceback (most recent call last):
+
+  File "/app/start.py", line 97, in <module>
+
+    from main import app
+
+  File "/app/main.py", line 19, in <module>
+
+    from mercadopago_routes import router as mercadopago_router
+
+  File "/app/mercadopago_routes.py", line 6, in <module>
+
+    from mercadopago_integration import create_payment_preference, handle_payment_notification
+
+  File "/app/mercadopago_integration.py", line 16, in <module>
+
+    raise ValueError("MERCADOPAGO_ACCESS_TOKEN não configurada. Configure a chave no Secrets.")
+
+ValueError: MERCADOPAGO_ACCESS_TOKEN não configurada. Configure a chave no Secrets.
+
+🚀 Iniciando DarkFov...
+
+✅ Modo desenvolvimento - usando SQLite
+
+✅ Conectando ao PostgreSQL em produção
+
+✅ Tabelas do banco criadas/verificadas
+
+✅ Usuário admin já existe
+
+🎯 Iniciando servidor DarkFov...
+
+⚠️ MercadoPago token não configurado - Pagamentos desabilitados
+
+Traceback (most recent call last):
+
+  File "/app/start.py", line 97, in <module>
+
+    from main import app
+
+  File "/app/main.py", line 19, in <module>
+
+    from mercadopago_routes import router as mercadopago_router
+
+  File "/app/mercadopago_routes.py", line 6, in <module>
+
+    from mercadopago_integration import create_payment_preference, handle_payment_notification
+
+  File "/app/mercadopago_integration.py", line 16, in <module>
+
+    raise ValueError("MERCADOPAGO_ACCESS_TOKEN não configurada. Configure a chave no Secrets.")
+
+ValueError: MERCADOPAGO_ACCESS_TOKEN não configurada. Configure a chave no Secrets.
+
+🚀 Iniciando DarkFov...
+
+✅ Modo desenvolvimento - usando SQLite
+
+✅ Conectando ao PostgreSQL em produção
+
+✅ Tabelas do banco criadas/verificadas
+
+✅ Usuário admin já existe
+
+🎯 Iniciando servidor DarkFov...
+
+⚠️ MercadoPago token não configurado - Pagamentos desabilitados
+
+Traceback (most recent call last):
+
+  File "/app/start.py", line 97, in <module>
+
+    from main import app
+
+  File "/app/main.py", line 19, in <module>
+
+    from mercadopago_routes import router as mercadopago_router
+
+  File "/app/mercadopago_routes.py", line 6, in <module>
+
+    from mercadopago_integration import create_payment_preference, handle_payment_notification
