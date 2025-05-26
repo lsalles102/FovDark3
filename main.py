@@ -329,7 +329,7 @@ async def download_script(
     # Em produção, retornaria o arquivo real
     # Aqui vamos simular um arquivo
     script_content = f"""
-# DarkFov Aim Assist Script
+# FovDark Aim Assist Script
 # Licenciado para: {current_user.email}
 # Válido até: {current_user.data_expiracao}
 
@@ -337,7 +337,7 @@ import os
 import sys
 
 def main():
-    print("DarkFov Aim Assist carregado com sucesso!")
+    print("FovDark Aim Assist carregado com sucesso!")
     print(f"Usuário: {current_user.email}")
     print("Status: Licença ativa")
     
@@ -349,14 +349,14 @@ if __name__ == "__main__":
 """
     
     # Criar arquivo temporário
-    filename = f"darkfov_loader_{current_user.id}.py"
+    filename = f"fovdark_loader_{current_user.id}.py"
     with open(filename, "w") as f:
         f.write(script_content)
     
     return FileResponse(
         filename,
         media_type="application/octet-stream",
-        filename="darkfov_loader.py"
+        filename="fovdark_loader.py"
     )
 
 
@@ -655,9 +655,9 @@ async def update_site_settings(
 
 @app.post("/api/admin/settings/general")
 async def save_general_settings(
-    site_name: str = Form("DarkFov"),
+    site_name: str = Form("FovDark"),
     site_url: str = Form(""),
-    support_email: str = Form(""),
+    support_email: str = Form("suporte@fovdark.com"),
     site_description: str = Form(""),
     mp_token: str = Form(""),
     smtp_host: str = Form(""),

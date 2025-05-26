@@ -1,7 +1,7 @@
 
 {% extends "base.html" %}
 
-{% block title %}Painel - DarkFov{% endblock %}
+{% block title %}Painel - FovDark{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -345,7 +345,7 @@
 <div class="painel-container">
     <!-- Header -->
     <div class="painel-header">
-        <h1 class="painel-title">PAINEL DARKFOV</h1>
+        <h1 class="painel-title">PAINEL FOVDARK</h1>
         <div class="user-badge">
             <i class="fas fa-user"></i>
             <span id="userBadge">admin</span>
@@ -367,7 +367,7 @@
                     Sem Licença Ativa
                 </div>
                 <p class="license-info" id="licenseInfo">
-                    Adquira uma licença para acessar o DarkFov Aimbot
+                    Adquira uma licença para acessar o FovDark Aimbot
                 </p>
                 <a href="/comprar" class="btn btn-primary">
                     <i class="fas fa-shopping-cart"></i>
@@ -407,7 +407,7 @@
                     <div class="step-number">1</div>
                     <div class="step-content">
                         <h4><i class="fas fa-download"></i> DOWNLOAD</h4>
-                        <p>Baixe o arquivo do DarkFov</p>
+                        <p>Baixe o arquivo do FovDark</p>
                     </div>
                 </div>
                 
@@ -473,7 +473,7 @@
 
     <!-- Footer -->
     <div class="painel-footer">
-        <p>&copy; 2024 DarkFov. Todos os direitos reservados.</p>
+        <p>&copy; 2024 FovDark. Todos os direitos reservados.</p>
         <p>O mais avançado aimbot para BloodStrike.</p>
     </div>
 </div>
@@ -571,7 +571,7 @@ function updateLicenseStatus(data) {
         }
         infoElement.textContent = infoText;
         
-        downloadBtn.innerHTML = '<i class="fas fa-download"></i> BAIXAR DARKFOV';
+        downloadBtn.innerHTML = '<i class="fas fa-download"></i> BAIXAR FOVDARK';
         downloadBtn.disabled = false;
         downloadBtn.className = 'btn btn-success';
         downloadBtn.onclick = downloadSoftware;
@@ -580,7 +580,7 @@ function updateLicenseStatus(data) {
         if (data.license_status === 'critico') {
             showLicenseAlert('⚠️ Atenção! Sua licença expira muito em breve. Renove agora para evitar interrupções.', 'warning');
         } else if (data.license_status === 'expirando') {
-            showLicenseAlert('⏰ Sua licença expira em breve. Considere renovar para continuar usando o DarkFov.', 'warning');
+            showLicenseAlert('⏰ Sua licença expira em breve. Considere renovar para continuar usando o FovDark.', 'warning');
         }
         
     } else {
@@ -590,7 +590,7 @@ function updateLicenseStatus(data) {
         
         if (data.license_status === 'expirada') {
             statusText = 'Licença Expirada';
-            infoText = 'Sua licença expirou. Renove para continuar usando o DarkFov';
+            infoText = 'Sua licença expirou. Renove para continuar usando o FovDark';
         }
         
         statusElement.className = statusClass;

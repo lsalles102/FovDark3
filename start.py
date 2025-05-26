@@ -70,7 +70,7 @@ def create_admin_user():
         print(f"⚠️  Erro ao criar admin: {e}")
 
 if __name__ == "__main__":
-    print("🚀 Iniciando DarkFov...")
+    print("🚀 Iniciando FovDark...")
     
     # Aguardar banco de dados
     if not wait_for_database():
@@ -90,7 +90,7 @@ if __name__ == "__main__":
     create_admin_user()
     
     # Iniciar aplicação
-    print("🎯 Iniciando servidor DarkFov...")
+    print("🎯 Iniciando servidor FovDark...")
     
     # Importar e executar
     import uvicorn

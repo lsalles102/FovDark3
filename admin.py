@@ -22,11 +22,11 @@ def create_admin_user(db: Session, email: str, password_hash: str) -> User:
         senha_hash=password_hash,
         is_admin=True
     )
-    
+
     db.add(admin_user)
     db.commit()
     db.refresh(admin_user)
-    
+
     return admin_user
 
 
@@ -38,7 +38,7 @@ def get_user_statistics(db: Session) -> dict:
         User.data_expiracao.isnot(None),
         User.data_expiracao > db.func.now()
     ).count()
-    
+
     return {
         "total_users": total_users,
         "admin_users": admin_users,
