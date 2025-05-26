@@ -288,7 +288,7 @@ async def download_script(
     # Em produção, retornaria o arquivo real
     # Aqui vamos simular um arquivo
     script_content = f"""
-# DarkFov Aimbot Script
+# DarkFov Aim Assist Script
 # Licenciado para: {current_user.email}
 # Válido até: {current_user.data_expiracao}
 
@@ -296,11 +296,11 @@ import os
 import sys
 
 def main():
-    print("DarkFov Aimbot carregado com sucesso!")
+    print("DarkFov Aim Assist carregado com sucesso!")
     print(f"Usuário: {current_user.email}")
     print("Status: Licença ativa")
     
-    # Aqui seria implementada a lógica do aimbot
+    # Aqui seria implementada a lógica do aim assist
     # IMPORTANTE: Este é apenas um exemplo educacional
     
 if __name__ == "__main__":
