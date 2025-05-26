@@ -1,1 +1,655 @@
+
 {% extends "base.html" %}
+
+{% block title %}Painel - DarkFov{% endblock %}
+
+{% block extra_head %}
+<style>
+    :root {
+        --bg-primary: #0a0a0f;
+        --bg-secondary: #1a1a2e;
+        --bg-tertiary: #16213e;
+        --primary: #00d4ff;
+        --secondary: #9d4edd;
+        --accent: #7209b7;
+        --success: #00ff88;
+        --warning: #ffaa00;
+        --danger: #ff4444;
+        --text-primary: #ffffff;
+        --text-secondary: #b8b8b8;
+        --text-muted: #888888;
+        --border: rgba(0, 212, 255, 0.3);
+        --glow: 0 0 20px rgba(0, 212, 255, 0.5);
+    }
+
+    body {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+    }
+
+    .painel-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+        min-height: 100vh;
+    }
+
+    .painel-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 2rem 0;
+    }
+
+    .painel-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin: 0;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .user-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 25px;
+        padding: 0.5rem 1rem;
+        margin-top: 1rem;
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    .painel-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .painel-card {
+        background: var(--bg-secondary);
+        border: 2px solid var(--border);
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .painel-card:hover {
+        border-color: var(--primary);
+        box-shadow: var(--glow);
+        transform: translateY(-5px);
+    }
+
+    .card-header {
+        background: var(--bg-tertiary);
+        padding: 1.5rem;
+        border-bottom: 2px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .card-icon {
+        font-size: 1.5rem;
+        color: var(--primary);
+    }
+
+    .card-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin: 0;
+        color: var(--text-primary);
+    }
+
+    .card-content {
+        padding: 2rem;
+    }
+
+    /* Status da Licença */
+    .status-active {
+        color: var(--success);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .status-expired {
+        color: var(--danger);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .license-info {
+        color: var(--text-secondary);
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        justify-content: center;
+        font-size: 0.9rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--secondary), var(--accent));
+        color: white;
+        border: 2px solid transparent;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, var(--accent), var(--secondary));
+        box-shadow: 0 0 15px rgba(157, 78, 221, 0.5);
+        transform: translateY(-2px);
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, var(--primary), #00b4d8);
+        color: white;
+        border: 2px solid transparent;
+    }
+
+    .btn-success:hover {
+        background: linear-gradient(135deg, #00b4d8, var(--primary));
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+        transform: translateY(-2px);
+    }
+
+    /* Como Usar */
+    .tutorial-step {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: var(--bg-tertiary);
+        border-radius: 10px;
+        border-left: 4px solid var(--secondary);
+    }
+
+    .step-number {
+        background: linear-gradient(135deg, var(--secondary), var(--accent));
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .step-content h4 {
+        color: var(--primary);
+        margin: 0 0 0.5rem 0;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+    }
+
+    .step-content p {
+        color: var(--text-secondary);
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    /* Suporte */
+    .support-option {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .support-option:hover {
+        border-color: var(--primary);
+        background: var(--bg-secondary);
+        transform: translateX(5px);
+    }
+
+    .support-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: white;
+    }
+
+    .discord-icon {
+        background: #5865f2;
+    }
+
+    .telegram-icon {
+        background: #0088cc;
+    }
+
+    .email-icon {
+        background: #ea4335;
+    }
+
+    .support-info h4 {
+        margin: 0 0 0.25rem 0;
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .support-info p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .support-action {
+        margin-left: auto;
+        background: var(--secondary);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    /* Footer */
+    .painel-footer {
+        text-align: center;
+        padding: 2rem 0;
+        border-top: 1px solid var(--border);
+        color: var(--text-muted);
+        margin-top: 3rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .painel-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .painel-title {
+            font-size: 2rem;
+        }
+        
+        .card-content {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="painel-container">
+    <!-- Header -->
+    <div class="painel-header">
+        <h1 class="painel-title">PAINEL DARKFOV</h1>
+        <div class="user-badge">
+            <i class="fas fa-user"></i>
+            <span id="userBadge">admin</span>
+            <span style="background: var(--success); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">ADMIN</span>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="painel-grid">
+        <!-- Status da Licença -->
+        <div class="painel-card">
+            <div class="card-header">
+                <i class="fas fa-shield-alt card-icon"></i>
+                <h2 class="card-title">STATUS DA LICENÇA</h2>
+            </div>
+            <div class="card-content">
+                <div id="licenseStatus" class="status-expired">
+                    <i class="fas fa-times-circle"></i>
+                    Sem Licença Ativa
+                </div>
+                <p class="license-info" id="licenseInfo">
+                    Adquira uma licença para acessar o DarkFov Aimbot
+                </p>
+                <a href="/comprar" class="btn btn-primary">
+                    <i class="fas fa-shopping-cart"></i>
+                    COMPRAR LICENÇA
+                </a>
+            </div>
+        </div>
+
+        <!-- Download -->
+        <div class="painel-card">
+            <div class="card-header">
+                <i class="fas fa-download card-icon"></i>
+                <h2 class="card-title">DOWNLOAD</h2>
+            </div>
+            <div class="card-content">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <i class="fas fa-lock" style="font-size: 2rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                        Download disponível apenas para usuários com licença ativa
+                    </p>
+                </div>
+                <button class="btn btn-success" id="downloadBtn" style="width: 100%;" disabled>
+                    <i class="fas fa-download"></i>
+                    ADQUIRIR LICENÇA
+                </button>
+            </div>
+        </div>
+
+        <!-- Como Usar -->
+        <div class="painel-card">
+            <div class="card-header">
+                <i class="fas fa-book card-icon"></i>
+                <h2 class="card-title">COMO USAR</h2>
+            </div>
+            <div class="card-content">
+                <div class="tutorial-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4><i class="fas fa-download"></i> DOWNLOAD</h4>
+                        <p>Baixe o arquivo do DarkFov</p>
+                    </div>
+                </div>
+                
+                <div class="tutorial-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4><i class="fas fa-play"></i> EXECUÇÃO</h4>
+                        <p>Execute como administrador</p>
+                    </div>
+                </div>
+                
+                <div class="tutorial-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4><i class="fas fa-cog"></i> CONFIGURAÇÃO</h4>
+                        <p>Ajuste conforme necessário</p>
+                    </div>
+                </div>
+                
+                <div class="tutorial-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4><i class="fas fa-gamepad"></i> JOGO</h4>
+                        <p>Inicie o BloodStrike</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suporte -->
+        <div class="painel-card">
+            <div class="card-header">
+                <i class="fas fa-headset card-icon"></i>
+                <h2 class="card-title">SUPORTE</h2>
+            </div>
+            <div class="card-content">
+                <a href="#" class="support-option" onclick="openDiscord()">
+                    <div class="support-icon discord-icon">
+                        <i class="fab fa-discord"></i>
+                    </div>
+                    <div class="support-info">
+                        <h4>DISCORD</h4>
+                        <p>Suporte em tempo real</p>
+                    </div>
+                    <div class="support-action">ENTRAR</div>
+                </a>
+
+                <a href="#" class="support-option" onclick="openTelegram()">
+                    <div class="support-icon telegram-icon">
+                        <i class="fab fa-telegram"></i>
+                    </div>
+                    <div class="support-info">
+                        <h4>TELEGRAM</h4>
+                        <p>Grupo exclusivo</p>
+                    </div>
+                    <div class="support-action">ENTRAR</div>
+                </a>
+
+                <a href="#" class="support-option" onclick="openEmail()">
+                    <div class="support-icon email-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="support-info">
+                        <h4>EMAIL</h4>
+                        <p>suporte@darkfov.com</p>
+                    </div>
+                    <div class="support-action">CONTATO</div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="painel-footer">
+        <p>&copy; 2024 DarkFov. Todos os direitos reservados.</p>
+        <p>O mais avançado aimbot para BloodStrike.</p>
+    </div>
+</div>
+
+<script>
+// Verificar status de autenticação ao carregar
+document.addEventListener('DOMContentLoaded', function() {
+    checkAuth();
+    loadUserInfo();
+});
+
+async function checkAuth() {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/license/check', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            localStorage.removeItem('access_token');
+            window.location.href = '/login';
+            return;
+        }
+
+        const data = await response.json();
+        updateLicenseStatus(data);
+        
+    } catch (error) {
+        console.error('Erro ao verificar licença:', error);
+    }
+}
+
+async function loadUserInfo() {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+
+    try {
+        const response = await fetch('/api/license/check', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById('userBadge').textContent = data.email;
+        }
+    } catch (error) {
+        console.error('Erro ao carregar informações do usuário:', error);
+    }
+}
+
+function updateLicenseStatus(data) {
+    const statusElement = document.getElementById('licenseStatus');
+    const infoElement = document.getElementById('licenseInfo');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    if (data.valid) {
+        statusElement.className = 'status-active';
+        statusElement.innerHTML = '<i class="fas fa-check-circle"></i> Licença Ativa';
+        
+        const expirationDate = new Date(data.data_expiracao);
+        infoElement.textContent = `Sua licença expira em: ${expirationDate.toLocaleDateString('pt-BR')}`;
+        
+        downloadBtn.innerHTML = '<i class="fas fa-download"></i> BAIXAR DARKFOV';
+        downloadBtn.disabled = false;
+        downloadBtn.onclick = downloadSoftware;
+    } else {
+        statusElement.className = 'status-expired';
+        statusElement.innerHTML = '<i class="fas fa-times-circle"></i> Sem Licença Ativa';
+        infoElement.textContent = 'Adquira uma licença para acessar o DarkFov Aimbot';
+        
+        downloadBtn.innerHTML = '<i class="fas fa-shopping-cart"></i> ADQUIRIR LICENÇA';
+        downloadBtn.disabled = false;
+        downloadBtn.onclick = function() { window.location.href = '/comprar'; };
+    }
+}
+
+async function downloadSoftware() {
+    const token = localStorage.getItem('access_token');
+    
+    try {
+        const response = await fetch('/api/download/executable', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Script_Dark.exe';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showToast('Download iniciado com sucesso!', 'success');
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'Erro no download', 'error');
+        }
+    } catch (error) {
+        console.error('Erro no download:', error);
+        showToast('Erro ao fazer download', 'error');
+    }
+}
+
+function openDiscord() {
+    showToast('Entre em contato via Discord para suporte', 'info');
+}
+
+function openTelegram() {
+    showToast('Entre em contato via Telegram para suporte', 'info');
+}
+
+function openEmail() {
+    window.location.href = 'mailto:suporte@darkfov.com';
+}
+
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container') || createToastContainer();
+    
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'}-circle"></i>
+        <span>${message}</span>
+    `;
+    
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => {
+            if (container.contains(toast)) {
+                container.removeChild(toast);
+            }
+        }, 300);
+    }, 3000);
+}
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container';
+    container.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+    `;
+    document.body.appendChild(container);
+    return container;
+}
+</script>
+
+<style>
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    transition: opacity 0.3s ease;
+    min-width: 300px;
+}
+
+.toast-success {
+    background: linear-gradient(135deg, var(--success), #00cc66);
+}
+
+.toast-error {
+    background: linear-gradient(135deg, var(--danger), #cc0000);
+}
+
+.toast-info {
+    background: linear-gradient(135deg, var(--primary), #0099cc);
+}
+</style>
+{% endblock %}
