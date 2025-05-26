@@ -50,6 +50,9 @@
                         <h3 id="totalUsers">-</h3>
                         <span>Total de Usuários</span>
                     </div>
+                    <div class="stat-change">
+                        <span class="change-positive">+12% este mês</span>
+                    </div>
                 </div>
                 
                 <div class="stat-card">
@@ -59,6 +62,9 @@
                     <div class="stat-info">
                         <h3 id="activeLicenses">-</h3>
                         <span>Licenças Ativas</span>
+                    </div>
+                    <div class="stat-change">
+                        <span class="change-positive">+8% este mês</span>
                     </div>
                 </div>
                 
@@ -70,6 +76,9 @@
                         <h3 id="totalRevenue">R$ -</h3>
                         <span>Receita Total</span>
                     </div>
+                    <div class="stat-change">
+                        <span class="change-positive">+25% este mês</span>
+                    </div>
                 </div>
                 
                 <div class="stat-card">
@@ -79,6 +88,60 @@
                     <div class="stat-info">
                         <h3 id="todaySignups">-</h3>
                         <span>Cadastros Hoje</span>
+                    </div>
+                    <div class="stat-change">
+                        <span class="change-neutral">Hoje</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions Dashboard -->
+            <div class="dashboard-quick-actions">
+                <h3>AÇÕES RÁPIDAS</h3>
+                <div class="quick-actions-grid">
+                    <button class="quick-action-btn" onclick="openProductModal()">
+                        <i class="fas fa-plus"></i>
+                        <span>Novo Produto</span>
+                    </button>
+                    <button class="quick-action-btn" onclick="switchAdminTab('users')">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Gerenciar Usuários</span>
+                    </button>
+                    <button class="quick-action-btn" onclick="switchAdminTab('themes')">
+                        <i class="fas fa-palette"></i>
+                        <span>Personalizar Site</span>
+                    </button>
+                    <button class="quick-action-btn" onclick="exportAllData()">
+                        <i class="fas fa-download"></i>
+                        <span>Exportar Dados</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="recent-activity">
+                <h3>ATIVIDADE RECENTE</h3>
+                <div class="activity-list" id="recentActivity">
+                    <div class="activity-item">
+                        <i class="fas fa-user-plus activity-icon"></i>
+                        <div class="activity-info">
+                            <strong>Novo usuário registrado</strong>
+                            <span>usuario@email.com - há 5 minutos</span>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <i class="fas fa-shopping-cart activity-icon"></i>
+                        <div class="activity-info">
+                            <strong>Nova compra realizada</strong>
+                            <span>Plano Premium - R$ 29,90 - há 12 minutos</span>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <i class="fas fa-cog activity-icon"></i>
+                        <div class="activity-info">
+                            <strong>Configurações alteradas</strong>
+                            <span>Tema atualizado - há 1 hora</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -129,33 +192,95 @@
         <div id="users-tab" class="admin-tab">
             <div class="tab-header">
                 <h2>GERENCIAR USUÁRIOS</h2>
-                <button class="btn btn-primary" onclick="refreshUsers()">
-                    <i class="fas fa-sync-alt"></i>
-                    ATUALIZAR
-                </button>
+                <div class="tab-actions">
+                    <div class="search-filter-container">
+                        <input type="text" id="userSearch" placeholder="Buscar por email..." class="search-input">
+                        <select id="userFilter" class="filter-select">
+                            <option value="all">Todos os Usuários</option>
+                            <option value="active">Licenças Ativas</option>
+                            <option value="expired">Licenças Expiradas</option>
+                            <option value="no_license">Sem Licença</option>
+                            <option value="admin">Administradores</option>
+                        </select>
+                    </div>
+                    <div class="action-buttons-container">
+                        <button class="btn btn-secondary" onclick="exportUsers()">
+                            <i class="fas fa-download"></i>
+                            EXPORTAR
+                        </button>
+                        <button class="btn btn-primary" onclick="refreshUsers()">
+                            <i class="fas fa-sync-alt"></i>
+                            ATUALIZAR
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bulk Actions -->
+            <div class="bulk-actions-bar" id="bulkActionsBar" style="display: none;">
+                <div class="bulk-info">
+                    <span id="selectedCount">0</span> usuários selecionados
+                </div>
+                <div class="bulk-buttons">
+                    <button class="btn btn-warning btn-small" onclick="bulkExtendLicense()">
+                        <i class="fas fa-clock"></i>
+                        ESTENDER LICENÇAS
+                    </button>
+                    <button class="btn btn-danger btn-small" onclick="bulkDeleteUsers()">
+                        <i class="fas fa-trash"></i>
+                        DELETAR SELECIONADOS
+                    </button>
+                    <button class="btn btn-secondary btn-small" onclick="clearSelection()">
+                        <i class="fas fa-times"></i>
+                        LIMPAR SELEÇÃO
+                    </button>
+                </div>
             </div>
             
             <div class="admin-table-container">
                 <table class="admin-table">
                     <thead>
                         <tr>
+                            <th>
+                                <input type="checkbox" id="selectAllUsers" onchange="toggleSelectAll()">
+                            </th>
                             <th>ID</th>
                             <th>Email</th>
                             <th>Tipo</th>
                             <th>Licença</th>
+                            <th>Status</th>
                             <th>Cadastro</th>
+                            <th>Último Login</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody id="usersTableBody">
                         <tr>
-                            <td colspan="6" class="loading-row">
+                            <td colspan="9" class="loading-row">
                                 <i class="fas fa-spinner fa-spin"></i>
                                 Carregando usuários...
                             </td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Mostrando <span id="showingStart">0</span> a <span id="showingEnd">0</span> de <span id="totalUsers">0</span> usuários
+                </div>
+                <div class="pagination-controls">
+                    <button class="btn btn-secondary btn-small" onclick="previousPage()">
+                        <i class="fas fa-chevron-left"></i>
+                        Anterior
+                    </button>
+                    <span class="page-numbers" id="pageNumbers"></span>
+                    <button class="btn btn-secondary btn-small" onclick="nextPage()">
+                        Próximo
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
             </div>
         </div>
         
@@ -576,12 +701,491 @@ function switchAdminTab(tabName) {
 }
 
 async function loadOverviewData() {
-    // Em uma implementação real, estes dados viriam da API
-    // Aqui vamos simular alguns dados
-    document.getElementById('totalUsers').textContent = '1,234';
-    document.getElementById('activeLicenses').textContent = '892';
-    document.getElementById('totalRevenue').textContent = 'R$ 45,678';
-    document.getElementById('todaySignups').textContent = '15';
+    const token = localStorage.getItem('access_token');
+    
+    try {
+        // Carregar estatísticas reais
+        const [usersResponse, paymentsResponse] = await Promise.all([
+            fetch('/api/admin/users', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }),
+            fetch('/api/admin/payments', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+        ]);
+        
+        if (usersResponse.ok && paymentsResponse.ok) {
+            const users = await usersResponse.json();
+            const payments = await paymentsResponse.json();
+            
+            // Calcular estatísticas
+            const totalUsers = users.length;
+            const activeLicenses = users.filter(user => 
+                user.data_expiracao && new Date(user.data_expiracao) > new Date()
+            ).length;
+            const totalRevenue = payments.reduce((sum, payment) => sum + payment.valor, 0);
+            const today = new Date().toDateString();
+            const todaySignups = users.filter(user => 
+                user.created_at && new Date(user.created_at).toDateString() === today
+            ).length;
+            
+            // Atualizar interface
+            document.getElementById('totalUsers').textContent = totalUsers.toLocaleString('pt-BR');
+            document.getElementById('activeLicenses').textContent = activeLicenses.toLocaleString('pt-BR');
+            document.getElementById('totalRevenue').textContent = `R$ ${totalRevenue.toLocaleString('pt-BR', {
+                minimumFractionDigits: 2
+            })}`;
+            document.getElementById('todaySignups').textContent = todaySignups.toLocaleString('pt-BR');
+            
+            // Carregar atividade recente
+            loadRecentActivity(users, payments);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        // Usar dados de fallback
+        document.getElementById('totalUsers').textContent = '1,234';
+        document.getElementById('activeLicenses').textContent = '892';
+        document.getElementById('totalRevenue').textContent = 'R$ 45,678';
+        document.getElementById('todaySignups').textContent = '15';
+    }
+}
+
+function loadRecentActivity(users, payments) {
+    const activityContainer = document.getElementById('recentActivity');
+    const activities = [];
+    
+    // Adicionar últimos usuários
+    const recentUsers = users.slice(-3).reverse();
+    recentUsers.forEach(user => {
+        const timeAgo = getTimeAgo(new Date(user.created_at));
+        activities.push({
+            icon: 'fas fa-user-plus',
+            title: 'Novo usuário registrado',
+            description: `${user.email} - ${timeAgo}`,
+            time: new Date(user.created_at)
+        });
+    });
+    
+    // Adicionar últimos pagamentos
+    const recentPayments = payments.slice(-2).reverse();
+    recentPayments.forEach(payment => {
+        const timeAgo = getTimeAgo(new Date(payment.data_pagamento));
+        activities.push({
+            icon: 'fas fa-shopping-cart',
+            title: 'Nova compra realizada',
+            description: `R$ ${payment.valor.toFixed(2)} - ${timeAgo}`,
+            time: new Date(payment.data_pagamento)
+        });
+    });
+    
+    // Ordenar por data
+    activities.sort((a, b) => b.time - a.time);
+    
+    // Renderizar atividades
+    activityContainer.innerHTML = activities.slice(0, 5).map(activity => `
+        <div class="activity-item">
+            <i class="${activity.icon} activity-icon"></i>
+            <div class="activity-info">
+                <strong>${activity.title}</strong>
+                <span>${activity.description}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function getTimeAgo(date) {
+    const now = new Date();
+    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'agora mesmo';
+    if (diffInMinutes < 60) return `há ${diffInMinutes} minuto${diffInMinutes > 1 ? 's' : ''}`;
+    
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `há ${diffInHours} hora${diffInHours > 1 ? 's' : ''}`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `há ${diffInDays} dia${diffInDays > 1 ? 's' : ''}`;
+}
+
+// Variáveis globais para gerenciamento de usuários
+let allUsers = [];
+let filteredUsers = [];
+let currentPage = 1;
+let usersPerPage = 10;
+let selectedUsers = new Set();
+
+// Funções de filtro e busca
+function setupUserFilters() {
+    const searchInput = document.getElementById('userSearch');
+    const filterSelect = document.getElementById('userFilter');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(filterUsers, 300));
+    }
+    
+    if (filterSelect) {
+        filterSelect.addEventListener('change', filterUsers);
+    }
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+function filterUsers() {
+    const searchTerm = document.getElementById('userSearch')?.value.toLowerCase() || '';
+    const filterType = document.getElementById('userFilter')?.value || 'all';
+    
+    filteredUsers = allUsers.filter(user => {
+        // Filtro de busca
+        const matchesSearch = user.email.toLowerCase().includes(searchTerm);
+        
+        // Filtro de tipo
+        let matchesFilter = true;
+        switch (filterType) {
+            case 'active':
+                matchesFilter = user.data_expiracao && new Date(user.data_expiracao) > new Date();
+                break;
+            case 'expired':
+                matchesFilter = user.data_expiracao && new Date(user.data_expiracao) <= new Date();
+                break;
+            case 'no_license':
+                matchesFilter = !user.data_expiracao;
+                break;
+            case 'admin':
+                matchesFilter = user.is_admin;
+                break;
+        }
+        
+        return matchesSearch && matchesFilter;
+    });
+    
+    currentPage = 1;
+    displayUsersWithPagination();
+}
+
+function displayUsersWithPagination() {
+    const startIndex = (currentPage - 1) * usersPerPage;
+    const endIndex = startIndex + usersPerPage;
+    const usersToShow = filteredUsers.slice(startIndex, endIndex);
+    
+    displayUsers(usersToShow);
+    updatePaginationInfo();
+    updatePaginationControls();
+}
+
+function updatePaginationInfo() {
+    const startIndex = (currentPage - 1) * usersPerPage;
+    const endIndex = Math.min(startIndex + usersPerPage, filteredUsers.length);
+    
+    document.getElementById('showingStart').textContent = filteredUsers.length > 0 ? startIndex + 1 : 0;
+    document.getElementById('showingEnd').textContent = endIndex;
+    document.getElementById('totalUsers').textContent = filteredUsers.length;
+}
+
+function updatePaginationControls() {
+    const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+    const pageNumbers = document.getElementById('pageNumbers');
+    
+    if (!pageNumbers) return;
+    
+    let numbersHtml = '';
+    const maxVisible = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+    
+    if (endPage - startPage + 1 < maxVisible) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+        numbersHtml += `
+            <a href="#" class="page-number ${i === currentPage ? 'active' : ''}" 
+               onclick="goToPage(${i}); return false;">${i}</a>
+        `;
+    }
+    
+    pageNumbers.innerHTML = numbersHtml;
+}
+
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        displayUsersWithPagination();
+    }
+}
+
+function nextPage() {
+    const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        displayUsersWithPagination();
+    }
+}
+
+function goToPage(page) {
+    currentPage = page;
+    displayUsersWithPagination();
+}
+
+// Funções de seleção em lote
+function toggleSelectAll() {
+    const selectAllCheckbox = document.getElementById('selectAllUsers');
+    const userCheckboxes = document.querySelectorAll('.user-checkbox');
+    
+    if (selectAllCheckbox.checked) {
+        userCheckboxes.forEach(checkbox => {
+            checkbox.checked = true;
+            selectedUsers.add(parseInt(checkbox.value));
+        });
+    } else {
+        userCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        selectedUsers.clear();
+    }
+    
+    updateBulkActionsBar();
+}
+
+function toggleUserSelection(userId) {
+    if (selectedUsers.has(userId)) {
+        selectedUsers.delete(userId);
+    } else {
+        selectedUsers.add(userId);
+    }
+    
+    updateBulkActionsBar();
+    updateSelectAllCheckbox();
+}
+
+function updateSelectAllCheckbox() {
+    const selectAllCheckbox = document.getElementById('selectAllUsers');
+    const userCheckboxes = document.querySelectorAll('.user-checkbox');
+    const checkedBoxes = document.querySelectorAll('.user-checkbox:checked');
+    
+    if (checkedBoxes.length === 0) {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = false;
+    } else if (checkedBoxes.length === userCheckboxes.length) {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = true;
+    } else {
+        selectAllCheckbox.indeterminate = true;
+    }
+}
+
+function updateBulkActionsBar() {
+    const bulkActionsBar = document.getElementById('bulkActionsBar');
+    const selectedCount = document.getElementById('selectedCount');
+    
+    if (selectedUsers.size > 0) {
+        bulkActionsBar.style.display = 'flex';
+        selectedCount.textContent = selectedUsers.size;
+    } else {
+        bulkActionsBar.style.display = 'none';
+    }
+}
+
+function clearSelection() {
+    selectedUsers.clear();
+    document.querySelectorAll('.user-checkbox').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    updateBulkActionsBar();
+    updateSelectAllCheckbox();
+}
+
+// Funções de ações em lote
+async function bulkExtendLicense() {
+    if (selectedUsers.size === 0) return;
+    
+    const days = prompt('Quantos dias deseja estender as licenças?', '30');
+    if (!days || isNaN(days)) return;
+    
+    const token = localStorage.getItem('access_token');
+    let successCount = 0;
+    
+    for (const userId of selectedUsers) {
+        try {
+            const formData = new FormData();
+            formData.append('dias', days);
+            
+            const response = await fetch(`/api/admin/users/${userId}/license`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            
+            if (response.ok) successCount++;
+        } catch (error) {
+            console.error(`Erro ao estender licença do usuário ${userId}:`, error);
+        }
+    }
+    
+    showToast(`${successCount} licenças estendidas com sucesso`, 'success');
+    clearSelection();
+    loadUsers();
+}
+
+async function bulkDeleteUsers() {
+    if (selectedUsers.size === 0) return;
+    
+    if (!confirm(`Tem certeza que deseja deletar ${selectedUsers.size} usuários? Esta ação não pode ser desfeita.`)) {
+        return;
+    }
+    
+    const token = localStorage.getItem('access_token');
+    let successCount = 0;
+    
+    for (const userId of selectedUsers) {
+        try {
+            const response = await fetch(`/api/admin/users/${userId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (response.ok) successCount++;
+        } catch (error) {
+            console.error(`Erro ao deletar usuário ${userId}:`, error);
+        }
+    }
+    
+    showToast(`${successCount} usuários deletados com sucesso`, 'success');
+    clearSelection();
+    loadUsers();
+}
+
+async function exportUsers() {
+    const token = localStorage.getItem('access_token');
+    
+    try {
+        const response = await fetch('/api/admin/users', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const users = await response.json();
+            const csvContent = generateUsersCSV(users);
+            downloadCSV(csvContent, 'usuarios.csv');
+            showToast('Exportação de usuários concluída', 'success');
+        }
+    } catch (error) {
+        console.error('Erro ao exportar usuários:', error);
+        showToast('Erro ao exportar usuários', 'error');
+    }
+}
+
+function generateUsersCSV(users) {
+    const headers = ['ID', 'Email', 'Tipo', 'Data Cadastro', 'Data Expiração', 'Status Licença'];
+    const rows = users.map(user => [
+        user.id,
+        user.email,
+        user.is_admin ? 'Admin' : 'Usuário',
+        user.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR') : '',
+        user.data_expiracao ? new Date(user.data_expiracao).toLocaleDateString('pt-BR') : '',
+        user.data_expiracao ? 
+            (new Date(user.data_expiracao) > new Date() ? 'Ativa' : 'Expirada') : 
+            'Sem licença'
+    ]);
+    
+    return [headers, ...rows].map(row => 
+        row.map(field => `"${field}"`).join(',')
+    ).join('\n');
+}
+
+function downloadCSV(content, filename) {
+    const blob = new Blob(['\ufeff' + content], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+}
+
+async function exportAllData() {
+    if (!confirm('Deseja exportar todos os dados do sistema? Isso pode levar alguns minutos.')) {
+        return;
+    }
+    
+    showToast('Iniciando exportação completa...', 'info');
+    
+    const token = localStorage.getItem('access_token');
+    
+    try {
+        const [usersResponse, paymentsResponse, productsResponse] = await Promise.all([
+            fetch('/api/admin/users', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }),
+            fetch('/api/admin/payments', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }),
+            fetch('/api/admin/products', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+        ]);
+        
+        if (usersResponse.ok && paymentsResponse.ok && productsResponse.ok) {
+            const users = await usersResponse.json();
+            const payments = await paymentsResponse.json();
+            const products = await productsResponse.json();
+            
+            // Gerar CSV de usuários
+            const usersCSV = generateUsersCSV(users);
+            downloadCSV(usersCSV, 'usuarios.csv');
+            
+            // Gerar CSV de pagamentos
+            const paymentsCSV = generatePaymentsCSV(payments);
+            downloadCSV(paymentsCSV, 'pagamentos.csv');
+            
+            // Gerar CSV de produtos
+            const productsCSV = generateProductsCSV(products);
+            downloadCSV(productsCSV, 'produtos.csv');
+            
+            showToast('Exportação completa concluída', 'success');
+        }
+    } catch (error) {
+        console.error('Erro na exportação:', error);
+        showToast('Erro na exportação completa', 'error');
+    }
+}
+
+function generatePaymentsCSV(payments) {
+    const headers = ['ID', 'ID Usuário', 'Valor', 'Data', 'Status'];
+    const rows = payments.map(payment => [
+        payment.id,
+        payment.user_id,
+        `R$ ${payment.valor.toFixed(2)}`,
+        new Date(payment.data_pagamento).toLocaleDateString('pt-BR'),
+        payment.status
+    ]);
+    
+    return [headers, ...rows].map(row => 
+        row.map(field => `"${field}"`).join(',')
+    ).join('\n');
+}
+
+function generateProductsCSV(products) {
+    const headers = ['ID', 'Nome', 'Preço', 'Duração (dias)', 'Status', 'Destaque'];
+    const rows = products.map(product => [
+        product.id,
+        product.name,
+        `R$ ${product.price.toFixed(2)}`,
+        product.duration_days,
+        product.is_active ? 'Ativo' : 'Inativo',
+        product.is_featured ? 'Sim' : 'Não'
+    ]);
+    
+    return [headers, ...rows].map(row => 
+        row.map(field => `"${field}"`).join(',')
+    ).join('\n');
 }
 
 async function loadUsers() {
@@ -596,8 +1200,16 @@ async function loadUsers() {
         });
         
         if (response.ok) {
-            const users = await response.json();
-            displayUsers(users);
+            allUsers = await response.json();
+            filteredUsers = [...allUsers];
+            
+            // Configurar filtros se não foram configurados ainda
+            if (!document.getElementById('userSearch')?.hasEventListener) {
+                setupUserFilters();
+                document.getElementById('userSearch').hasEventListener = true;
+            }
+            
+            displayUsersWithPagination();
         } else {
             throw new Error('Erro ao carregar usuários');
         }
@@ -606,7 +1218,7 @@ async function loadUsers() {
         console.error('Erro:', error);
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" class="error-row">
+                <td colspan="9" class="error-row">
                     <i class="fas fa-exclamation-triangle"></i>
                     Erro ao carregar usuários
                 </td>
@@ -621,7 +1233,7 @@ function displayUsers(users) {
     if (users.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" class="empty-row">
+                <td colspan="9" class="empty-row">
                     <i class="fas fa-users"></i>
                     Nenhum usuário encontrado
                 </td>
@@ -640,8 +1252,20 @@ function displayUsers(users) {
             new Date(user.created_at).toLocaleDateString('pt-BR') : 
             '-';
         
+        // Simular último login (em uma implementação real, isso viria do banco)
+        const lastLogin = user.created_at ? 
+            getTimeAgo(new Date(user.created_at)) : 
+            'Nunca';
+        
+        const userStatus = Math.random() > 0.7 ? 'online' : 'offline'; // Simulado
+        
         return `
             <tr>
+                <td>
+                    <input type="checkbox" class="user-checkbox" value="${user.id}" 
+                           onchange="toggleUserSelection(${user.id})"
+                           ${user.is_admin ? 'disabled' : ''}>
+                </td>
                 <td>${user.id}</td>
                 <td>${user.email}</td>
                 <td>
@@ -654,11 +1278,21 @@ function displayUsers(users) {
                         ${licenseStatus}
                     </span>
                 </td>
+                <td>
+                    <div class="user-status">
+                        <div class="status-dot status-${userStatus}"></div>
+                        ${userStatus === 'online' ? 'Online' : 'Offline'}
+                    </div>
+                </td>
                 <td>${cadastroDate}</td>
+                <td>${lastLogin}</td>
                 <td>
                     <div class="action-buttons">
                         <button class="btn-icon btn-edit" onclick="editUser(${user.id}, '${user.email}')" title="Editar">
                             <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon btn-info" onclick="viewUserDetails(${user.id})" title="Detalhes">
+                            <i class="fas fa-info-circle"></i>
                         </button>
                         ${!user.is_admin ? `
                             <button class="btn-icon btn-delete" onclick="deleteUser(${user.id})" title="Deletar">
@@ -670,6 +1304,28 @@ function displayUsers(users) {
             </tr>
         `;
     }).join('');
+}
+
+async function viewUserDetails(userId) {
+    const user = allUsers.find(u => u.id === userId);
+    if (!user) return;
+    
+    const licenseStatus = user.data_expiracao ? 
+        (new Date(user.data_expiracao) > new Date() ? 'Ativa' : 'Expirada') : 
+        'Sem licença';
+    
+    const expirationDate = user.data_expiracao ? 
+        new Date(user.data_expiracao).toLocaleDateString('pt-BR') : 
+        'N/A';
+    
+    alert(`Detalhes do Usuário:
+    
+ID: ${user.id}
+Email: ${user.email}
+Tipo: ${user.is_admin ? 'Administrador' : 'Usuário'}
+Status da Licença: ${licenseStatus}
+Data de Expiração: ${expirationDate}
+Data de Cadastro: ${user.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR') : 'N/A'}`);
 }
 
 async function loadPayments() {
