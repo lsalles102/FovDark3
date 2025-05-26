@@ -12,8 +12,7 @@ else:
     print("⚠️ MercadoPago token não configurado - Pagamentos desabilitados")
     mp = None
 
-if not os.getenv("MERCADOPAGO_ACCESS_TOKEN"):
-    raise ValueError("MERCADOPAGO_ACCESS_TOKEN não configurada. Configure a chave no Secrets.")
+# Remover a validação que quebra a aplicação - será tratada nos endpoints
 
 # Definição dos produtos
 PRODUCTS = {

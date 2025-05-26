@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, Request, HTTPException, Depends
 from sqlalchemy.orm import Session
 from database import get_db
@@ -6,6 +5,7 @@ from models import User
 from mercadopago_integration import create_payment_preference, handle_payment_notification
 from auth import decode_access_token
 import json
+import os  # Import the os module
 
 router = APIRouter()
 
@@ -32,7 +32,7 @@ async def criar_preferencia(request: Request, db: Session = Depends(get_db)):
         preference = create_payment_preference(plano, user.id, user.email)
         if 'error' in preference:
             raise HTTPException(status_code=400, detail=preference['error'])
-        
+
         return {
             "preference_id": preference.get("id"),
             "init_point": preference.get("init_point"),
@@ -44,9 +44,13 @@ async def criar_preferencia(request: Request, db: Session = Depends(get_db)):
 @router.post("/webhook/mercadopago")
 async def mercadopago_webhook(request: Request):
     try:
+        # Verificar se o MercadoPago está configurado
+        if not os.getenv("MERCADOPAGO_ACCESS_TOKEN"):
+            return {"status": "disabled", "message": "MercadoPago não configurado"}
+
         # Verificar se é uma notificação de pagamento
         content_type = request.headers.get('content-type', '')
-        
+
         if 'application/json' in content_type:
             body = await request.json()
         else:
@@ -64,7 +68,7 @@ async def mercadopago_webhook(request: Request):
                 "type": form_data.get("type"),
                 "user_id": form_data.get("user_id")
             }
-        
+
         # Processar apenas notificações de pagamento
         if body.get("type") == "payment":
             success, message = handle_payment_notification(body)
@@ -72,9 +76,9 @@ async def mercadopago_webhook(request: Request):
                 print(f"Erro ao processar webhook: {message}")
                 # Retorna 200 mesmo em erro para evitar reenvios desnecessários
                 return {"status": "error", "message": message}
-        
+
         return {"status": "success"}
-        
+
     except Exception as e:
         print(f"Erro no webhook: {str(e)}")
         return {"status": "error", "message": str(e)}
