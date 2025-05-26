@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}Painel - DarkFov{% endblock %}
@@ -7,15 +8,21 @@
     <div class="container">
         <!-- Dashboard Header -->
         <div class="dashboard-header">
-            <h1>Painel <span class="highlight">DarkFov</span></h1>
-            <div class="user-info">
-                <div class="user-avatar">
+            <div class="user-welcome">
+                <div class="welcome-avatar">
                     <i class="fas fa-user-circle"></i>
                 </div>
-                <div class="user-details">
+                <div class="welcome-info">
+                    <h1>Bem-vindo ao <span class="highlight">DarkFov</span></h1>
                     <span class="user-email" id="userEmail">carregando...</span>
                     <span class="user-since">Membro desde <span id="userSince">2024</span></span>
                 </div>
+            </div>
+            <div class="dashboard-actions">
+                <button class="btn btn-outline" onclick="checkLicenseStatus()">
+                    <i class="fas fa-sync-alt"></i>
+                    Atualizar Status
+                </button>
             </div>
         </div>
 
@@ -33,37 +40,54 @@
                     <h2><i class="fas fa-shield-alt"></i> Status da Licença</h2>
                 </div>
                 <div class="card-content">
-                    <div class="license-status" id="licenseStatus">
-                        <div class="status-indicator status-loading">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            <span>Verificando...</span>
+                    <div class="license-header">
+                        <div class="license-icon">
+                            <i class="fas fa-key"></i>
+                        </div>
+                        <div class="license-info">
+                            <div class="license-status" id="licenseStatus">
+                                <div class="status-indicator status-loading">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <span>Verificando...</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
                     <div class="license-details" id="licenseDetails" style="display: none;">
-                        <div class="license-info-grid">
-                            <div class="license-info-item">
+                        <div class="license-grid">
+                            <div class="license-item">
                                 <span class="label">Expira em:</span>
                                 <span class="value" id="expirationDate">-</span>
                             </div>
-                            <div class="license-info-item">
+                            <div class="license-item">
                                 <span class="label">Dias restantes:</span>
                                 <span class="value" id="daysRemaining">-</span>
                             </div>
-                            <div class="license-info-item">
+                            <div class="license-item">
                                 <span class="label">Chave da Licença:</span>
                                 <span class="value license-key" id="licenseKey">-</span>
                             </div>
-                            <div class="license-info-item">
+                            <div class="license-item">
                                 <span class="label">Última verificação:</span>
                                 <span class="value" id="lastCheck">Agora</span>
                             </div>
                         </div>
+
+                        <!-- Botão de Renovação -->
+                        <div class="license-actions" id="licenseActions" style="display: none;">
+                            <a href="/comprar" class="btn btn-warning btn-full">
+                                <i class="fas fa-clock"></i>
+                                Renovar Licença
+                            </a>
+                        </div>
                     </div>
+
                     <div class="license-inactive" id="licenseInactive" style="display: none;">
                         <i class="fas fa-exclamation-triangle"></i>
                         <div class="inactive-content">
                             <h3>Sem Licença Ativa</h3>
-                            <p>Adquira uma licença para acessar o DarkFov Aimbot</p>
+                            <p>Adquira uma licença para acessar o DarkFov</p>
                             <a href="/comprar" class="btn btn-primary">
                                 <i class="fas fa-shopping-cart"></i>
                                 Comprar Agora
@@ -73,7 +97,7 @@
                 </div>
             </div>
 
-            <!-- Download Card -->
+            <!-- Downloads Card -->
             <div class="dashboard-card download-card">
                 <div class="card-header">
                     <h2><i class="fas fa-download"></i> Downloads</h2>
@@ -82,29 +106,14 @@
                     <div class="download-section" id="downloadSection">
                         <div class="download-item">
                             <div class="download-icon">
-                                <i class="fas fa-file-code"></i>
-                            </div>
-                            <div class="download-info">
-                                <h3>Script Principal</h3>
-                                <p>Loader principal do DarkFov</p>
-                                <span class="version">v2.1.0</span>
-                            </div>
-                            <button class="btn btn-primary" onclick="downloadScript()">
-                                <i class="fas fa-download"></i>
-                                Baixar
-                            </button>
-                        </div>
-
-                        <div class="download-item">
-                            <div class="download-icon">
                                 <i class="fas fa-desktop"></i>
                             </div>
                             <div class="download-info">
                                 <h3>Desktop Loader</h3>
-                                <p>Aplicativo para Windows</p>
+                                <p>Aplicativo principal para Windows</p>
                                 <span class="version">v2.1.0</span>
                             </div>
-                            <button class="btn btn-outline" onclick="downloadLoader()">
+                            <button class="btn btn-primary" onclick="downloadLoader()">
                                 <i class="fas fa-download"></i>
                                 Baixar
                             </button>
@@ -116,11 +125,11 @@
                             </div>
                             <div class="download-info">
                                 <h3>Manual de Uso</h3>
-                                <p>Guia completo de instalação</p>
+                                <p>Guia completo de instalação e uso</p>
                                 <span class="version">Atualizado</span>
                             </div>
                             <button class="btn btn-outline" onclick="downloadManual()">
-                                <i class="fas fa-download"></i>
+                                <i class="fas fa-file-download"></i>
                                 Baixar
                             </button>
                         </div>
@@ -135,56 +144,57 @@
                 </div>
             </div>
 
-            <!-- Tutorial Card -->
-            <div class="dashboard-card tutorial-card">
+            <!-- Dicas Importantes Card -->
+            <div class="dashboard-card tips-card">
                 <div class="card-header">
-                    <h2><i class="fas fa-book-open"></i> Como Usar</h2>
+                    <h2><i class="fas fa-lightbulb"></i> Dicas Importantes</h2>
                 </div>
                 <div class="card-content">
-                    <div class="tutorial-steps">
-                        <div class="tutorial-step">
-                            <div class="step-number">1</div>
-                            <div class="step-content">
-                                <h3>Download</h3>
-                                <p>Baixe o loader do DarkFov</p>
+                    <div class="tips-list">
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="tip-content">
+                                <h4>Execute sempre como administrador</h4>
+                                <p>Clique com botão direito e "Executar como administrador"</p>
                             </div>
                         </div>
-                        <div class="tutorial-step">
-                            <div class="step-number">2</div>
-                            <div class="step-content">
-                                <h3>Execução</h3>
-                                <p>Execute como administrador</p>
-                            </div>
-                        </div>
-                        <div class="tutorial-step">
-                            <div class="step-number">3</div>
-                            <div class="step-content">
-                                <h3>Configuração</h3>
-                                <p>Configure suas preferências</p>
-                            </div>
-                        </div>
-                        <div class="tutorial-step">
-                            <div class="step-number">4</div>
-                            <div class="step-content">
-                                <h3>Jogo</h3>
-                                <p>Inicie o BloodStrike</p>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="tutorial-tips">
-                        <h4><i class="fas fa-lightbulb"></i> Dicas Importantes</h4>
-                        <ul>
-                            <li>Execute sempre como administrador</li>
-                            <li>Desative antivírus temporariamente</li>
-                            <li>Use apenas em modo offline</li>
-                            <li>Mantenha o loader sempre atualizado</li>
-                        </ul>
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="fas fa-virus-slash"></i>
+                            </div>
+                            <div class="tip-content">
+                                <h4>Desative antivírus temporariamente</h4>
+                                <p>Adicione à lista de exceções ou desative durante o uso</p>
+                            </div>
+                        </div>
+
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="fas fa-wifi-slash"></i>
+                            </div>
+                            <div class="tip-content">
+                                <h4>Use apenas em modo offline</h4>
+                                <p>Desconecte da internet para evitar detecção</p>
+                            </div>
+                        </div>
+
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="fas fa-sync-alt"></i>
+                            </div>
+                            <div class="tip-content">
+                                <h4>Mantenha o loader sempre atualizado</h4>
+                                <p>Baixe a versão mais recente regularmente</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- System Status Card -->
+            <!-- Status do Sistema Card -->
             <div class="dashboard-card system-card">
                 <div class="card-header">
                     <h2><i class="fas fa-server"></i> Status do Sistema</h2>
@@ -214,7 +224,7 @@
 
                         <div class="metric-item">
                             <div class="metric-icon">
-                                <i class="fas fa-sync-alt"></i>
+                                <i class="fas fa-code-branch"></i>
                             </div>
                             <div class="metric-info">
                                 <span class="metric-value">v2.1.0</span>
@@ -224,133 +234,9 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Support Card -->
-            <div class="dashboard-card support-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-headset"></i> Suporte</h2>
-                </div>
-                <div class="card-content">
-                    <div class="support-options">
-                        <div class="support-option">
-                            <div class="support-icon discord">
-                                <i class="fab fa-discord"></i>
-                            </div>
-                            <div class="support-info">
-                                <h3>Discord</h3>
-                                <p>Suporte em tempo real</p>
-                                <span class="status-online">🟢 Online</span>
-                            </div>
-                            <button class="btn btn-primary small" onclick="openSupportModal()">Entrar</button>
-                        </div>
-
-                        <div class="support-option">
-                            <div class="support-icon telegram">
-                                <i class="fab fa-telegram"></i>
-                            </div>
-                            <div class="support-info">
-                                <h3>Telegram</h3>
-                                <p>Grupo exclusivo</p>
-                                <span class="status-online">🟢 Online</span>
-                            </div>
-                            <button class="btn btn-outline small" onclick="openSupportModal()">Acessar</button>
-                        </div>
-
-                        <div class="support-option">
-                            <div class="support-icon email">
-                                <i class="fas fa-envelope"></i>
-                            </div>
-                            <div class="support-info">
-                                <h3>Email</h3>
-                                <p>suporte@darkfov.com</p>
-                                <span class="status-available">📧 24h</span>
-                            </div>
-                            <a href="mailto:suporte@darkfov.com" class="btn btn-outline small">Enviar</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Account Stats Card -->
-            <div class="dashboard-card stats-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-chart-bar"></i> Estatísticas</h2>
-                </div>
-                <div class="card-content">
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <div class="stat-number">15</div>
-                            <div class="stat-label">Downloads</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number">30</div>
-                            <div class="stat-label">Dias Ativos</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number">99%</div>
-                            <div class="stat-label">Satisfação</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number">24/7</div>
-                            <div class="stat-label">Suporte</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </section>
-
-<!-- Support Modal -->
-<div id="supportModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Suporte Técnico</h2>
-            <button class="modal-close" onclick="closeModal('supportModal')">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <div class="support-channels">
-                <div class="support-channel">
-                    <div class="channel-icon discord">
-                        <i class="fab fa-discord"></i>
-                    </div>
-                    <div class="channel-info">
-                        <h3>Discord</h3>
-                        <p>Chat em tempo real com a comunidade e suporte</p>
-                        <p class="channel-status">🟢 Online - Resposta em minutos</p>
-                    </div>
-                    <a href="#" class="btn btn-primary">Entrar</a>
-                </div>
-
-                <div class="support-channel">
-                    <div class="channel-icon telegram">
-                        <i class="fab fa-telegram"></i>
-                    </div>
-                    <div class="channel-info">
-                        <h3>Telegram</h3>
-                        <p>Suporte direto via mensagens privadas</p>
-                        <p class="channel-status">🟢 Online - Resposta em até 1h</p>
-                    </div>
-                    <a href="#" class="btn btn-outline">Contatar</a>
-                </div>
-
-                <div class="support-channel">
-                    <div class="channel-icon ticket">
-                        <i class="fas fa-ticket-alt"></i>
-                    </div>
-                    <div class="channel-info">
-                        <h3>Sistema de Tickets</h3>
-                        <p>Para problemas técnicos específicos</p>
-                        <p class="channel-status">📧 Email - Resposta em até 24h</p>
-                    </div>
-                    <a href="#" class="btn btn-outline">Abrir Ticket</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block scripts %}
@@ -421,6 +307,7 @@ function updateLicenseDisplay(licenseData) {
     const inactiveContainer = document.getElementById('licenseInactive');
     const downloadSection = document.getElementById('downloadSection');
     const downloadLocked = document.getElementById('downloadLocked');
+    const licenseActions = document.getElementById('licenseActions');
 
     if (licenseData.valid) {
         const expirationDate = new Date(licenseData.data_expiracao);
@@ -433,16 +320,20 @@ function updateLicenseDisplay(licenseData) {
 
         if (daysRemaining <= 3) {
             statusClass = 'status-critical';
-            statusText = 'CRÍTICO';
+            statusText = 'CRÍTICO - EXPIRA EM BREVE';
             statusIcon = 'fas fa-exclamation-triangle';
+            licenseActions.style.display = 'block';
         } else if (daysRemaining <= 7) {
             statusClass = 'status-warning';
-            statusText = 'ATENÇÃO';
+            statusText = 'ATENÇÃO - EXPIRA EM BREVE';
             statusIcon = 'fas fa-exclamation-circle';
+            licenseActions.style.display = 'block';
+        } else {
+            licenseActions.style.display = 'none';
         }
 
         statusContainer.innerHTML = `
-            <div class="license-active">
+            <div class="${statusClass}">
                 <i class="${statusIcon}"></i>
                 <span>Licença ${statusText}</span>
             </div>
@@ -461,9 +352,9 @@ function updateLicenseDisplay(licenseData) {
 
     } else {
         statusContainer.innerHTML = `
-            <div class="license-inactive">
+            <div class="status-expired">
                 <i class="fas fa-times-circle"></i>
-                <span>SEM LICENÇA</span>
+                <span>SEM LICENÇA ATIVA</span>
             </div>
         `;
         detailsContainer.style.display = 'none';
@@ -476,7 +367,7 @@ function updateLicenseDisplay(licenseData) {
 function showLicenseError() {
     const statusContainer = document.getElementById('licenseStatus');
     statusContainer.innerHTML = `
-        <div class="status-indicator status-error">
+        <div class="status-error">
             <i class="fas fa-exclamation-triangle"></i>
             <span>ERRO DE CONEXÃO</span>
         </div>
@@ -493,97 +384,209 @@ function showSuccessMessage(message) {
     }, 5000);
 }
 
-async function downloadScript() {
-    const token = localStorage.getItem('access_token');
-
-    try {
-        const response = await fetch('/api/download/script', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        if (response.ok) {
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = 'darkfov_loader.py';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-
-            showToast('Download iniciado com sucesso!', 'success');
-
-        } else if (response.status === 403) {
-            showToast('Licença expirada. Renove para baixar o script.', 'error');
-        } else {
-            showToast('Erro ao baixar script', 'error');
-        }
-
-    } catch (error) {
-        console.error('Erro no download:', error);
-        showToast('Erro de conexão', 'error');
-    }
-}
-
 function downloadLoader() {
-    // Código do loader desktop (mantendo o mesmo código anterior)
     const loaderContent = `import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 import requests
 import subprocess
 import os
 import json
 import webbrowser
 from datetime import datetime
+import threading
 
 # Configurações
 API_URL = "https://darkfov.repl.co"
 LOGIN_URL = f"{API_URL}/api/login"
 LICENSE_URL = f"{API_URL}/api/license/check"
-DOWNLOAD_URL = f"{API_URL}/api/download/executable"
 
 class DarkFovLoader:
     def __init__(self):
+        self.token = None
         self.setup_window()
 
     def setup_window(self):
         self.janela = tk.Tk()
         self.janela.title("DarkFov Loader v2.1")
-        self.janela.geometry("400x300")
+        self.janela.geometry("450x350")
         self.janela.configure(bg="#0a0a0f")
         self.janela.resizable(False, False)
+        
+        # Centralizar janela
+        self.janela.eval('tk::PlaceWindow . center')
 
-        # Título
-        tk.Label(self.janela, text="DarkFov", fg="#00fff7", bg="#0a0a0f", 
-                font=("Orbitron", 24, "bold")).pack(pady=20)
+        # Header
+        header_frame = tk.Frame(self.janela, bg="#0a0a0f")
+        header_frame.pack(pady=20)
 
-        # Campos de login
-        tk.Label(self.janela, text="Email", bg="#0a0a0f", fg="#e0e0e0").pack()
-        self.entry_email = tk.Entry(self.janela, width=40, bg="#1a1a2e", fg="#e0e0e0")
-        self.entry_email.pack(pady=5)
+        # Logo/Título
+        tk.Label(header_frame, text="🎯 DarkFov", fg="#00fff7", bg="#0a0a0f", 
+                font=("Orbitron", 28, "bold")).pack()
+        
+        tk.Label(header_frame, text="Aim Assist Premium", fg="#9D4EDD", bg="#0a0a0f", 
+                font=("Arial", 12)).pack()
 
-        tk.Label(self.janela, text="Senha", bg="#0a0a0f", fg="#e0e0e0").pack()
-        self.entry_senha = tk.Entry(self.janela, show="*", width=40, bg="#1a1a2e", fg="#e0e0e0")
-        self.entry_senha.pack(pady=5)
+        # Login Frame
+        login_frame = tk.Frame(self.janela, bg="#1a1a2e", relief="ridge", bd=2)
+        login_frame.pack(pady=20, padx=40, fill="x")
 
-        # Botão de login
-        self.btn_login = tk.Button(self.janela, text="ENTRAR", bg="#00fff7", fg="#000", 
-                                  width=30, height=2, command=self.login)
-        self.btn_login.pack(pady=20)
+        tk.Label(login_frame, text="LOGIN", fg="#00fff7", bg="#1a1a2e", 
+                font=("Orbitron", 14, "bold")).pack(pady=(10, 5))
+
+        # Email
+        tk.Label(login_frame, text="Email:", bg="#1a1a2e", fg="#e0e0e0", 
+                font=("Arial", 10)).pack(anchor="w", padx=20)
+        self.entry_email = tk.Entry(login_frame, width=35, bg="#2a2a3e", fg="#e0e0e0", 
+                                   font=("Arial", 10), relief="flat", bd=5)
+        self.entry_email.pack(pady=(0, 10), padx=20)
+
+        # Senha
+        tk.Label(login_frame, text="Senha:", bg="#1a1a2e", fg="#e0e0e0", 
+                font=("Arial", 10)).pack(anchor="w", padx=20)
+        self.entry_senha = tk.Entry(login_frame, show="*", width=35, bg="#2a2a3e", 
+                                   fg="#e0e0e0", font=("Arial", 10), relief="flat", bd=5)
+        self.entry_senha.pack(pady=(0, 15), padx=20)
+
+        # Botões
+        btn_frame = tk.Frame(login_frame, bg="#1a1a2e")
+        btn_frame.pack(pady=(0, 15))
+
+        self.btn_login = tk.Button(btn_frame, text="ENTRAR", bg="#00fff7", fg="#000", 
+                                  width=15, height=2, font=("Orbitron", 10, "bold"),
+                                  command=self.login, relief="flat", cursor="hand2")
+        self.btn_login.pack(side="left", padx=5)
+
+        self.btn_register = tk.Button(btn_frame, text="REGISTRAR", bg="#9D4EDD", fg="#fff", 
+                                     width=15, height=2, font=("Orbitron", 10, "bold"),
+                                     command=self.open_register, relief="flat", cursor="hand2")
+        self.btn_register.pack(side="left", padx=5)
+
+        # Status
+        self.status_label = tk.Label(self.janela, text="Pronto para conectar", 
+                                    fg="#39FF14", bg="#0a0a0f", font=("Arial", 9))
+        self.status_label.pack(pady=10)
+
+        # Progress bar
+        self.progress = ttk.Progressbar(self.janela, mode='indeterminate')
+        
+        # Bind Enter key
+        self.janela.bind('<Return>', lambda e: self.login())
+
+    def update_status(self, message, color="#39FF14"):
+        self.status_label.config(text=message, fg=color)
+        self.janela.update()
+
+    def show_progress(self, show=True):
+        if show:
+            self.progress.pack(pady=5)
+            self.progress.start()
+        else:
+            self.progress.stop()
+            self.progress.pack_forget()
 
     def login(self):
-        # Implementar lógica de login
-        messagebox.showinfo("Info", "Loader em desenvolvimento!")
+        email = self.entry_email.get().strip()
+        senha = self.entry_senha.get()
+
+        if not email or not senha:
+            messagebox.showwarning("Aviso", "Preencha todos os campos!")
+            return
+
+        self.btn_login.config(state="disabled")
+        self.show_progress(True)
+        self.update_status("Conectando...", "#00fff7")
+
+        # Login em thread separada
+        threading.Thread(target=self._do_login, args=(email, senha), daemon=True).start()
+
+    def _do_login(self, email, senha):
+        try:
+            response = requests.post(LOGIN_URL, 
+                                   data={"username": email, "password": senha},
+                                   timeout=10)
+
+            if response.status_code == 200:
+                data = response.json()
+                self.token = data.get("access_token")
+                
+                self.janela.after(0, lambda: self.update_status("Login realizado com sucesso!", "#39FF14"))
+                self.janela.after(500, self.check_license)
+                
+            else:
+                error_msg = "Credenciais inválidas"
+                if response.status_code == 422:
+                    error_msg = "Formato de dados inválido"
+                
+                self.janela.after(0, lambda: self.update_status(error_msg, "#FF3333"))
+                self.janela.after(0, lambda: messagebox.showerror("Erro", error_msg))
+                
+        except requests.exceptions.Timeout:
+            self.janela.after(0, lambda: self.update_status("Timeout - Tente novamente", "#FF3333"))
+            self.janela.after(0, lambda: messagebox.showerror("Erro", "Conexão expirou"))
+        except Exception as e:
+            self.janela.after(0, lambda: self.update_status("Erro de conexão", "#FF3333"))
+            self.janela.after(0, lambda: messagebox.showerror("Erro", f"Erro de conexão: {e}"))
+        finally:
+            self.janela.after(0, lambda: self.btn_login.config(state="normal"))
+            self.janela.after(0, lambda: self.show_progress(False))
+
+    def check_license(self):
+        if not self.token:
+            return
+
+        self.update_status("Verificando licença...", "#00fff7")
+        threading.Thread(target=self._do_license_check, daemon=True).start()
+
+    def _do_license_check(self):
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            response = requests.get(LICENSE_URL, headers=headers, timeout=10)
+
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("valid"):
+                    self.janela.after(0, lambda: self.show_license_info(data))
+                else:
+                    self.janela.after(0, lambda: self.update_status("Licença inválida ou expirada", "#FF3333"))
+                    self.janela.after(0, lambda: messagebox.showwarning("Aviso", "Sua licença não está ativa!"))
+            else:
+                self.janela.after(0, lambda: self.update_status("Erro ao verificar licença", "#FF3333"))
+                
+        except Exception as e:
+            self.janela.after(0, lambda: self.update_status("Erro na verificação", "#FF3333"))
+
+    def show_license_info(self, license_data):
+        from datetime import datetime
+        
+        exp_date = datetime.fromisoformat(license_data["data_expiracao"].replace('Z', '+00:00'))
+        days_left = (exp_date - datetime.now()).days
+        
+        info = f"✅ Licença Ativa\\n"
+        info += f"📅 Expira em: {exp_date.strftime('%d/%m/%Y')}\\n"
+        info += f"⏰ Dias restantes: {days_left}"
+        
+        if days_left <= 7:
+            info += "\\n⚠️ RENOVAÇÃO NECESSÁRIA EM BREVE!"
+        
+        messagebox.showinfo("Status da Licença", info)
+        self.update_status(f"Licença válida - {days_left} dias restantes", "#39FF14")
+
+    def open_register(self):
+        webbrowser.open("https://darkfov.repl.co/register")
 
     def run(self):
-        self.janela.mainloop()
+        try:
+            self.janela.mainloop()
+        except KeyboardInterrupt:
+            pass
 
 if __name__ == "__main__":
-    loader = DarkFovLoader()
-    loader.run()
+    try:
+        loader = DarkFovLoader()
+        loader.run()
+    except Exception as e:
+        print(f"Erro: {e}")
+        input("Pressione Enter para sair...")
 `;
 
     const blob = new Blob([loaderContent], { type: 'text/plain' });
@@ -596,28 +599,169 @@ if __name__ == "__main__":
     a.click();
     window.URL.revokeObjectURL(url);
 
-    showToast('Loader Desktop baixado!', 'success');
+    showToast('Desktop Loader baixado com sucesso!', 'success');
 }
 
 function downloadManual() {
-    const manualContent = `# DARKFOV - MANUAL DO USUÁRIO
+    const manualContent = `# DARKFOV - MANUAL COMPLETO DO USUÁRIO
+Versão 2.1.0 | Atualizado em ${new Date().toLocaleDateString('pt-BR')}
 
-## Instalação
-1. Baixe o loader
-2. Execute como administrador
-3. Faça login com suas credenciais
-4. Execute o BloodStrike
-5. Aproveite!
+## 📋 ÍNDICE
+1. Instalação
+2. Configuração Inicial
+3. Uso do Software
+4. Dicas Importantes
+5. Solução de Problemas
+6. Suporte
 
-## Controles
-- F1: Ativar/Desativar
-- F2: Modo de mira
-- F3: Sensibilidade
-- ESC: Fechar
+## 🚀 INSTALAÇÃO
 
-## Suporte
-Discord: discord.gg/darkfov
-Email: suporte@darkfov.com
+### Pré-requisitos:
+- Windows 10/11 (64-bit)
+- Python 3.8+ (se usar versão .py)
+- Conta ativa no DarkFov
+- Licença válida
+
+### Passos de Instalação:
+1. Baixe o Desktop Loader do painel
+2. Extraia o arquivo em uma pasta segura
+3. Execute como administrador
+4. Faça login com suas credenciais
+5. Aguarde a verificação da licença
+
+## ⚙️ CONFIGURAÇÃO INICIAL
+
+### Primeira execução:
+1. **Execute como Administrador**
+   - Clique com botão direito no loader
+   - Selecione "Executar como administrador"
+   - Isso é OBRIGATÓRIO para funcionamento
+
+2. **Configurar Antivírus**
+   - Adicione o loader às exceções
+   - Ou desative temporariamente durante o uso
+   - Windows Defender pode bloquear o arquivo
+
+3. **Verificar Firewall**
+   - Permita o acesso do loader
+   - Libere conexões de entrada e saída
+
+## 🎮 USO DO SOFTWARE
+
+### Iniciando o DarkFov:
+1. Execute o loader como administrador
+2. Faça login com email e senha
+3. Aguarde verificação da licença
+4. Abra o BloodStrike
+5. O aimbot será carregado automaticamente
+
+### Controles Principais:
+- **F1**: Ativar/Desativar aimbot
+- **F2**: Alternar modo de mira
+- **F3**: Ajustar sensibilidade
+- **F4**: Menu de configurações
+- **ESC**: Fechar menu/sair
+
+### Configurações Recomendadas:
+- Sensibilidade: 50-70%
+- Modo de mira: Automático
+- Área de detecção: Médio
+- Suavização: Ligada
+
+## ⚠️ DICAS IMPORTANTES
+
+### 🛡️ Execute sempre como administrador
+- **Por que?** O software precisa de privilégios elevados
+- **Como?** Botão direito → "Executar como administrador"
+- **Sempre** faça isso, mesmo que pareça estar funcionando
+
+### 🦠 Desative antivírus temporariamente
+- **Windows Defender**: Pode bloquear o arquivo
+- **Outros antivírus**: Adicionem à lista de exceções
+- **Importante**: Reative após o uso
+
+### 🌐 Use apenas em modo offline
+- **Desconecte da internet** durante o uso
+- **Evita detecção** pelos sistemas anti-cheat
+- **Reconecte** apenas após fechar o jogo
+
+### 🔄 Mantenha o loader sempre atualizado
+- **Verifique atualizações** semanalmente
+- **Baixe novas versões** do painel
+- **Versões antigas** podem não funcionar
+
+## 🔧 SOLUÇÃO DE PROBLEMAS
+
+### Erro: "Licença não encontrada"
+- Verifique se sua licença está ativa
+- Faça login novamente
+- Contate o suporte se persistir
+
+### Erro: "Acesso negado"
+- Execute como administrador
+- Desative antivírus temporariamente
+- Verifique permissões da pasta
+
+### Aimbot não funciona no jogo
+- Certifique-se que o BloodStrike está rodando
+- Verifique se o loader foi executado primeiro
+- Reinicie ambos os programas
+
+### Jogo não abre
+- Desative antivírus
+- Execute como administrador
+- Verifique se não há outros cheats rodando
+
+### Conexão com servidor falha
+- Verifique sua internet
+- Tente em alguns minutos
+- Contate suporte se persistir
+
+## 📞 SUPORTE TÉCNICO
+
+### Canais de Atendimento:
+- **Discord**: Resposta em minutos
+- **Telegram**: Suporte direto
+- **Email**: suporte@darkfov.com
+
+### Informações para o Suporte:
+- Versão do loader
+- Sistema operacional
+- Descrição detalhada do problema
+- Screenshots (se necessário)
+
+### Horários de Atendimento:
+- **Discord/Telegram**: 24/7
+- **Email**: 24h para resposta
+- **Suporte prioritário** para licenças ativas
+
+## 🚨 AVISOS LEGAIS
+
+### Responsabilidade:
+- Use por sua conta e risco
+- Não nos responsabilizamos por banimentos
+- Leia os termos de uso completos
+
+### Recomendações:
+- Use apenas em contas secundárias
+- Não abuse do software
+- Seja discreto durante o uso
+
+### Suporte:
+- Suporte apenas para usuários com licença ativa
+- Não fornecemos suporte para versões pirata
+- Reporte bugs e problemas
+
+---
+
+© 2024 DarkFov. Todos os direitos reservados.
+Para mais informações: https://darkfov.repl.co
+
+## 📱 CONTATOS RÁPIDOS
+- Site: https://darkfov.repl.co
+- Discord: discord.gg/darkfov
+- Telegram: @darkfov_support
+- Email: suporte@darkfov.com
 `;
 
     const blob = new Blob([manualContent], { type: 'text/plain' });
@@ -625,30 +769,12 @@ Email: suporte@darkfov.com
     const a = document.createElement('a');
     a.style.display = 'none';
     a.href = url;
-    a.download = 'DarkFov_Manual.txt';
+    a.download = 'DarkFov_Manual_Completo.txt';
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
 
-    showToast('Manual baixado!', 'success');
+    showToast('Manual completo baixado!', 'success');
 }
-
-function openSupportModal() {
-    document.getElementById('supportModal').style.display = 'flex';
-}
-
-function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
-}
-
-// Fechar modal clicando fora
-window.addEventListener('click', function(e) {
-    const modals = document.querySelectorAll('.modal');
-    modals.forEach(modal => {
-        if (e.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
-});
 </script>
 {% endblock %}
