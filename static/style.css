@@ -635,144 +635,424 @@ h6 { font-size: 1rem; }
     text-shadow: 0 0 5px hsl(var(--accent));
 }
 
-/* ===== DISCOUNT BANNER ===== */
-.discount-banner {
-    background: linear-gradient(135deg, hsl(var(--warning) / 0.9), hsl(var(--danger) / 0.9));
-    padding: 2rem 0;
+/* ===== CYBERPUNK DISCOUNT BANNER ===== */
+.cyberpunk-banner {
+    background: linear-gradient(135deg, 
+        hsl(280 100% 10%) 0%,
+        hsl(190 100% 15%) 25%,
+        hsl(280 100% 10%) 50%,
+        hsl(190 100% 15%) 75%,
+        hsl(280 100% 10%) 100%);
+    background-size: 400% 400%;
+    animation: cyberWave 4s ease-in-out infinite;
+    padding: 3rem 0;
     position: relative;
     overflow: hidden;
-    animation: bannerPulse 3s ease-in-out infinite;
+    border-top: 2px solid hsl(var(--secondary));
+    border-bottom: 2px solid hsl(var(--secondary));
 }
 
-.discount-banner::before {
-    content: '';
+.cyber-grid-overlay {
     position: absolute;
     top: 0;
-    left: -100%;
+    left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, hsl(var(--text-primary) / 0.1), transparent);
-    animation: bannerSweep 2s ease-in-out infinite;
+    background-image: 
+        linear-gradient(hsl(var(--secondary) / 0.3) 1px, transparent 1px),
+        linear-gradient(90deg, hsl(var(--secondary) / 0.3) 1px, transparent 1px);
+    background-size: 30px 30px;
+    animation: gridMove 10s linear infinite;
+    z-index: 1;
+}
+
+.cyber-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+}
+
+.cyber-particles::before,
+.cyber-particles::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: hsl(var(--secondary));
+    border-radius: 50%;
+    box-shadow: 
+        0 0 10px hsl(var(--secondary)),
+        100px 50px 0 hsl(var(--accent)),
+        0 0 10px hsl(var(--accent)),
+        200px 100px 0 hsl(var(--primary)),
+        0 0 10px hsl(var(--primary)),
+        300px 25px 0 hsl(var(--secondary)),
+        0 0 10px hsl(var(--secondary));
+    animation: particles 8s linear infinite;
+}
+
+.cyber-particles::after {
+    animation-delay: -4s;
 }
 
 .banner-content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 2rem;
-    max-width: 1000px;
+    gap: 3rem;
+    max-width: 1200px;
     margin: 0 auto;
     position: relative;
-    z-index: 1;
+    z-index: 3;
+    padding: 0 2rem;
 }
 
-.banner-icon {
-    width: 80px;
-    height: 80px;
-    background: hsl(var(--text-primary));
+.cyber-icon {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-core {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--primary)));
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2rem;
-    color: hsl(var(--warning));
-    animation: iconBounce 2s ease-in-out infinite;
-    box-shadow: 0 0 30px hsl(var(--text-primary) / 0.3);
+    color: hsl(var(--text-primary));
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 0 30px hsl(var(--secondary) / 0.8);
+    animation: coreRotate 4s linear infinite;
 }
 
-.banner-text {
+.icon-rings {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.ring {
+    position: absolute;
+    border: 2px solid;
+    border-radius: 50%;
+    border-color: hsl(var(--secondary)) transparent hsl(var(--secondary)) transparent;
+}
+
+.ring-1 {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    animation: ringRotate 3s linear infinite;
+}
+
+.ring-2 {
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    border-color: hsl(var(--accent)) transparent hsl(var(--accent)) transparent;
+    animation: ringRotate 2s linear infinite reverse;
+}
+
+.ring-3 {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-color: hsl(var(--primary)) transparent hsl(var(--primary)) transparent;
+    animation: ringRotate 4s linear infinite;
+}
+
+.cyber-text {
     flex: 1;
     text-align: center;
 }
 
-.banner-text h3 {
-    font-size: 2.5rem;
-    color: hsl(var(--text-primary));
-    margin-bottom: 0.5rem;
-    text-shadow: 2px 2px 4px hsl(var(--bg-primary) / 0.5);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
-.banner-text p {
-    font-size: 1.3rem;
-    color: hsl(var(--text-primary));
-    font-weight: 600;
-    text-shadow: 1px 1px 2px hsl(var(--bg-primary) / 0.5);
-}
-
-.discount-percentage {
-    font-size: 1.5em;
+.glitch-text {
+    font-family: var(--font-primary);
+    font-size: 3rem;
     font-weight: 900;
     color: hsl(var(--text-primary));
-    text-shadow: 2px 2px 4px hsl(var(--bg-primary) / 0.8);
-    animation: percentagePulse 1.5s ease-in-out infinite;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    position: relative;
+    margin-bottom: 1.5rem;
+    text-shadow: 
+        0 0 10px hsl(var(--secondary)),
+        0 0 20px hsl(var(--secondary)),
+        0 0 30px hsl(var(--secondary));
+    animation: glitch 2s infinite;
 }
 
-.banner-cta .btn-warning {
-    background: hsl(var(--text-primary));
-    color: hsl(var(--warning));
-    border-color: hsl(var(--text-primary));
+.glitch-text::before,
+.glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.glitch-text::before {
+    color: hsl(var(--danger));
+    animation: glitchOffset1 0.6s infinite linear alternate-reverse;
+}
+
+.glitch-text::after {
+    color: hsl(var(--secondary));
+    animation: glitchOffset2 0.8s infinite linear alternate-reverse;
+}
+
+.deal-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.stat-line {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    font-family: var(--font-primary);
     font-size: 1.1rem;
-    padding: 1rem 2rem;
-    box-shadow: 0 4px 15px hsl(var(--bg-primary) / 0.3);
-    animation: ctaBounce 2s ease-in-out infinite;
 }
 
-.banner-cta .btn-warning:hover {
+.stat-line .label {
+    color: hsl(var(--text-secondary));
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+}
+
+.stat-line .value {
+    color: hsl(var(--secondary));
+    font-weight: 900;
+    text-shadow: 0 0 10px hsl(var(--secondary) / 0.5);
+    animation: valueGlow 2s ease-in-out infinite;
+}
+
+.cyber-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.cyber-btn {
+    position: relative;
+    background: none !important;
+    border: 2px solid hsl(var(--secondary)) !important;
+    color: hsl(var(--text-primary)) !important;
+    padding: 1rem 2.5rem !important;
+    font-size: 1.2rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 2px !important;
+    overflow: hidden !important;
+    transition: all 0.3s ease !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+}
+
+.btn-bg {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, hsl(var(--secondary) / 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.cyber-btn:hover .btn-bg {
+    left: 100%;
+}
+
+.btn-text {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-glow {
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, hsl(var(--secondary)), hsl(var(--primary)), hsl(var(--accent)), hsl(var(--secondary)));
+    background-size: 400% 400%;
+    z-index: -1;
+    border-radius: inherit;
+    opacity: 0;
+    animation: glowRotate 3s linear infinite;
+    transition: opacity 0.3s ease;
+}
+
+.cyber-btn:hover .btn-glow {
+    opacity: 1;
+}
+
+.cyber-btn:hover {
     transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 25px hsl(var(--bg-primary) / 0.5);
+    box-shadow: 0 10px 30px hsl(var(--secondary) / 0.5);
+    text-shadow: 0 0 10px hsl(var(--secondary));
 }
 
-@keyframes bannerPulse {
-    0%, 100% { 
-        background: linear-gradient(135deg, hsl(var(--warning) / 0.9), hsl(var(--danger) / 0.9));
-    }
-    50% { 
-        background: linear-gradient(135deg, hsl(var(--warning)), hsl(var(--danger)));
-    }
+.countdown-timer {
+    text-align: center;
+    font-family: var(--font-primary);
 }
 
-@keyframes bannerSweep {
-    0% { left: -100%; }
-    100% { left: 100%; }
+.timer-label {
+    display: block;
+    color: hsl(var(--warning));
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
 }
 
-@keyframes iconBounce {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    25% { transform: translateY(-5px) rotate(-5deg); }
-    75% { transform: translateY(-2px) rotate(5deg); }
+.timer-display {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: hsl(var(--danger));
+    text-shadow: 0 0 10px hsl(var(--danger) / 0.5);
+    animation: timerPulse 1s ease-in-out infinite;
 }
 
-@keyframes percentagePulse {
+/* Animations */
+@keyframes cyberWave {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes particles {
+    0% { transform: translateX(-100px); }
+    100% { transform: translateX(calc(100vw + 100px)); }
+}
+
+@keyframes coreRotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes ringRotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes glitch {
+    0%, 100% { transform: translate(0); }
+    10% { transform: translate(-2px, -1px); }
+    20% { transform: translate(2px, 1px); }
+    30% { transform: translate(-1px, 2px); }
+    40% { transform: translate(1px, -2px); }
+    50% { transform: translate(-2px, 1px); }
+    60% { transform: translate(2px, -1px); }
+    70% { transform: translate(-1px, -2px); }
+    80% { transform: translate(1px, 2px); }
+    90% { transform: translate(-2px, -1px); }
+}
+
+@keyframes glitchOffset1 {
+    0% { clip-path: inset(40% 0 61% 0); }
+    20% { clip-path: inset(92% 0 1% 0); }
+    40% { clip-path: inset(43% 0 1% 0); }
+    60% { clip-path: inset(25% 0 58% 0); }
+    80% { clip-path: inset(54% 0 7% 0); }
+    100% { clip-path: inset(58% 0 43% 0); }
+}
+
+@keyframes glitchOffset2 {
+    0% { clip-path: inset(25% 0 58% 0); }
+    20% { clip-path: inset(54% 0 7% 0); }
+    40% { clip-path: inset(58% 0 43% 0); }
+    60% { clip-path: inset(40% 0 61% 0); }
+    80% { clip-path: inset(92% 0 1% 0); }
+    100% { clip-path: inset(43% 0 1% 0); }
+}
+
+@keyframes valueGlow {
+    0%, 100% { text-shadow: 0 0 10px hsl(var(--secondary) / 0.5); }
+    50% { text-shadow: 0 0 20px hsl(var(--secondary)), 0 0 30px hsl(var(--secondary)); }
+}
+
+@keyframes glowRotate {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes timerPulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.1); }
 }
 
-@keyframes ctaBounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-2px); }
-}
-
-@media (max-width: 768px) {
+/* Mobile Responsive */
+@media (max-width: 968px) {
     .banner-content {
         flex-direction: column;
+        gap: 2rem;
         text-align: center;
-        gap: 1.5rem;
     }
     
-    .banner-icon {
-        width: 60px;
-        height: 60px;
+    .cyber-icon {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .icon-core {
+        width: 50px;
+        height: 50px;
         font-size: 1.5rem;
     }
     
-    .banner-text h3 {
+    .glitch-text {
+        font-size: 2.5rem;
+    }
+    
+    .stat-line {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .glitch-text {
         font-size: 2rem;
     }
     
-    .banner-text p {
-        font-size: 1.1rem;
+    .stat-line {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .deal-stats {
+        gap: 1rem;
+    }
+    
+    .cyber-btn {
+        padding: 0.8rem 2rem !important;
+        font-size: 1rem !important;
     }
 }
 

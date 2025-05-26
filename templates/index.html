@@ -157,22 +157,52 @@
     </div>
 </section>
 
-<!-- Discount Banner -->
-<section class="discount-banner">
+<!-- Cyberpunk Discount Banner -->
+<section class="discount-banner cyberpunk-banner">
+    <div class="cyber-grid-overlay"></div>
+    <div class="cyber-particles"></div>
     <div class="container">
         <div class="banner-content">
-            <div class="banner-icon">
-                <i class="fas fa-fire"></i>
-            </div>
-            <div class="banner-text">
-                <h3>OFERTA ESPECIAL!</h3>
-                <p>Economize <span class="discount-percentage">43%</span> no plano anual</p>
-            </div>
-            <div class="banner-cta">
-                <a href="/comprar" class="btn btn-warning">
+            <div class="cyber-icon">
+                <div class="icon-core">
                     <i class="fas fa-bolt"></i>
-                    APROVEITAR DESCONTO
+                </div>
+                <div class="icon-rings">
+                    <div class="ring ring-1"></div>
+                    <div class="ring ring-2"></div>
+                    <div class="ring ring-3"></div>
+                </div>
+            </div>
+            <div class="cyber-text">
+                <h3 class="glitch-text" data-text="CYBER DEAL ATIVO">CYBER DEAL ATIVO</h3>
+                <div class="deal-stats">
+                    <div class="stat-line">
+                        <span class="label">ECONOMIA:</span>
+                        <span class="value discount-percentage">43%</span>
+                    </div>
+                    <div class="stat-line">
+                        <span class="label">PLANO ANUAL:</span>
+                        <span class="value price-display">R$ 199,90</span>
+                    </div>
+                    <div class="stat-line">
+                        <span class="label">VOCÊ ECONOMIZA:</span>
+                        <span class="value savings-amount">R$ 148,90</span>
+                    </div>
+                </div>
+            </div>
+            <div class="cyber-cta">
+                <a href="/comprar" class="btn cyber-btn">
+                    <span class="btn-bg"></span>
+                    <span class="btn-text">
+                        <i class="fas fa-rocket"></i>
+                        ATIVAR DESCONTO
+                    </span>
+                    <div class="btn-glow"></div>
                 </a>
+                <div class="countdown-timer">
+                    <span class="timer-label">OFERTA LIMITADA</span>
+                    <div class="timer-display" id="countdown"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -291,6 +321,12 @@ document.addEventListener('DOMContentLoaded', function() {
         title.style.opacity = '1';
     }
     
+    // Cálculos dinâmicos do banner cyberpunk
+    initCyberBanner();
+    
+    // Countdown timer
+    initCountdownTimer();
+    
     // Scroll suave para seções
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
@@ -304,6 +340,112 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+});
+
+function initCyberBanner() {
+    // Preços dos planos
+    const prices = {
+        monthly: 29.90,
+        quarterly: 79.90,
+        annual: 199.90
+    };
+    
+    // Calcular economia do plano anual
+    const monthlyTotal = prices.monthly * 12; // R$ 358,80
+    const annualPrice = prices.annual; // R$ 199,90
+    const savings = monthlyTotal - annualPrice; // R$ 158,90
+    const discountPercentage = Math.round((savings / monthlyTotal) * 100); // 44%
+    
+    // Atualizar elementos do banner
+    const discountElement = document.querySelector('.discount-percentage');
+    const priceElement = document.querySelector('.price-display');
+    const savingsElement = document.querySelector('.savings-amount');
+    
+    if (discountElement) {
+        discountElement.textContent = discountPercentage + '%';
+    }
+    
+    if (priceElement) {
+        priceElement.textContent = 'R$ ' + annualPrice.toFixed(2).replace('.', ',');
+    }
+    
+    if (savingsElement) {
+        savingsElement.textContent = 'R$ ' + savings.toFixed(2).replace('.', ',');
+    }
+    
+    // Efeito de atualização dos valores
+    animateValues();
+}
+
+function animateValues() {
+    const values = document.querySelectorAll('.stat-line .value');
+    values.forEach((value, index) => {
+        value.style.opacity = '0';
+        value.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            value.style.transition = 'all 0.5s ease';
+            value.style.opacity = '1';
+            value.style.transform = 'translateY(0)';
+        }, index * 200);
+    });
+}
+
+function initCountdownTimer() {
+    const countdownElement = document.getElementById('countdown');
+    if (!countdownElement) return;
+    
+    // Definir uma data de fim fictícia (próximas 24 horas)
+    const endTime = new Date();
+    endTime.setHours(endTime.getHours() + 24);
+    
+    function updateCountdown() {
+        const now = new Date();
+        const timeLeft = endTime - now;
+        
+        if (timeLeft > 0) {
+            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            
+            countdownElement.textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        } else {
+            countdownElement.textContent = '00:00:00';
+            // Reiniciar countdown para 24h
+            endTime.setTime(new Date().getTime() + (24 * 60 * 60 * 1000));
+        }
+    }
+    
+    // Atualizar countdown a cada segundo
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+}
+
+// Efeito de paralaxe suave para o banner
+window.addEventListener('scroll', function() {
+    const banner = document.querySelector('.cyberpunk-banner');
+    if (!banner) return;
+    
+    const scrolled = window.pageYOffset;
+    const rate = scrolled * -0.5;
+    
+    banner.style.transform = `translateY(${rate}px)`;
+});
+
+// Efeito hover melhorado para elementos cyberpunk
+document.addEventListener('mouseover', function(e) {
+    if (e.target.closest('.cyber-btn')) {
+        const btn = e.target.closest('.cyber-btn');
+        btn.style.textShadow = '0 0 20px hsl(190deg 100% 50%)';
+    }
+});
+
+document.addEventListener('mouseout', function(e) {
+    if (e.target.closest('.cyber-btn')) {
+        const btn = e.target.closest('.cyber-btn');
+        btn.style.textShadow = '';
+    }
 });
 </script>
 {% endblock %}
