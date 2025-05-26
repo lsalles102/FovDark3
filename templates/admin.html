@@ -1584,8 +1584,207 @@ function displayPayments(payments) {
     }).join('');
 }
 
-// Funções placeholder para funcionalidades futuras
-function openProductModal() { showToast('Funcionalidade em desenvolvimento', 'info'); }
+// Funções para gerenciamento de produtos
+function openProductModal() {
+    const modal = createProductModal();
+    document.body.appendChild(modal);
+    modal.style.display = 'flex';
+}
+
+function createProductModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
+
+    modal.innerHTML = `
+        <div class="modal-content" style="
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 15px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        ">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h3 style="color: var(--primary); margin: 0;">NOVO PRODUTO</h3>
+                <button onclick="closeModal(this)" style="
+                    background: none;
+                    border: none;
+                    color: var(--text-secondary);
+                    font-size: 1.5rem;
+                    cursor: pointer;
+                ">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="productForm" onsubmit="submitProduct(event)">
+                <div style="margin-bottom: 1rem;">
+                    <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Nome do Produto:</label>
+                    <input type="text" name="name" required style="
+                        width: 100%;
+                        padding: 0.75rem;
+                        background: var(--bg-tertiary);
+                        border: 1px solid var(--border);
+                        border-radius: 8px;
+                        color: var(--text-primary);
+                    ">
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+                    <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Descrição:</label>
+                    <textarea name="description" rows="3" style="
+                        width: 100%;
+                        padding: 0.75rem;
+                        background: var(--bg-tertiary);
+                        border: 1px solid var(--border);
+                        border-radius: 8px;
+                        color: var(--text-primary);
+                        resize: vertical;
+                    "></textarea>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Preço (R$):</label>
+                        <input type="number" name="price" step="0.01" required style="
+                            width: 100%;
+                            padding: 0.75rem;
+                            background: var(--bg-tertiary);
+                            border: 1px solid var(--border);
+                            border-radius: 8px;
+                            color: var(--text-primary);
+                        ">
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Duração (dias):</label>
+                        <input type="number" name="duration_days" required style="
+                            width: 100%;
+                            padding: 0.75rem;
+                            background: var(--bg-tertiary);
+                            border: 1px solid var(--border);
+                            border-radius: 8px;
+                            color: var(--text-primary);
+                        ">
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+                    <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">URL da Imagem:</label>
+                    <input type="url" name="image_url" style="
+                        width: 100%;
+                        padding: 0.75rem;
+                        background: var(--bg-tertiary);
+                        border: 1px solid var(--border);
+                        border-radius: 8px;
+                        color: var(--text-primary);
+                    ">
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+                    <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Recursos (separados por vírgula):</label>
+                    <textarea name="features" rows="2" placeholder="Aimbot, ESP, Anti-Cheat, etc." style="
+                        width: 100%;
+                        padding: 0.75rem;
+                        background: var(--bg-tertiary);
+                        border: 1px solid var(--border);
+                        border-radius: 8px;
+                        color: var(--text-primary);
+                        resize: vertical;
+                    "></textarea>
+                </div>
+
+                <div style="margin-bottom: 2rem;">
+                    <label style="color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="checkbox" name="is_active" checked style="
+                            width: 18px;
+                            height: 18px;
+                        ">
+                        Produto Ativo
+                    </label>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button type="button" onclick="closeModal(this)" class="btn btn-secondary" style="flex: 1;">
+                        CANCELAR
+                    </button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i class="fas fa-save"></i>
+                        CRIAR PRODUTO
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+
+    // Fechar modal ao clicar fora
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeModal(modal.querySelector('button'));
+        }
+    });
+
+    return modal;
+}
+
+function closeModal(button) {
+    const modal = button.closest('.modal-overlay');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+async function submitProduct(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    const token = localStorage.getItem('access_token');
+    
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalText = submitButton.innerHTML;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CRIANDO...';
+    submitButton.disabled = true;
+
+    try {
+        const response = await fetch('/api/admin/products', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            showToast('Produto criado com sucesso!', 'success');
+            closeModal(submitButton);
+            loadProducts(); // Recarregar lista de produtos
+        } else {
+            showToast(data.detail || 'Erro ao criar produto', 'error');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        showToast('Erro de conexão', 'error');
+    } finally {
+        submitButton.innerHTML = originalText;
+        submitButton.disabled = false;
+    }
+}
 function editUser(id, email) { showToast('Funcionalidade em desenvolvimento', 'info'); }
 function viewUserDetails(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
 function deleteUser(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
@@ -1669,6 +1868,49 @@ function createToastContainer() {
 
 .toast-warning {
     background: linear-gradient(135deg, var(--warning), #cc8800);
+}
+
+/* Modal Styles */
+.modal-overlay {
+    backdrop-filter: blur(5px);
+    animation: modalFadeIn 0.3s ease;
+}
+
+.modal-content {
+    animation: modalSlideIn 0.3s ease;
+    box-shadow: var(--glow);
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes modalSlideIn {
+    from { 
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-content input:focus,
+.modal-content textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+    outline: none;
+}
+
+.modal-content input[type="checkbox"] {
+    accent-color: var(--primary);
+}
+
+.modal-content form button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 </style>
 {% endblock %}
