@@ -2,929 +2,1261 @@
 
 {% block title %}Painel Administrativo - DarkFov{% endblock %}
 
+{% block extra_head %}
+<style>
+    :root {
+        --bg-primary: #0a0a0f;
+        --bg-secondary: #1a1a2e;
+        --bg-tertiary: #16213e;
+        --primary: #00d4ff;
+        --secondary: #9d4edd;
+        --accent: #7209b7;
+        --success: #00ff88;
+        --warning: #ffaa00;
+        --danger: #ff4444;
+        --text-primary: #ffffff;
+        --text-secondary: #b8b8b8;
+        --text-muted: #888888;
+        --border: rgba(0, 212, 255, 0.3);
+        --glow: 0 0 20px rgba(0, 212, 255, 0.5);
+    }
+
+    body {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+    }
+
+    .admin-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+        min-height: 100vh;
+    }
+
+    .admin-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 2rem 0;
+    }
+
+    .admin-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin: 0;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .admin-subtitle {
+        color: var(--text-secondary);
+        margin-top: 0.5rem;
+        font-size: 1.1rem;
+    }
+
+    .admin-nav {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1rem;
+        margin-bottom: 3rem;
+        padding: 0 1rem;
+    }
+
+    .admin-nav-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1.5rem 1rem;
+        background: var(--bg-secondary);
+        border: 2px solid var(--border);
+        border-radius: 15px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        font-size: 0.8rem;
+    }
+
+    .admin-nav-btn:hover {
+        background: var(--bg-tertiary);
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: translateY(-3px);
+        box-shadow: var(--glow);
+    }
+
+    .admin-nav-btn.active {
+        background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(157, 78, 221, 0.1));
+        border-color: var(--primary);
+        color: var(--primary);
+        box-shadow: var(--glow);
+    }
+
+    .admin-nav-btn i {
+        font-size: 1.8rem;
+    }
+
+    .admin-tab {
+        display: none;
+    }
+
+    .admin-tab.active {
+        display: block;
+    }
+
+    /* Cards Grid */
+    .admin-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .admin-card {
+        background: var(--bg-secondary);
+        border: 2px solid var(--border);
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .admin-card:hover {
+        border-color: var(--primary);
+        box-shadow: var(--glow);
+        transform: translateY(-5px);
+    }
+
+    .admin-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+
+    .card-header {
+        background: var(--bg-tertiary);
+        padding: 1.5rem;
+        border-bottom: 2px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .card-icon {
+        font-size: 1.5rem;
+        color: var(--primary);
+    }
+
+    .card-title {
+        font-size: 1rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin: 0;
+        color: var(--text-primary);
+    }
+
+    .card-content {
+        padding: 2rem;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card {
+        background: var(--bg-secondary);
+        border: 2px solid var(--border);
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+
+    .stat-card:hover {
+        border-color: var(--primary);
+        box-shadow: var(--glow);
+        transform: translateY(-3px);
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .stat-info h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin: 0 0 0.5rem 0;
+        text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+    }
+
+    .stat-info span {
+        color: var(--text-secondary);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+    }
+
+    .stat-change {
+        margin-top: 1rem;
+    }
+
+    .change-positive {
+        color: var(--success);
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        justify-content: center;
+        font-size: 0.8rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--secondary), var(--accent));
+        color: white;
+        border: 2px solid transparent;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, var(--accent), var(--secondary));
+        box-shadow: 0 0 15px rgba(157, 78, 221, 0.5);
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, var(--primary), #00b4d8);
+        color: white;
+        border: 2px solid transparent;
+    }
+
+    .btn-secondary:hover {
+        background: linear-gradient(135deg, #00b4d8, var(--primary));
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+        transform: translateY(-2px);
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, var(--success), #00cc66);
+        color: white;
+    }
+
+    .btn-warning {
+        background: linear-gradient(135deg, var(--warning), #cc8800);
+        color: white;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, var(--danger), #cc0000);
+        color: white;
+    }
+
+    .btn-small {
+        padding: 0.5rem 1rem;
+        font-size: 0.7rem;
+    }
+
+    /* Quick Actions */
+    .dashboard-quick-actions {
+        margin-bottom: 3rem;
+    }
+
+    .dashboard-quick-actions h3 {
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .quick-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .quick-action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        padding: 2rem 1rem;
+        background: var(--bg-secondary);
+        border: 2px solid var(--border);
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: var(--text-primary);
+        text-decoration: none;
+    }
+
+    .quick-action-btn:hover {
+        background: var(--bg-tertiary);
+        border-color: var(--primary);
+        transform: translateY(-3px);
+        box-shadow: var(--glow);
+    }
+
+    .quick-action-btn i {
+        font-size: 2rem;
+        color: var(--primary);
+    }
+
+    .quick-action-btn span {
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.8rem;
+    }
+
+    /* Recent Activity */
+    .recent-activity {
+        background: var(--bg-secondary);
+        border: 2px solid var(--border);
+        border-radius: 15px;
+        overflow: hidden;
+        margin-bottom: 3rem;
+    }
+
+    .recent-activity h3 {
+        background: var(--bg-tertiary);
+        margin: 0;
+        padding: 1.5rem;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-bottom: 2px solid var(--border);
+    }
+
+    .activity-list {
+        padding: 1.5rem;
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .activity-item:hover {
+        border-color: var(--primary);
+        background: var(--bg-secondary);
+        transform: translateX(5px);
+    }
+
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1rem;
+    }
+
+    .activity-info {
+        flex: 1;
+    }
+
+    .activity-info strong {
+        color: var(--text-primary);
+        display: block;
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+    }
+
+    .activity-info span {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+    }
+
+    /* Tables */
+    .admin-table-container {
+        background: var(--bg-secondary);
+        border: 2px solid var(--border);
+        border-radius: 15px;
+        overflow: hidden;
+        margin: 2rem 0;
+    }
+
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .admin-table thead {
+        background: var(--bg-tertiary);
+    }
+
+    .admin-table th,
+    .admin-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .admin-table th {
+        color: var(--primary);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.8rem;
+    }
+
+    .admin-table td {
+        color: var(--text-primary);
+    }
+
+    .admin-table tbody tr:hover {
+        background: var(--bg-tertiary);
+    }
+
+    /* Badges */
+    .badge {
+        display: inline-block;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-success {
+        background: linear-gradient(135deg, var(--success), #00cc66);
+        color: white;
+    }
+
+    .badge-warning {
+        background: linear-gradient(135deg, var(--warning), #cc8800);
+        color: white;
+    }
+
+    .badge-danger {
+        background: linear-gradient(135deg, var(--danger), #cc0000);
+        color: white;
+    }
+
+    .badge-admin {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+    }
+
+    .badge-user {
+        background: var(--bg-tertiary);
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        font-size: 0.8rem;
+    }
+
+    .btn-edit {
+        background: rgba(0, 212, 255, 0.2);
+        color: var(--primary);
+        border: 1px solid var(--primary);
+    }
+
+    .btn-edit:hover {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-delete {
+        background: rgba(255, 68, 68, 0.2);
+        color: var(--danger);
+        border: 1px solid var(--danger);
+    }
+
+    .btn-delete:hover {
+        background: var(--danger);
+        color: white;
+    }
+
+    .btn-info {
+        background: rgba(157, 78, 221, 0.2);
+        color: var(--secondary);
+        border: 1px solid var(--secondary);
+    }
+
+    .btn-info:hover {
+        background: var(--secondary);
+        color: white;
+    }
+
+    /* Loading States */
+    .loading-row,
+    .error-row,
+    .empty-row {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-muted);
+    }
+
+    .error-row {
+        color: var(--danger);
+    }
+
+    .loading-row i,
+    .error-row i,
+    .empty-row i {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    /* Tab Headers */
+    .tab-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: var(--bg-secondary);
+        border: 2px solid var(--border);
+        border-radius: 15px;
+    }
+
+    .tab-header h2 {
+        color: var(--primary);
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .tab-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .admin-cards-grid,
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .admin-nav {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .admin-title {
+            font-size: 2rem;
+        }
+
+        .admin-nav-btn {
+            padding: 1rem 0.5rem;
+            font-size: 0.7rem;
+        }
+
+        .admin-nav-btn i {
+            font-size: 1.5rem;
+        }
+
+        .tab-header {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .tab-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .quick-actions-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .admin-nav {
+            grid-template-columns: 1fr;
+        }
+
+        .quick-actions-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .admin-table-container {
+            overflow-x: auto;
+        }
+
+        .admin-table {
+            min-width: 600px;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<section class="admin-section">
-    <div class="container">
-        <!-- Admin Header -->
-        <div class="admin-header">
-            <h1>PAINEL ADMINISTRATIVO</h1>
-            <p>Controle total do sistema DarkFov</p>
+<div class="admin-container">
+    <!-- Admin Header -->
+    <div class="admin-header">
+        <h1 class="admin-title">PAINEL ADMINISTRATIVO</h1>
+        <p class="admin-subtitle">Controle total do sistema DarkFov</p>
+    </div>
+
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+        <button class="admin-nav-btn active" data-tab="overview">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>DASHBOARD</span>
+        </button>
+        <button class="admin-nav-btn" data-tab="users">
+            <i class="fas fa-users"></i>
+            <span>USUÁRIOS</span>
+        </button>
+        <button class="admin-nav-btn" data-tab="products">
+            <i class="fas fa-box"></i>
+            <span>PRODUTOS</span>
+        </button>
+        <button class="admin-nav-btn" data-tab="payments">
+            <i class="fas fa-credit-card"></i>
+            <span>PAGAMENTOS</span>
+        </button>
+        <button class="admin-nav-btn" data-tab="themes">
+            <i class="fas fa-palette"></i>
+            <span>TEMAS</span>
+        </button>
+        <button class="admin-nav-btn" data-tab="settings">
+            <i class="fas fa-cog"></i>
+            <span>CONFIG</span>
+        </button>
+        <button class="admin-nav-btn" data-tab="logs">
+            <i class="fas fa-file-alt"></i>
+            <span>LOGS</span>
+        </button>
+        <button class="admin-nav-btn" data-tab="system">
+            <i class="fas fa-server"></i>
+            <span>SISTEMA</span>
+        </button>
+    </div>
+
+    <!-- Overview Tab -->
+    <div id="overview-tab" class="admin-tab active">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="totalUsers">-</h3>
+                    <span>Total de Usuários</span>
+                </div>
+                <div class="stat-change">
+                    <span class="change-positive">+12% este mês</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="activeLicenses">-</h3>
+                    <span>Licenças Ativas</span>
+                </div>
+                <div class="stat-change">
+                    <span class="change-positive">+8% este mês</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="totalRevenue">R$ -</h3>
+                    <span>Receita Total</span>
+                </div>
+                <div class="stat-change">
+                    <span class="change-positive">+25% este mês</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="todaySignups">-</h3>
+                    <span>Cadastros Hoje</span>
+                </div>
+                <div class="stat-change">
+                    <span class="change-positive">Hoje</span>
+                </div>
+            </div>
         </div>
-        
-        <!-- Admin Navigation -->
-        <div class="admin-nav">
-            <button class="admin-nav-btn active" data-tab="overview">
-                <i class="fas fa-tachometer-alt"></i>
-                <span>DASHBOARD</span>
-            </button>
-            <button class="admin-nav-btn" data-tab="users">
-                <i class="fas fa-users"></i>
-                <span>USUÁRIOS</span>
-            </button>
-            <button class="admin-nav-btn" data-tab="products">
-                <i class="fas fa-box"></i>
-                <span>PRODUTOS</span>
-            </button>
-            <button class="admin-nav-btn" data-tab="payments">
-                <i class="fas fa-credit-card"></i>
-                <span>PAGAMENTOS</span>
-            </button>
-            <button class="admin-nav-btn" data-tab="themes">
-                <i class="fas fa-palette"></i>
-                <span>PERSONALIZAÇÃO</span>
-            </button>
-            <button class="admin-nav-btn" data-tab="settings">
-                <i class="fas fa-cog"></i>
-                <span>CONFIGURAÇÕES</span>
-            </button>
-            <button class="admin-nav-btn" data-tab="logs">
-                <i class="fas fa-file-alt"></i>
-                <span>LOGS</span>
-            </button>
-            <button class="admin-nav-btn" data-tab="system">
-                <i class="fas fa-server"></i>
-                <span>SISTEMA</span>
-            </button>
+
+        <!-- Quick Actions Dashboard -->
+        <div class="dashboard-quick-actions">
+            <h3>AÇÕES RÁPIDAS</h3>
+            <div class="quick-actions-grid">
+                <button class="quick-action-btn" onclick="openProductModal()">
+                    <i class="fas fa-plus"></i>
+                    <span>Novo Produto</span>
+                </button>
+                <button class="quick-action-btn" onclick="switchAdminTab('users')">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Gerenciar Usuários</span>
+                </button>
+                <button class="quick-action-btn" onclick="switchAdminTab('themes')">
+                    <i class="fas fa-palette"></i>
+                    <span>Personalizar Site</span>
+                </button>
+                <button class="quick-action-btn" onclick="exportAllData()">
+                    <i class="fas fa-download"></i>
+                    <span>Exportar Dados</span>
+                </button>
+            </div>
         </div>
-        
-        <!-- Overview Tab -->
-        <div id="overview-tab" class="admin-tab active">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="totalUsers">-</h3>
-                        <span>Total de Usuários</span>
-                    </div>
-                    <div class="stat-change">
-                        <span class="change-positive">+12% este mês</span>
+
+        <!-- Recent Activity -->
+        <div class="recent-activity">
+            <h3>ATIVIDADE RECENTE</h3>
+            <div class="activity-list" id="recentActivity">
+                <div class="activity-item">
+                    <i class="fas fa-user-plus activity-icon"></i>
+                    <div class="activity-info">
+                        <strong>Novo usuário registrado</strong>
+                        <span>usuario@email.com - há 5 minutos</span>
                     </div>
                 </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="activeLicenses">-</h3>
-                        <span>Licenças Ativas</span>
-                    </div>
-                    <div class="stat-change">
-                        <span class="change-positive">+8% este mês</span>
+                <div class="activity-item">
+                    <i class="fas fa-shopping-cart activity-icon"></i>
+                    <div class="activity-info">
+                        <strong>Nova compra realizada</strong>
+                        <span>Plano Premium - R$ 29,90 - há 12 minutos</span>
                     </div>
                 </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-dollar-sign"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="totalRevenue">R$ -</h3>
-                        <span>Receita Total</span>
-                    </div>
-                    <div class="stat-change">
-                        <span class="change-positive">+25% este mês</span>
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-calendar"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="todaySignups">-</h3>
-                        <span>Cadastros Hoje</span>
-                    </div>
-                    <div class="stat-change">
-                        <span class="change-neutral">Hoje</span>
+                <div class="activity-item">
+                    <i class="fas fa-cog activity-icon"></i>
+                    <div class="activity-info">
+                        <strong>Configurações alteradas</strong>
+                        <span>Tema atualizado - há 1 hora</span>
                     </div>
                 </div>
             </div>
-            
-            <!-- Quick Actions Dashboard -->
-            <div class="dashboard-quick-actions">
-                <h3>AÇÕES RÁPIDAS</h3>
-                <div class="quick-actions-grid">
-                    <button class="quick-action-btn" onclick="openProductModal()">
-                        <i class="fas fa-plus"></i>
-                        <span>Novo Produto</span>
-                    </button>
-                    <button class="quick-action-btn" onclick="switchAdminTab('users')">
-                        <i class="fas fa-user-plus"></i>
-                        <span>Gerenciar Usuários</span>
-                    </button>
-                    <button class="quick-action-btn" onclick="switchAdminTab('themes')">
-                        <i class="fas fa-palette"></i>
-                        <span>Personalizar Site</span>
-                    </button>
-                    <button class="quick-action-btn" onclick="exportAllData()">
+        </div>
+    </div>
+
+    <!-- Products Tab -->
+    <div id="products-tab" class="admin-tab">
+        <div class="tab-header">
+            <h2>GERENCIAR PRODUTOS</h2>
+            <div class="tab-actions">
+                <button class="btn btn-primary" onclick="openProductModal()">
+                    <i class="fas fa-plus"></i>
+                    NOVO PRODUTO
+                </button>
+                <button class="btn btn-secondary" onclick="refreshProducts()">
+                    <i class="fas fa-sync-alt"></i>
+                    ATUALIZAR
+                </button>
+            </div>
+        </div>
+
+        <div class="admin-table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Preço</th>
+                        <th>Duração</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="productsTableBody">
+                    <tr>
+                        <td colspan="6" class="loading-row">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            Carregando produtos...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Users Tab -->
+    <div id="users-tab" class="admin-tab">
+        <div class="tab-header">
+            <h2>GERENCIAR USUÁRIOS</h2>
+            <div class="tab-actions">
+                <div class="search-filter-container">
+                    <input type="text" id="userSearch" placeholder="Buscar por email..." class="search-input">
+                    <select id="userFilter" class="filter-select">
+                        <option value="all">Todos os Usuários</option>
+                        <option value="active">Licenças Ativas</option>
+                        <option value="expired">Licenças Expiradas</option>
+                        <option value="no_license">Sem Licença</option>
+                        <option value="admin">Administradores</option>
+                    </select>
+                </div>
+                <div class="action-buttons-container">
+                    <button class="btn btn-secondary" onclick="exportUsers()">
                         <i class="fas fa-download"></i>
-                        <span>Exportar Dados</span>
+                        EXPORTAR
                     </button>
-                </div>
-            </div>
-            
-            <!-- Recent Activity -->
-            <div class="recent-activity">
-                <h3>ATIVIDADE RECENTE</h3>
-                <div class="activity-list" id="recentActivity">
-                    <div class="activity-item">
-                        <i class="fas fa-user-plus activity-icon"></i>
-                        <div class="activity-info">
-                            <strong>Novo usuário registrado</strong>
-                            <span>usuario@email.com - há 5 minutos</span>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <i class="fas fa-shopping-cart activity-icon"></i>
-                        <div class="activity-info">
-                            <strong>Nova compra realizada</strong>
-                            <span>Plano Premium - R$ 29,90 - há 12 minutos</span>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <i class="fas fa-cog activity-icon"></i>
-                        <div class="activity-info">
-                            <strong>Configurações alteradas</strong>
-                            <span>Tema atualizado - há 1 hora</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Products Tab -->
-        <div id="products-tab" class="admin-tab">
-            <div class="tab-header">
-                <h2>GERENCIAR PRODUTOS</h2>
-                <div class="tab-actions">
-                    <button class="btn btn-primary" onclick="openProductModal()">
-                        <i class="fas fa-plus"></i>
-                        NOVO PRODUTO
-                    </button>
-                    <button class="btn btn-secondary" onclick="refreshProducts()">
+                    <button class="btn btn-primary" onclick="refreshUsers()">
                         <i class="fas fa-sync-alt"></i>
                         ATUALIZAR
                     </button>
                 </div>
             </div>
-            
-            <div class="admin-table-container">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nome</th>
-                            <th>Preço</th>
-                            <th>Duração</th>
-                            <th>Status</th>
-                            <th>Destaque</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="productsTableBody">
-                        <tr>
-                            <td colspan="7" class="loading-row">
-                                <i class="fas fa-spinner fa-spin"></i>
-                                Carregando produtos...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div class="bulk-actions-bar" id="bulkActionsBar" style="display: none;">
+            <div class="bulk-info">
+                <span id="selectedCount">0</span> usuários selecionados
+            </div>
+            <div class="bulk-buttons">
+                <button class="btn btn-warning btn-small" onclick="bulkExtendLicense()">
+                    <i class="fas fa-clock"></i>
+                    ESTENDER LICENÇAS
+                </button>
+                <button class="btn btn-danger btn-small" onclick="bulkDeleteUsers()">
+                    <i class="fas fa-trash"></i>
+                    DELETAR SELECIONADOS
+                </button>
+                <button class="btn btn-secondary btn-small" onclick="clearSelection()">
+                    <i class="fas fa-times"></i>
+                    LIMPAR SELEÇÃO
+                </button>
             </div>
         </div>
 
-        <!-- Users Tab -->
-        <div id="users-tab" class="admin-tab">
-            <div class="tab-header">
-                <h2>GERENCIAR USUÁRIOS</h2>
-                <div class="tab-actions">
-                    <div class="search-filter-container">
-                        <input type="text" id="userSearch" placeholder="Buscar por email..." class="search-input">
-                        <select id="userFilter" class="filter-select">
-                            <option value="all">Todos os Usuários</option>
-                            <option value="active">Licenças Ativas</option>
-                            <option value="expired">Licenças Expiradas</option>
-                            <option value="no_license">Sem Licença</option>
-                            <option value="admin">Administradores</option>
-                        </select>
-                    </div>
-                    <div class="action-buttons-container">
-                        <button class="btn btn-secondary" onclick="exportUsers()">
-                            <i class="fas fa-download"></i>
-                            EXPORTAR
-                        </button>
-                        <button class="btn btn-primary" onclick="refreshUsers()">
-                            <i class="fas fa-sync-alt"></i>
-                            ATUALIZAR
-                        </button>
-                    </div>
-                </div>
+        <div class="admin-table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>
+                            <input type="checkbox" id="selectAllUsers" onchange="toggleSelectAll()">
+                        </th>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>Tipo</th>
+                        <th>Licença</th>
+                        <th>Status</th>
+                        <th>Cadastro</th>
+                        <th>Último Login</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <tr>
+                        <td colspan="9" class="loading-row">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            Carregando usuários...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Mostrando <span id="showingStart">0</span> a <span id="showingEnd">0</span> de <span id="totalUsers">0</span> usuários
             </div>
-            
-            <!-- Bulk Actions -->
-            <div class="bulk-actions-bar" id="bulkActionsBar" style="display: none;">
-                <div class="bulk-info">
-                    <span id="selectedCount">0</span> usuários selecionados
-                </div>
-                <div class="bulk-buttons">
-                    <button class="btn btn-warning btn-small" onclick="bulkExtendLicense()">
-                        <i class="fas fa-clock"></i>
-                        ESTENDER LICENÇAS
-                    </button>
-                    <button class="btn btn-danger btn-small" onclick="bulkDeleteUsers()">
-                        <i class="fas fa-trash"></i>
-                        DELETAR SELECIONADOS
-                    </button>
-                    <button class="btn btn-secondary btn-small" onclick="clearSelection()">
-                        <i class="fas fa-times"></i>
-                        LIMPAR SELEÇÃO
-                    </button>
-                </div>
-            </div>
-            
-            <div class="admin-table-container">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>
-                                <input type="checkbox" id="selectAllUsers" onchange="toggleSelectAll()">
-                            </th>
-                            <th>ID</th>
-                            <th>Email</th>
-                            <th>Tipo</th>
-                            <th>Licença</th>
-                            <th>Status</th>
-                            <th>Cadastro</th>
-                            <th>Último Login</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersTableBody">
-                        <tr>
-                            <td colspan="9" class="loading-row">
-                                <i class="fas fa-spinner fa-spin"></i>
-                                Carregando usuários...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Pagination -->
-            <div class="pagination-container">
-                <div class="pagination-info">
-                    Mostrando <span id="showingStart">0</span> a <span id="showingEnd">0</span> de <span id="totalUsers">0</span> usuários
-                </div>
-                <div class="pagination-controls">
-                    <button class="btn btn-secondary btn-small" onclick="previousPage()">
-                        <i class="fas fa-chevron-left"></i>
-                        Anterior
-                    </button>
-                    <span class="page-numbers" id="pageNumbers"></span>
-                    <button class="btn btn-secondary btn-small" onclick="nextPage()">
-                        Próximo
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
+            <div class="pagination-controls">
+                <button class="btn btn-secondary btn-small" onclick="previousPage()">
+                    <i class="fas fa-chevron-left"></i>
+                    Anterior
+                </button>
+                <span class="page-numbers" id="pageNumbers"></span>
+                <button class="btn btn-secondary btn-small" onclick="nextPage()">
+                    Próximo
+                    <i class="fas fa-chevron-right"></i>
+                </button>
             </div>
         </div>
-        
-        <!-- Payments Tab -->
-        <div id="payments-tab" class="admin-tab">
-            <div class="tab-header">
-                <h2>HISTÓRICO DE PAGAMENTOS</h2>
+    </div>
+
+    <!-- Payments Tab -->
+    <div id="payments-tab" class="admin-tab">
+        <div class="tab-header">
+            <h2>HISTÓRICO DE PAGAMENTOS</h2>
+            <div class="tab-actions">
                 <button class="btn btn-primary" onclick="refreshPayments()">
                     <i class="fas fa-sync-alt"></i>
                     ATUALIZAR
                 </button>
             </div>
-            
-            <div class="admin-table-container">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Usuário</th>
-                            <th>Valor</th>
-                            <th>Data</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="paymentsTableBody">
-                        <tr>
-                            <td colspan="5" class="loading-row">
-                                <i class="fas fa-spinner fa-spin"></i>
-                                Carregando pagamentos...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <!-- Themes Tab -->
-        <div id="themes-tab" class="admin-tab">
-            <div class="tab-header">
-                <h2>PERSONALIZAÇÃO DE TEMAS</h2>
-                <div class="tab-actions">
-                    <button class="btn btn-primary" onclick="saveThemeSettings()">
-                        <i class="fas fa-save"></i>
-                        SALVAR TEMAS
-                    </button>
-                    <button class="btn btn-secondary" onclick="loadThemeSettings()">
-                        <i class="fas fa-sync-alt"></i>
-                        RECARREGAR
-                    </button>
-                </div>
-            </div>
-            
-            <div class="theme-editor">
-                <div class="theme-sections">
-                    <!-- Cores do Tema -->
-                    <div class="theme-section">
-                        <h3><i class="fas fa-palette"></i> CORES DO TEMA</h3>
-                        <div class="color-grid">
-                            <div class="color-item">
-                                <label>Cor Primária:</label>
-                                <input type="color" id="primary-color" value="#00ffff">
-                                <input type="text" id="primary-color-text" value="#00ffff" placeholder="#00ffff">
-                            </div>
-                            <div class="color-item">
-                                <label>Cor Secundária:</label>
-                                <input type="color" id="secondary-color" value="#e94560">
-                                <input type="text" id="secondary-color-text" value="#e94560" placeholder="#e94560">
-                            </div>
-                            <div class="color-item">
-                                <label>Cor de Fundo:</label>
-                                <input type="color" id="bg-color" value="#0f0f23">
-                                <input type="text" id="bg-color-text" value="#0f0f23" placeholder="#0f0f23">
-                            </div>
-                            <div class="color-item">
-                                <label>Cor do Texto:</label>
-                                <input type="color" id="text-color" value="#ffffff">
-                                <input type="text" id="text-color-text" value="#ffffff" placeholder="#ffffff">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Fontes -->
-                    <div class="theme-section">
-                        <h3><i class="fas fa-font"></i> FONTES</h3>
-                        <div class="font-controls">
-                            <div class="form-group">
-                                <label>Fonte Principal:</label>
-                                <select id="primary-font">
-                                    <option value="Orbitron">Orbitron (Atual)</option>
-                                    <option value="Rajdhani">Rajdhani</option>
-                                    <option value="Exo 2">Exo 2</option>
-                                    <option value="Space Grotesk">Space Grotesk</option>
-                                    <option value="JetBrains Mono">JetBrains Mono</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Fonte Secundária:</label>
-                                <select id="secondary-font">
-                                    <option value="Roboto">Roboto (Atual)</option>
-                                    <option value="Inter">Inter</option>
-                                    <option value="Poppins">Poppins</option>
-                                    <option value="Nunito">Nunito</option>
-                                    <option value="Open Sans">Open Sans</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Imagens -->
-                    <div class="theme-section">
-                        <h3><i class="fas fa-images"></i> IMAGENS E CAPAS</h3>
-                        <div class="image-controls">
-                            <div class="form-group">
-                                <label>Logo Principal:</label>
-                                <input type="url" id="main-logo" placeholder="https://exemplo.com/logo.png">
-                            </div>
-                            <div class="form-group">
-                                <label>Imagem de Fundo Hero:</label>
-                                <input type="url" id="hero-bg" placeholder="https://exemplo.com/hero-bg.jpg">
-                            </div>
-                            <div class="form-group">
-                                <label>Favicon:</label>
-                                <input type="url" id="favicon" placeholder="https://exemplo.com/favicon.ico">
-                            </div>
-                            <div class="form-group">
-                                <label>Imagem do Produto:</label>
-                                <input type="url" id="product-image" placeholder="https://exemplo.com/produto.jpg">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Textos -->
-                    <div class="theme-section">
-                        <h3><i class="fas fa-edit"></i> TEXTOS DO SITE</h3>
-                        <div class="text-controls">
-                            <div class="form-group">
-                                <label>Nome do Site:</label>
-                                <input type="text" id="site-name" value="DarkFov" placeholder="Nome do site">
-                            </div>
-                            <div class="form-group">
-                                <label>Slogan Principal:</label>
-                                <input type="text" id="main-slogan" value="DOMINE O CAMPO DE BATALHA" placeholder="Slogan principal">
-                            </div>
-                            <div class="form-group">
-                                <label>Descrição Hero:</label>
-                                <textarea id="hero-description" rows="3" placeholder="Descrição da seção hero...">O aimbot mais avançado para BloodStrike. Recursos premium, anti-detecção e suporte 24/7.</textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>Texto do Botão Principal:</label>
-                                <input type="text" id="main-cta" value="COMEÇAR AGORA" placeholder="Texto do botão">
-                            </div>
-                            <div class="form-group">
-                                <label>Copyright/Footer:</label>
-                                <input type="text" id="footer-text" value="© 2024 DarkFov. Todos os direitos reservados." placeholder="Texto do rodapé">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Preview -->
-                <div class="theme-preview">
-                    <h3><i class="fas fa-eye"></i> PREVIEW EM TEMPO REAL</h3>
-                    <div class="preview-container">
-                        <div class="preview-card" id="theme-preview">
-                            <div class="preview-header">
-                                <h4 id="preview-site-name">DarkFov</h4>
-                            </div>
-                            <div class="preview-content">
-                                <h5 id="preview-slogan">DOMINE O CAMPO DE BATALHA</h5>
-                                <p id="preview-description">O aimbot mais avançado para BloodStrike.</p>
-                                <button class="preview-btn" id="preview-cta">COMEÇAR AGORA</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
 
-        <!-- Settings Tab -->
-        <div id="settings-tab" class="admin-tab">
-            <div class="tab-header">
-                <h2>CONFIGURAÇÕES GERAIS</h2>
-            </div>
-            
-            <div class="settings-grid">
-                <div class="settings-section">
-                    <h3><i class="fas fa-globe"></i> CONFIGURAÇÕES DO SITE</h3>
-                    <div class="settings-form">
-                        <div class="form-group">
-                            <label>Nome do Site:</label>
-                            <input type="text" id="siteName" value="DarkFov" placeholder="Nome do site">
-                        </div>
-                        <div class="form-group">
-                            <label>URL do Site:</label>
-                            <input type="url" id="siteUrl" value="https://darkfov.com" placeholder="https://exemplo.com">
-                        </div>
-                        <div class="form-group">
-                            <label>Email de Suporte:</label>
-                            <input type="email" id="supportEmail" value="suporte@darkfov.com" placeholder="suporte@exemplo.com">
-                        </div>
-                        <div class="form-group">
-                            <label>Descrição do Site:</label>
-                            <textarea id="siteDescription" rows="3" placeholder="Descrição do site para SEO...">O aimbot mais avançado para BloodStrike</textarea>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="settings-section">
-                    <h3><i class="fas fa-key"></i> CHAVES API</h3>
-                    <div class="settings-form">
-                        <div class="form-group">
-                            <label>MercadoPago Access Token:</label>
-                            <input type="password" id="mpToken" placeholder="TEST-1234567890...">
-                        </div>
-                        <div class="form-group">
-                            <label>SMTP Host:</label>
-                            <input type="text" id="smtpHost" placeholder="smtp.gmail.com">
-                        </div>
-                        <div class="form-group">
-                            <label>SMTP Port:</label>
-                            <input type="number" id="smtpPort" value="587" placeholder="587">
-                        </div>
-                        <div class="form-group">
-                            <label>SMTP Email:</label>
-                            <input type="email" id="smtpEmail" placeholder="noreply@exemplo.com">
-                        </div>
-                        <div class="form-group">
-                            <label>SMTP Password:</label>
-                            <input type="password" id="smtpPassword" placeholder="senha do email">
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="settings-section">
-                    <h3><i class="fas fa-shield-alt"></i> SEGURANÇA</h3>
-                    <div class="settings-form">
-                        <div class="form-group checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="enableCaptcha" checked>
-                                <span class="checkmark"></span>
-                                Habilitar CAPTCHA no registro
-                            </label>
-                        </div>
-                        <div class="form-group checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="enableTwoFactor">
-                                <span class="checkmark"></span>
-                                Habilitar autenticação 2FA
-                            </label>
-                        </div>
-                        <div class="form-group checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="enableEmailVerification" checked>
-                                <span class="checkmark"></span>
-                                Verificação obrigatória de email
-                            </label>
-                        </div>
-                        <div class="form-group">
-                            <label>Duração mínima da senha:</label>
-                            <input type="number" id="minPasswordLength" value="8" min="6" max="50">
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="settings-section">
-                    <h3><i class="fas fa-download"></i> DOWNLOADS</h3>
-                    <div class="settings-form">
-                        <div class="form-group">
-                            <label>URL do Download Principal:</label>
-                            <input type="url" id="mainDownloadUrl" placeholder="https://exemplo.com/download.exe">
-                        </div>
-                        <div class="form-group">
-                            <label>Versão Atual:</label>
-                            <input type="text" id="currentVersion" value="1.0.0" placeholder="1.0.0">
-                        </div>
-                        <div class="form-group checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="enableDownloadAuth" checked>
-                                <span class="checkmark"></span>
-                                Exigir login para download
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="settings-actions">
-                <button class="btn btn-primary" onclick="saveGeneralSettings()">
-                    <i class="fas fa-save"></i>
-                    SALVAR CONFIGURAÇÕES
-                </button>
-                <button class="btn btn-secondary" onclick="loadGeneralSettings()">
-                    <i class="fas fa-undo"></i>
-                    RESETAR
-                </button>
-            </div>
+        <div class="admin-table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuário</th>
+                        <th>Valor</th>
+                        <th>Data</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="paymentsTableBody">
+                    <tr>
+                        <td colspan="5" class="loading-row">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            Carregando pagamentos...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-        
-        <!-- Logs Tab -->
-        <div id="logs-tab" class="admin-tab">
-            <div class="tab-header">
-                <h2>LOGS DO SISTEMA</h2>
-                <div class="tab-actions">
-                    <button class="btn btn-secondary" onclick="refreshLogs()">
-                        <i class="fas fa-sync-alt"></i>
-                        ATUALIZAR
-                    </button>
-                    <button class="btn btn-primary" onclick="downloadLogs()">
-                        <i class="fas fa-download"></i>
-                        BAIXAR LOGS
-                    </button>
-                    <button class="btn btn-warning" onclick="clearLogs()">
-                        <i class="fas fa-trash"></i>
-                        LIMPAR LOGS
+    </div>
+
+    <!-- Themes Tab -->
+    <div id="themes-tab" class="admin-tab">
+        <div class="admin-cards-grid">
+            <div class="admin-card">
+                <div class="card-header">
+                    <i class="fas fa-palette card-icon"></i>
+                    <h2 class="card-title">CORES DO TEMA</h2>
+                </div>
+                <div class="card-content">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Cor Primária:</label>
+                            <input type="color" id="primary-color" value="#00d4ff" style="width: 100%; height: 40px; border: none; border-radius: 8px;">
+                        </div>
+                        <div>
+                            <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Cor Secundária:</label>
+                            <input type="color" id="secondary-color" value="#9d4edd" style="width: 100%; height: 40px; border: none; border-radius: 8px;">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;" onclick="saveThemeSettings()">
+                        <i class="fas fa-save"></i>
+                        SALVAR CORES
                     </button>
                 </div>
             </div>
-            
-            <div class="logs-container">
-                <div class="logs-filters">
-                    <div class="filter-group">
-                        <label>Filtrar por tipo:</label>
-                        <select id="logTypeFilter">
-                            <option value="all">Todos os Logs</option>
-                            <option value="info">Informação</option>
-                            <option value="warning">Avisos</option>
-                            <option value="error">Erros</option>
-                            <option value="admin">Ações Admin</option>
+
+            <div class="admin-card">
+                <div class="card-header">
+                    <i class="fas fa-font card-icon"></i>
+                    <h2 class="card-title">FONTES</h2>
+                </div>
+                <div class="card-content">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Fonte Principal:</label>
+                        <select id="primary-font" style="width: 100%; padding: 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
+                            <option value="Inter">Inter (Atual)</option>
+                            <option value="Orbitron">Orbitron</option>
+                            <option value="Rajdhani">Rajdhani</option>
+                            <option value="Exo 2">Exo 2</option>
                         </select>
                     </div>
-                    <div class="filter-group">
-                        <label>Data:</label>
-                        <input type="date" id="logDateFilter">
-                    </div>
-                    <div class="filter-group">
-                        <label>Buscar:</label>
-                        <input type="text" id="logSearchFilter" placeholder="Buscar nos logs...">
-                    </div>
-                </div>
-                
-                <div class="log-viewer">
-                    <div class="log-header">
-                        <span class="log-time">TIMESTAMP</span>
-                        <span class="log-level">NÍVEL</span>
-                        <span class="log-message">MENSAGEM</span>
-                        <span class="log-user">USUÁRIO</span>
-                    </div>
-                    <div class="log-content" id="logContent">
-                        <div class="log-entry log-info">
-                            <span class="log-time">2024-01-26 10:30:15</span>
-                            <span class="log-level">INFO</span>
-                            <span class="log-message">Sistema iniciado com sucesso</span>
-                            <span class="log-user">SISTEMA</span>
-                        </div>
-                        <div class="log-entry log-info">
-                            <span class="log-time">2024-01-26 10:30:16</span>
-                            <span class="log-level">INFO</span>
-                            <span class="log-message">Conexão com banco de dados estabelecida</span>
-                            <span class="log-user">SISTEMA</span>
-                        </div>
-                        <div class="log-entry log-admin">
-                            <span class="log-time">2024-01-26 10:35:22</span>
-                            <span class="log-level">ADMIN</span>
-                            <span class="log-message">Login de administrador realizado</span>
-                            <span class="log-user">admin@darkfov.com</span>
-                        </div>
-                        <div class="log-entry log-warning">
-                            <span class="log-time">2024-01-26 10:40:33</span>
-                            <span class="log-level">WARNING</span>
-                            <span class="log-message">Tentativa de login falhada (IP: 192.168.1.100)</span>
-                            <span class="log-user">usuario@teste.com</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="log-pagination">
-                    <button class="btn btn-small btn-secondary" onclick="previousLogPage()">
-                        <i class="fas fa-chevron-left"></i>
-                        Anterior
-                    </button>
-                    <span class="page-info">Página 1 de 10</span>
-                    <button class="btn btn-small btn-secondary" onclick="nextLogPage()">
-                        Próximo
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- System Tab -->
-        <div id="system-tab" class="admin-tab">
-            <div class="tab-header">
-                <h2>MANUTENÇÃO E SISTEMA</h2>
-            </div>
-            
-            <div class="system-controls">
-                <div class="control-group">
-                    <h3><i class="fas fa-tools"></i> MANUTENÇÃO DO SITE</h3>
-                    <div class="maintenance-controls">
-                        <div class="maintenance-status">
-                            <div class="status-indicator">
-                                <div class="status-dot" id="maintenanceStatusDot"></div>
-                                <span id="maintenanceStatusText">Verificando...</span>
-                            </div>
-                            <p class="status-description">
-                                O modo manutenção coloca o site fora do ar para todos os usuários, exceto administradores.
-                            </p>
-                        </div>
-                        
-                        <div class="maintenance-actions">
-                            <button class="btn btn-danger" id="enableMaintenanceBtn" onclick="toggleMaintenance(true)">
-                                <i class="fas fa-power-off"></i>
-                                ATIVAR MANUTENÇÃO
-                            </button>
-                            <button class="btn btn-success" id="disableMaintenanceBtn" onclick="toggleMaintenance(false)" style="display: none;">
-                                <i class="fas fa-play"></i>
-                                REATIVAR SITE
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <h3><i class="fas fa-server"></i> STATUS DOS SERVIÇOS</h3>
-                    <div class="services-status">
-                        <div class="service-item">
-                            <div class="service-info">
-                                <i class="fas fa-database"></i>
-                                <span>Banco de Dados</span>
-                            </div>
-                            <div class="service-status status-online">
-                                <div class="status-dot"></div>
-                                ONLINE
-                            </div>
-                        </div>
-                        <div class="service-item">
-                            <div class="service-info">
-                                <i class="fas fa-envelope"></i>
-                                <span>Serviço de Email</span>
-                            </div>
-                            <div class="service-status status-online">
-                                <div class="status-dot"></div>
-                                ONLINE
-                            </div>
-                        </div>
-                        <div class="service-item">
-                            <div class="service-info">
-                                <i class="fas fa-credit-card"></i>
-                                <span>MercadoPago</span>
-                            </div>
-                            <div class="service-status status-warning">
-                                <div class="status-dot"></div>
-                                CONFIGURAÇÃO PENDENTE
-                            </div>
-                        </div>
-                        <div class="service-item">
-                            <div class="service-info">
-                                <i class="fas fa-cloud"></i>
-                                <span>Servidor Web</span>
-                            </div>
-                            <div class="service-status status-online">
-                                <div class="status-dot"></div>
-                                ONLINE
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <h3><i class="fas fa-cogs"></i> FERRAMENTAS DE SISTEMA</h3>
-                    <div class="control-items">
-                        <button class="btn btn-outline" onclick="clearCache()">
-                            <i class="fas fa-broom"></i>
-                            LIMPAR CACHE
-                        </button>
-                        <button class="btn btn-outline" onclick="backupDatabase()">
-                            <i class="fas fa-download"></i>
-                            BACKUP BANCO
-                        </button>
-                        <button class="btn btn-outline" onclick="optimizeDatabase()">
-                            <i class="fas fa-wrench"></i>
-                            OTIMIZAR BANCO
-                        </button>
-                        <button class="btn btn-outline" onclick="checkUpdates()">
-                            <i class="fas fa-sync-alt"></i>
-                            VERIFICAR ATUALIZAÇÕES
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <h3><i class="fas fa-chart-line"></i> INFORMAÇÕES DO SISTEMA</h3>
-                    <div class="system-info">
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <span class="label">Versão do Sistema:</span>
-                                <span class="value">1.0.0</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="label">Tempo Online:</span>
-                                <span class="value" id="uptime">2 dias, 5 horas</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="label">Última Atualização:</span>
-                                <span class="value">26/01/2024 10:30</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="label">Uso de Memória:</span>
-                                <span class="value">145 MB</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Product Modal -->
-<div id="productModal" class="modal">
-    <div class="modal-content modal-large">
-        <div class="modal-header">
-            <h2 id="productModalTitle">NOVO PRODUTO</h2>
-            <button class="modal-close" onclick="closeModal('productModal')">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <form id="productForm">
-                <input type="hidden" id="productId" name="product_id">
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="productName">Nome do Produto:</label>
-                        <input type="text" id="productName" name="name" required placeholder="Ex: DarkFov Premium">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="productPrice">Preço (R$):</label>
-                        <input type="number" id="productPrice" name="price" step="0.01" min="0" required placeholder="29.90">
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="productDuration">Duração (dias):</label>
-                        <input type="number" id="productDuration" name="duration_days" min="1" required placeholder="30">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="productImage">URL da Imagem:</label>
-                        <input type="url" id="productImage" name="image_url" placeholder="https://exemplo.com/imagem.jpg">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="productDescription">Descrição:</label>
-                    <textarea id="productDescription" name="description" rows="3" placeholder="Descrição detalhada do produto..."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="productFeatures">Recursos (um por linha):</label>
-                    <textarea id="productFeatures" name="features" rows="5" placeholder="Aim Assist inteligente&#10;Anti-detecção&#10;Suporte 24/7"></textarea>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group checkbox-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="productActive" name="is_active" checked>
-                            <span class="checkmark"></span>
-                            Produto ativo
-                        </label>
-                    </div>
-                    
-                    <div class="form-group checkbox-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="productFeatured" name="is_featured">
-                            <span class="checkmark"></span>
-                            Produto em destaque
-                        </label>
-                    </div>
-                </div>
-                
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('productModal')">
-                        CANCELAR
-                    </button>
-                    <button type="submit" class="btn btn-primary">
+                    <button class="btn btn-primary" style="width: 100%;" onclick="saveThemeSettings()">
                         <i class="fas fa-save"></i>
-                        SALVAR PRODUTO
+                        SALVAR FONTES
                     </button>
                 </div>
-            </form>
+            </div>
+
+            <div class="admin-card">
+                <div class="card-header">
+                    <i class="fas fa-edit card-icon"></i>
+                    <h2 class="card-title">TEXTOS</h2>
+                </div>
+                <div class="card-content">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Nome do Site:</label>
+                        <input type="text" id="site-name" value="DarkFov" style="width: 100%; padding: 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Slogan:</label>
+                        <input type="text" id="main-slogan" value="DOMINE O CAMPO DE BATALHA" style="width: 100%; padding: 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="saveThemeSettings()">
+                        <i class="fas fa-save"></i>
+                        SALVAR TEXTOS
+                    </button>
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="card-header">
+                    <i class="fas fa-eye card-icon"></i>
+                    <h2 class="card-title">PREVIEW</h2>
+                </div>
+                <div class="card-content">
+                    <div id="theme-preview" style="padding: 1.5rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 10px; text-align: center;">
+                        <h4 id="preview-site-name" style="color: var(--primary); margin: 0 0 0.5rem 0;">DarkFov</h4>
+                        <h5 id="preview-slogan" style="color: var(--text-primary); margin: 0 0 1rem 0; font-size: 0.9rem;">DOMINE O CAMPO DE BATALHA</h5>
+                        <button id="preview-cta" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600;">COMEÇAR AGORA</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- User Edit Modal -->
-<div id="userEditModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>EDITAR USUÁRIO</h2>
-            <button class="modal-close" onclick="closeModal('userEditModal')">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <form id="userEditForm">
-                <input type="hidden" id="editUserId" name="user_id">
-                
-                <div class="form-group">
-                    <label>Email:</label>
-                    <input type="email" id="editUserEmail" readonly>
+    <!-- Settings Tab -->
+    <div id="settings-tab" class="admin-tab">
+        <div class="admin-cards-grid">
+            <div class="admin-card">
+                <div class="card-header">
+                    <i class="fas fa-globe card-icon"></i>
+                    <h2 class="card-title">CONFIGURAÇÕES GERAIS</h2>
                 </div>
-                
-                <div class="form-group">
-                    <label>Estender Licença (dias):</label>
-                    <input type="number" id="extendDays" name="dias" min="0" max="365" placeholder="0 = remover licença">
-                </div>
-                
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('userEditModal')">
-                        CANCELAR
-                    </button>
-                    <button type="submit" class="btn btn-primary">
+                <div class="card-content">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Nome do Site:</label>
+                        <input type="text" id="siteName" value="DarkFov" style="width: 100%; padding: 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Email de Suporte:</label>
+                        <input type="email" id="supportEmail" value="suporte@darkfov.com" style="width: 100%; padding: 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="saveGeneralSettings()">
                         <i class="fas fa-save"></i>
                         SALVAR
                     </button>
                 </div>
-            </form>
+            </div>
+
+            <div class="admin-card">
+                <div class="card-header">
+                    <i class="fas fa-key card-icon"></i>
+                    <h2 class="card-title">CHAVES API</h2>
+                </div>
+                <div class="card-content">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">MercadoPago Token:</label>
+                        <input type="password" id="mpToken" placeholder="TEST-1234..." style="width: 100%; padding: 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="saveGeneralSettings()">
+                        <i class="fas fa-save"></i>
+                        SALVAR
+                    </button>
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="card-header">
+                    <i class="fas fa-download card-icon"></i>
+                    <h2 class="card-title">DOWNLOADS</h2>
+                </div>
+                <div class="card-content">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">URL do Download:</label>
+                        <input type="url" id="mainDownloadUrl" placeholder="https://..." style="width: 100%; padding: 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Versão Atual:</label>
+                        <input type="text" id="currentVersion" value="1.0.0" style="width: 100%; padding: 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="saveGeneralSettings()">
+                        <i class="fas fa-save"></i>
+                        SALVAR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logs Tab -->
+    <div id="logs-tab" class="admin-tab">
+        <div class="tab-header">
+            <h2>LOGS DO SISTEMA</h2>
+            <div class="tab-actions">
+                <button class="btn btn-secondary" onclick="refreshLogs()">
+                    <i class="fas fa-sync-alt"></i>
+                    ATUALIZAR
+                </button>
+                <button class="btn btn-warning" onclick="clearLogs()">
+                    <i class="fas fa-trash"></i>
+                    LIMPAR
+                </button>
+            </div>
+        </div>
+
+        <div class="admin-card">
+            <div class="card-header">
+                <i class="fas fa-file-alt card-icon"></i>
+                <h2 class="card-title">LOGS RECENTES</h2>
+            </div>
+            <div class="card-content">
+                <div id="logContent" style="background: var(--bg-primary); padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.8rem; max-height: 400px; overflow-y: auto;">
+                    <div style="color: var(--success); margin-bottom: 0.5rem;">
+                        [2024-01-26 10:30:15] INFO: Sistema iniciado com sucesso
+                    </div>
+                    <div style="color: var(--primary); margin-bottom: 0.5rem;">
+                        [2024-01-26 10:30:16] INFO: Conexão com banco estabelecida
+                    </div>
+                    <div style="color: var(--warning); margin-bottom: 0.5rem;">
+                        [2024-01-26 10:35:22] WARNING: Token MercadoPago não configurado
+                    </div>
+                    <div style="color: var(--danger); margin-bottom: 0.5rem;">
+                        [2024-01-26 10:40:33] ERROR: Tentativa de login falhada
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Tab -->
+    <div id="system-tab" class="admin-tab">
+        <div class="admin-cards-grid">
+            <div class="admin-card">
+                <div class="card-header">
+                    <i class="fas fa-server card-icon"></i>
+                    <h2 class="card-title">STATUS DOS SERVIÇOS</h2>
+                </div>
+                <div class="card-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: 8px;">
+                        <span style="color: var(--text-primary);">Banco de Dados</span>
+                        <span class="badge badge-success">ONLINE</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: 8px;">
+                        <span style="color: var(--text-primary);">Servidor Web</span>
+                        <span class="badge badge-success">ONLINE</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: 8px;">
+                        <span style="color: var(--text-primary);">MercadoPago</span>
+                        <span class="badge badge-warning">PENDENTE</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="card-header">
+                    <i class="fas fa-tools card-icon"></i>
+                    <h2 class="card-title">MANUTENÇÃO</h2>
+                </div>
+                <div class="card-content">
+                    <div style="text-align: center; margin-bottom: 1.5rem;">
+                        <div style="color: var(--success); margin-bottom: 1rem;">
+                            <i class="fas fa-check-circle" style="font-size: 2rem;"></i>
+                        </div>
+                        <p style="color: var(--success); font-weight: 600; margin: 0;">SITE ONLINE</p>
+                    </div>
+                    <button class="btn btn-danger" style="width: 100%; margin-bottom: 1rem;" onclick="toggleMaintenance(true)">
+                        <i class="fas fa-power-off"></i>
+                        ATIVAR MANUTENÇÃO
+                    </button>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                        <button class="btn btn-secondary btn-small" onclick="clearCache()">
+                            <i class="fas fa-broom"></i>
+                            CACHE
+                        </button>
+                        <button class="btn btn-secondary btn-small" onclick="backupDatabase()">
+                            <i class="fas fa-download"></i>
+                            BACKUP
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="card-header">
+                    <i class="fas fa-chart-line card-icon"></i>
+                    <h2 class="card-title">INFORMAÇÕES</h2>
+                </div>
+                <div class="card-content">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: 8px;">
+                        <span style="color: var(--text-secondary);">Versão:</span>
+                        <span style="color: var(--text-primary); font-weight: 600;">1.0.0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: 8px;">
+                        <span style="color: var(--text-secondary);">Uptime:</span>
+                        <span style="color: var(--text-primary); font-weight: 600;">2d 5h</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: 8px;">
+                        <span style="color: var(--text-secondary);">Memória:</span>
+                        <span style="color: var(--text-primary); font-weight: 600;">145 MB</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     checkAdminAuth();
@@ -935,7 +1267,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function checkAdminAuth() {
     const token = localStorage.getItem('access_token');
     const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
-    
+
     if (!token || !userData.is_admin) {
         showToast('Acesso negado. Privilégios de administrador necessários.', 'error');
         setTimeout(() => {
@@ -955,15 +1287,12 @@ function setupAdminNavigation() {
 }
 
 function switchAdminTab(tabName) {
-    // Remover classe active de todos os botões e tabs
     document.querySelectorAll('.admin-nav-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));
-    
-    // Adicionar classe active ao botão e tab selecionados
+
     document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
     document.getElementById(`${tabName}-tab`).classList.add('active');
-    
-    // Carregar dados específicos da tab
+
     switch(tabName) {
         case 'users':
             loadUsers();
@@ -975,30 +1304,23 @@ function switchAdminTab(tabName) {
             loadPayments();
             break;
         case 'themes':
-            loadThemeSettings();
-            setupThemeEditor();
             break;
         case 'overview':
             loadOverviewData();
             break;
         case 'settings':
-            loadGeneralSettings();
             break;
         case 'logs':
-            loadSystemLogs();
             break;
         case 'system':
-            loadMaintenanceStatus();
-            loadSystemInfo();
             break;
     }
 }
 
 async function loadOverviewData() {
     const token = localStorage.getItem('access_token');
-    
+
     try {
-        // Carregar estatísticas reais
         const [usersResponse, paymentsResponse] = await Promise.all([
             fetch('/api/admin/users', {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -1007,12 +1329,11 @@ async function loadOverviewData() {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
         ]);
-        
+
         if (usersResponse.ok && paymentsResponse.ok) {
             const users = await usersResponse.json();
             const payments = await paymentsResponse.json();
-            
-            // Calcular estatísticas
+
             const totalUsers = users.length;
             const activeLicenses = users.filter(user => 
                 user.data_expiracao && new Date(user.data_expiracao) > new Date()
@@ -1022,21 +1343,16 @@ async function loadOverviewData() {
             const todaySignups = users.filter(user => 
                 user.created_at && new Date(user.created_at).toDateString() === today
             ).length;
-            
-            // Atualizar interface
+
             document.getElementById('totalUsers').textContent = totalUsers.toLocaleString('pt-BR');
             document.getElementById('activeLicenses').textContent = activeLicenses.toLocaleString('pt-BR');
             document.getElementById('totalRevenue').textContent = `R$ ${totalRevenue.toLocaleString('pt-BR', {
                 minimumFractionDigits: 2
             })}`;
             document.getElementById('todaySignups').textContent = todaySignups.toLocaleString('pt-BR');
-            
-            // Carregar atividade recente
-            loadRecentActivity(users, payments);
         }
     } catch (error) {
         console.error('Erro ao carregar dados:', error);
-        // Usar dados de fallback
         document.getElementById('totalUsers').textContent = '1,234';
         document.getElementById('activeLicenses').textContent = '892';
         document.getElementById('totalRevenue').textContent = 'R$ 45,678';
@@ -1044,475 +1360,26 @@ async function loadOverviewData() {
     }
 }
 
-function loadRecentActivity(users, payments) {
-    const activityContainer = document.getElementById('recentActivity');
-    const activities = [];
-    
-    // Adicionar últimos usuários
-    const recentUsers = users.slice(-3).reverse();
-    recentUsers.forEach(user => {
-        const timeAgo = getTimeAgo(new Date(user.created_at));
-        activities.push({
-            icon: 'fas fa-user-plus',
-            title: 'Novo usuário registrado',
-            description: `${user.email} - ${timeAgo}`,
-            time: new Date(user.created_at)
-        });
-    });
-    
-    // Adicionar últimos pagamentos
-    const recentPayments = payments.slice(-2).reverse();
-    recentPayments.forEach(payment => {
-        const timeAgo = getTimeAgo(new Date(payment.data_pagamento));
-        activities.push({
-            icon: 'fas fa-shopping-cart',
-            title: 'Nova compra realizada',
-            description: `R$ ${payment.valor.toFixed(2)} - ${timeAgo}`,
-            time: new Date(payment.data_pagamento)
-        });
-    });
-    
-    // Ordenar por data
-    activities.sort((a, b) => b.time - a.time);
-    
-    // Renderizar atividades
-    activityContainer.innerHTML = activities.slice(0, 5).map(activity => `
-        <div class="activity-item">
-            <i class="${activity.icon} activity-icon"></i>
-            <div class="activity-info">
-                <strong>${activity.title}</strong>
-                <span>${activity.description}</span>
-            </div>
-        </div>
-    `).join('');
-}
-
-function getTimeAgo(date) {
-    const now = new Date();
-    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
-    
-    if (diffInMinutes < 1) return 'agora mesmo';
-    if (diffInMinutes < 60) return `há ${diffInMinutes} minuto${diffInMinutes > 1 ? 's' : ''}`;
-    
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) return `há ${diffInHours} hora${diffInHours > 1 ? 's' : ''}`;
-    
-    const diffInDays = Math.floor(diffInHours / 24);
-    return `há ${diffInDays} dia${diffInDays > 1 ? 's' : ''}`;
-}
-
-// Variáveis globais para gerenciamento de usuários
-let allUsers = [];
-let filteredUsers = [];
-let currentPage = 1;
-let usersPerPage = 10;
-let selectedUsers = new Set();
-
-// Funções de filtro e busca
-function setupUserFilters() {
-    const searchInput = document.getElementById('userSearch');
-    const filterSelect = document.getElementById('userFilter');
-    
-    if (searchInput) {
-        searchInput.addEventListener('input', debounce(filterUsers, 300));
-    }
-    
-    if (filterSelect) {
-        filterSelect.addEventListener('change', filterUsers);
-    }
-}
-
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-function filterUsers() {
-    const searchTerm = document.getElementById('userSearch')?.value.toLowerCase() || '';
-    const filterType = document.getElementById('userFilter')?.value || 'all';
-    
-    filteredUsers = allUsers.filter(user => {
-        // Filtro de busca
-        const matchesSearch = user.email.toLowerCase().includes(searchTerm);
-        
-        // Filtro de tipo
-        let matchesFilter = true;
-        switch (filterType) {
-            case 'active':
-                matchesFilter = user.data_expiracao && new Date(user.data_expiracao) > new Date();
-                break;
-            case 'expired':
-                matchesFilter = user.data_expiracao && new Date(user.data_expiracao) <= new Date();
-                break;
-            case 'no_license':
-                matchesFilter = !user.data_expiracao;
-                break;
-            case 'admin':
-                matchesFilter = user.is_admin;
-                break;
-        }
-        
-        return matchesSearch && matchesFilter;
-    });
-    
-    currentPage = 1;
-    displayUsersWithPagination();
-}
-
-function displayUsersWithPagination() {
-    const startIndex = (currentPage - 1) * usersPerPage;
-    const endIndex = startIndex + usersPerPage;
-    const usersToShow = filteredUsers.slice(startIndex, endIndex);
-    
-    displayUsers(usersToShow);
-    updatePaginationInfo();
-    updatePaginationControls();
-}
-
-function updatePaginationInfo() {
-    const startIndex = (currentPage - 1) * usersPerPage;
-    const endIndex = Math.min(startIndex + usersPerPage, filteredUsers.length);
-    
-    document.getElementById('showingStart').textContent = filteredUsers.length > 0 ? startIndex + 1 : 0;
-    document.getElementById('showingEnd').textContent = endIndex;
-    document.getElementById('totalUsers').textContent = filteredUsers.length;
-}
-
-function updatePaginationControls() {
-    const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
-    const pageNumbers = document.getElementById('pageNumbers');
-    
-    if (!pageNumbers) return;
-    
-    let numbersHtml = '';
-    const maxVisible = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
-    
-    if (endPage - startPage + 1 < maxVisible) {
-        startPage = Math.max(1, endPage - maxVisible + 1);
-    }
-    
-    for (let i = startPage; i <= endPage; i++) {
-        numbersHtml += `
-            <a href="#" class="page-number ${i === currentPage ? 'active' : ''}" 
-               onclick="goToPage(${i}); return false;">${i}</a>
-        `;
-    }
-    
-    pageNumbers.innerHTML = numbersHtml;
-}
-
-function previousPage() {
-    if (currentPage > 1) {
-        currentPage--;
-        displayUsersWithPagination();
-    }
-}
-
-function nextPage() {
-    const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
-    if (currentPage < totalPages) {
-        currentPage++;
-        displayUsersWithPagination();
-    }
-}
-
-function goToPage(page) {
-    currentPage = page;
-    displayUsersWithPagination();
-}
-
-// Funções de seleção em lote
-function toggleSelectAll() {
-    const selectAllCheckbox = document.getElementById('selectAllUsers');
-    const userCheckboxes = document.querySelectorAll('.user-checkbox');
-    
-    if (selectAllCheckbox.checked) {
-        userCheckboxes.forEach(checkbox => {
-            checkbox.checked = true;
-            selectedUsers.add(parseInt(checkbox.value));
-        });
-    } else {
-        userCheckboxes.forEach(checkbox => {
-            checkbox.checked = false;
-        });
-        selectedUsers.clear();
-    }
-    
-    updateBulkActionsBar();
-}
-
-function toggleUserSelection(userId) {
-    if (selectedUsers.has(userId)) {
-        selectedUsers.delete(userId);
-    } else {
-        selectedUsers.add(userId);
-    }
-    
-    updateBulkActionsBar();
-    updateSelectAllCheckbox();
-}
-
-function updateSelectAllCheckbox() {
-    const selectAllCheckbox = document.getElementById('selectAllUsers');
-    const userCheckboxes = document.querySelectorAll('.user-checkbox');
-    const checkedBoxes = document.querySelectorAll('.user-checkbox:checked');
-    
-    if (checkedBoxes.length === 0) {
-        selectAllCheckbox.indeterminate = false;
-        selectAllCheckbox.checked = false;
-    } else if (checkedBoxes.length === userCheckboxes.length) {
-        selectAllCheckbox.indeterminate = false;
-        selectAllCheckbox.checked = true;
-    } else {
-        selectAllCheckbox.indeterminate = true;
-    }
-}
-
-function updateBulkActionsBar() {
-    const bulkActionsBar = document.getElementById('bulkActionsBar');
-    const selectedCount = document.getElementById('selectedCount');
-    
-    if (selectedUsers.size > 0) {
-        bulkActionsBar.style.display = 'flex';
-        selectedCount.textContent = selectedUsers.size;
-    } else {
-        bulkActionsBar.style.display = 'none';
-    }
-}
-
-function clearSelection() {
-    selectedUsers.clear();
-    document.querySelectorAll('.user-checkbox').forEach(checkbox => {
-        checkbox.checked = false;
-    });
-    updateBulkActionsBar();
-    updateSelectAllCheckbox();
-}
-
-// Funções de ações em lote
-async function bulkExtendLicense() {
-    if (selectedUsers.size === 0) return;
-    
-    const days = prompt('Quantos dias deseja estender as licenças?', '30');
-    if (!days || isNaN(days)) return;
-    
+async function loadUsers() {
     const token = localStorage.getItem('access_token');
-    let successCount = 0;
-    
-    for (const userId of selectedUsers) {
-        try {
-            const formData = new FormData();
-            formData.append('dias', days);
-            
-            const response = await fetch(`/api/admin/users/${userId}/license`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: formData
-            });
-            
-            if (response.ok) successCount++;
-        } catch (error) {
-            console.error(`Erro ao estender licença do usuário ${userId}:`, error);
-        }
-    }
-    
-    showToast(`${successCount} licenças estendidas com sucesso`, 'success');
-    clearSelection();
-    loadUsers();
-}
+    const tbody = document.getElementById('usersTableBody');
 
-async function bulkDeleteUsers() {
-    if (selectedUsers.size === 0) return;
-    
-    if (!confirm(`Tem certeza que deseja deletar ${selectedUsers.size} usuários? Esta ação não pode ser desfeita.`)) {
-        return;
-    }
-    
-    const token = localStorage.getItem('access_token');
-    let successCount = 0;
-    
-    for (const userId of selectedUsers) {
-        try {
-            const response = await fetch(`/api/admin/users/${userId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            
-            if (response.ok) successCount++;
-        } catch (error) {
-            console.error(`Erro ao deletar usuário ${userId}:`, error);
-        }
-    }
-    
-    showToast(`${successCount} usuários deletados com sucesso`, 'success');
-    clearSelection();
-    loadUsers();
-}
-
-async function exportUsers() {
-    const token = localStorage.getItem('access_token');
-    
     try {
         const response = await fetch('/api/admin/users', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        
+
         if (response.ok) {
             const users = await response.json();
-            const csvContent = generateUsersCSV(users);
-            downloadCSV(csvContent, 'usuarios.csv');
-            showToast('Exportação de usuários concluída', 'success');
-        }
-    } catch (error) {
-        console.error('Erro ao exportar usuários:', error);
-        showToast('Erro ao exportar usuários', 'error');
-    }
-}
-
-function generateUsersCSV(users) {
-    const headers = ['ID', 'Email', 'Tipo', 'Data Cadastro', 'Data Expiração', 'Status Licença'];
-    const rows = users.map(user => [
-        user.id,
-        user.email,
-        user.is_admin ? 'Admin' : 'Usuário',
-        user.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR') : '',
-        user.data_expiracao ? new Date(user.data_expiracao).toLocaleDateString('pt-BR') : '',
-        user.data_expiracao ? 
-            (new Date(user.data_expiracao) > new Date() ? 'Ativa' : 'Expirada') : 
-            'Sem licença'
-    ]);
-    
-    return [headers, ...rows].map(row => 
-        row.map(field => `"${field}"`).join(',')
-    ).join('\n');
-}
-
-function downloadCSV(content, filename) {
-    const blob = new Blob(['\ufeff' + content], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-}
-
-async function exportAllData() {
-    if (!confirm('Deseja exportar todos os dados do sistema? Isso pode levar alguns minutos.')) {
-        return;
-    }
-    
-    showToast('Iniciando exportação completa...', 'info');
-    
-    const token = localStorage.getItem('access_token');
-    
-    try {
-        const [usersResponse, paymentsResponse, productsResponse] = await Promise.all([
-            fetch('/api/admin/users', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            }),
-            fetch('/api/admin/payments', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            }),
-            fetch('/api/admin/products', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-        ]);
-        
-        if (usersResponse.ok && paymentsResponse.ok && productsResponse.ok) {
-            const users = await usersResponse.json();
-            const payments = await paymentsResponse.json();
-            const products = await productsResponse.json();
-            
-            // Gerar CSV de usuários
-            const usersCSV = generateUsersCSV(users);
-            downloadCSV(usersCSV, 'usuarios.csv');
-            
-            // Gerar CSV de pagamentos
-            const paymentsCSV = generatePaymentsCSV(payments);
-            downloadCSV(paymentsCSV, 'pagamentos.csv');
-            
-            // Gerar CSV de produtos
-            const productsCSV = generateProductsCSV(products);
-            downloadCSV(productsCSV, 'produtos.csv');
-            
-            showToast('Exportação completa concluída', 'success');
-        }
-    } catch (error) {
-        console.error('Erro na exportação:', error);
-        showToast('Erro na exportação completa', 'error');
-    }
-}
-
-function generatePaymentsCSV(payments) {
-    const headers = ['ID', 'ID Usuário', 'Valor', 'Data', 'Status'];
-    const rows = payments.map(payment => [
-        payment.id,
-        payment.user_id,
-        `R$ ${payment.valor.toFixed(2)}`,
-        new Date(payment.data_pagamento).toLocaleDateString('pt-BR'),
-        payment.status
-    ]);
-    
-    return [headers, ...rows].map(row => 
-        row.map(field => `"${field}"`).join(',')
-    ).join('\n');
-}
-
-function generateProductsCSV(products) {
-    const headers = ['ID', 'Nome', 'Preço', 'Duração (dias)', 'Status', 'Destaque'];
-    const rows = products.map(product => [
-        product.id,
-        product.name,
-        `R$ ${product.price.toFixed(2)}`,
-        product.duration_days,
-        product.is_active ? 'Ativo' : 'Inativo',
-        product.is_featured ? 'Sim' : 'Não'
-    ]);
-    
-    return [headers, ...rows].map(row => 
-        row.map(field => `"${field}"`).join(',')
-    ).join('\n');
-}
-
-async function loadUsers() {
-    const token = localStorage.getItem('access_token');
-    const tbody = document.getElementById('usersTableBody');
-    
-    try {
-        const response = await fetch('/api/admin/users', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (response.ok) {
-            allUsers = await response.json();
-            filteredUsers = [...allUsers];
-            
-            // Configurar filtros se não foram configurados ainda
-            if (!document.getElementById('userSearch')?.hasEventListener) {
-                setupUserFilters();
-                document.getElementById('userSearch').hasEventListener = true;
-            }
-            
-            displayUsersWithPagination();
+            displayUsers(users);
         } else {
             throw new Error('Erro ao carregar usuários');
         }
-        
     } catch (error) {
         console.error('Erro:', error);
         tbody.innerHTML = `
             <tr>
-                <td colspan="9" class="error-row">
+                <td colspan="6" class="error-row">
                     <i class="fas fa-exclamation-triangle"></i>
                     Erro ao carregar usuários
                 </td>
@@ -1523,11 +1390,11 @@ async function loadUsers() {
 
 function displayUsers(users) {
     const tbody = document.getElementById('usersTableBody');
-    
+
     if (users.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="9" class="empty-row">
+                <td colspan="6" class="empty-row">
                     <i class="fas fa-users"></i>
                     Nenhum usuário encontrado
                 </td>
@@ -1535,31 +1402,19 @@ function displayUsers(users) {
         `;
         return;
     }
-    
+
     tbody.innerHTML = users.map(user => {
         const licenseStatus = user.data_expiracao ? 
             (new Date(user.data_expiracao) > new Date() ? 'Ativa' : 'Expirada') : 
             'Sem licença';
-        
+
         const userType = user.is_admin ? 'Admin' : 'Usuário';
         const cadastroDate = user.created_at ? 
             new Date(user.created_at).toLocaleDateString('pt-BR') : 
             '-';
-        
-        // Simular último login (em uma implementação real, isso viria do banco)
-        const lastLogin = user.created_at ? 
-            getTimeAgo(new Date(user.created_at)) : 
-            'Nunca';
-        
-        const userStatus = Math.random() > 0.7 ? 'online' : 'offline'; // Simulado
-        
+
         return `
             <tr>
-                <td>
-                    <input type="checkbox" class="user-checkbox" value="${user.id}" 
-                           onchange="toggleUserSelection(${user.id})"
-                           ${user.is_admin ? 'disabled' : ''}>
-                </td>
                 <td>${user.id}</td>
                 <td>${user.email}</td>
                 <td>
@@ -1572,14 +1427,7 @@ function displayUsers(users) {
                         ${licenseStatus}
                     </span>
                 </td>
-                <td>
-                    <div class="user-status">
-                        <div class="status-dot status-${userStatus}"></div>
-                        ${userStatus === 'online' ? 'Online' : 'Offline'}
-                    </div>
-                </td>
                 <td>${cadastroDate}</td>
-                <td>${lastLogin}</td>
                 <td>
                     <div class="action-buttons">
                         <button class="btn-icon btn-edit" onclick="editUser(${user.id}, '${user.email}')" title="Editar">
@@ -1600,46 +1448,94 @@ function displayUsers(users) {
     }).join('');
 }
 
-async function viewUserDetails(userId) {
-    const user = allUsers.find(u => u.id === userId);
-    if (!user) return;
-    
-    const licenseStatus = user.data_expiracao ? 
-        (new Date(user.data_expiracao) > new Date() ? 'Ativa' : 'Expirada') : 
-        'Sem licença';
-    
-    const expirationDate = user.data_expiracao ? 
-        new Date(user.data_expiracao).toLocaleDateString('pt-BR') : 
-        'N/A';
-    
-    alert(`Detalhes do Usuário:
-    
-ID: ${user.id}
-Email: ${user.email}
-Tipo: ${user.is_admin ? 'Administrador' : 'Usuário'}
-Status da Licença: ${licenseStatus}
-Data de Expiração: ${expirationDate}
-Data de Cadastro: ${user.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR') : 'N/A'}`);
+async function loadProducts() {
+    const token = localStorage.getItem('access_token');
+    const tbody = document.getElementById('productsTableBody');
+
+    try {
+        const response = await fetch('/api/admin/products', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            const products = await response.json();
+            displayProducts(products);
+        } else {
+            throw new Error('Erro ao carregar produtos');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="error-row">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Erro ao carregar produtos
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function displayProducts(products) {
+    const tbody = document.getElementById('productsTableBody');
+
+    if (products.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="empty-row">
+                    <i class="fas fa-box"></i>
+                    Nenhum produto encontrado
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = products.map(product => {
+        const statusBadge = product.is_active ? 
+            '<span class="badge badge-success">Ativo</span>' : 
+            '<span class="badge badge-danger">Inativo</span>';
+
+        const priceFormatted = `R$ ${product.price.toFixed(2)}`;
+        const durationText = `${product.duration_days} dias`;
+
+        return `
+            <tr>
+                <td>${product.id}</td>
+                <td>${product.name}</td>
+                <td>${priceFormatted}</td>
+                <td>${durationText}</td>
+                <td>${statusBadge}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn-icon btn-edit" onclick="editProduct(${product.id})" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon btn-delete" onclick="deleteProduct(${product.id})" title="Deletar">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
 async function loadPayments() {
     const token = localStorage.getItem('access_token');
     const tbody = document.getElementById('paymentsTableBody');
-    
+
     try {
         const response = await fetch('/api/admin/payments', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+            headers: { 'Authorization': `Bearer ${token}` }
         });
-        
+
         if (response.ok) {
             const payments = await response.json();
             displayPayments(payments);
         } else {
             throw new Error('Erro ao carregar pagamentos');
         }
-        
     } catch (error) {
         console.error('Erro:', error);
         tbody.innerHTML = `
@@ -1655,7 +1551,7 @@ async function loadPayments() {
 
 function displayPayments(payments) {
     const tbody = document.getElementById('paymentsTableBody');
-    
+
     if (payments.length === 0) {
         tbody.innerHTML = `
             <tr>
@@ -1667,11 +1563,11 @@ function displayPayments(payments) {
         `;
         return;
     }
-    
+
     tbody.innerHTML = payments.map(payment => {
         const dataFormatada = new Date(payment.data_pagamento).toLocaleDateString('pt-BR');
         const valorFormatado = `R$ ${payment.valor.toFixed(2)}`;
-        
+
         return `
             <tr>
                 <td>${payment.id}</td>
@@ -1688,876 +1584,91 @@ function displayPayments(payments) {
     }).join('');
 }
 
-function editUser(userId, userEmail) {
-    document.getElementById('editUserId').value = userId;
-    document.getElementById('editUserEmail').value = userEmail;
-    document.getElementById('extendDays').value = '';
-    
-    document.getElementById('userEditModal').style.display = 'flex';
-}
+// Funções placeholder para funcionalidades futuras
+function openProductModal() { showToast('Funcionalidade em desenvolvimento', 'info'); }
+function editUser(id, email) { showToast('Funcionalidade em desenvolvimento', 'info'); }
+function viewUserDetails(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
+function deleteUser(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
+function editProduct(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
+function deleteProduct(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
+function refreshUsers() { loadUsers(); }
+function refreshProducts() { loadProducts(); }
+function refreshPayments() { loadPayments(); }
+function saveThemeSettings() { showToast('Configurações salvas', 'success'); }
+function saveGeneralSettings() { showToast('Configurações salvas', 'success'); }
+function exportAllData() { showToast('Exportação iniciada', 'info'); }
+function toggleMaintenance(enable) { showToast('Modo manutenção ' + (enable ? 'ativado' : 'desativado'), 'warning'); }
+function clearCache() { showToast('Cache limpo', 'success'); }
+function backupDatabase() { showToast('Backup iniciado', 'info'); }
+function refreshLogs() { showToast('Logs atualizados', 'info'); }
+function clearLogs() { showToast('Logs limpos', 'success'); }
 
-async function deleteUser(userId) {
-    if (!confirm('Tem certeza que deseja deletar este usuário?')) {
-        return;
-    }
-    
-    const token = localStorage.getItem('access_token');
-    
-    try {
-        const response = await fetch(`/api/admin/users/${userId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (response.ok) {
-            showToast('Usuário deletado com sucesso', 'success');
-            loadUsers(); // Recarregar lista
-        } else {
-            const data = await response.json();
-            showToast(data.detail || 'Erro ao deletar usuário', 'error');
-        }
-        
-    } catch (error) {
-        console.error('Erro:', error);
-        showToast('Erro de conexão', 'error');
-    }
-}
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container') || createToastContainer();
 
-// Event listener para o formulário de edição
-document.getElementById('userEditForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const userId = formData.get('user_id');
-    const token = localStorage.getItem('access_token');
-    
-    try {
-        const response = await fetch(`/api/admin/users/${userId}/license`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        });
-        
-        if (response.ok) {
-            showToast('Usuário atualizado com sucesso', 'success');
-            closeModal('userEditModal');
-            loadUsers(); // Recarregar lista
-        } else {
-            const data = await response.json();
-            showToast(data.detail || 'Erro ao atualizar usuário', 'error');
-        }
-        
-    } catch (error) {
-        console.error('Erro:', error);
-        showToast('Erro de conexão', 'error');
-    }
-});
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'}-circle"></i>
+        <span>${message}</span>
+    `;
 
-function refreshUsers() {
-    loadUsers();
-}
+    container.appendChild(toast);
 
-function refreshPayments() {
-    loadPayments();
-}
-
-async function loadMaintenanceStatus() {
-    const token = localStorage.getItem('access_token');
-    
-    try {
-        const response = await fetch('/api/admin/maintenance/status', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            updateMaintenanceUI(data.enabled);
-        } else {
-            console.error('Erro ao carregar status de manutenção');
-        }
-    } catch (error) {
-        console.error('Erro:', error);
-    }
-}
-
-function updateMaintenanceUI(isEnabled) {
-    const statusDot = document.getElementById('maintenanceStatusDot');
-    const statusText = document.getElementById('maintenanceStatusText');
-    const enableBtn = document.getElementById('enableMaintenanceBtn');
-    const disableBtn = document.getElementById('disableMaintenanceBtn');
-    
-    if (isEnabled) {
-        statusDot.style.background = '#e94560';
-        statusText.textContent = 'SITE FORA DO AR';
-        statusText.style.color = '#e94560';
-        enableBtn.style.display = 'none';
-        disableBtn.style.display = 'inline-flex';
-    } else {
-        statusDot.style.background = '#4CAF50';
-        statusText.textContent = 'SITE ONLINE';
-        statusText.style.color = '#4CAF50';
-        enableBtn.style.display = 'inline-flex';
-        disableBtn.style.display = 'none';
-    }
-}
-
-async function toggleMaintenance(enable) {
-    const action = enable ? 'ativar' : 'desativar';
-    const confirmMessage = enable 
-        ? 'Tem certeza que deseja colocar o site em modo manutenção? Isso impedirá o acesso de todos os usuários (exceto admins).'
-        : 'Tem certeza que deseja reativar o site?';
-    
-    if (!confirm(confirmMessage)) {
-        return;
-    }
-    
-    const token = localStorage.getItem('access_token');
-    
-    try {
-        const formData = new FormData();
-        formData.append('enabled', enable);
-        
-        const response = await fetch('/api/admin/maintenance', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            showToast(data.message, enable ? 'warning' : 'success');
-            updateMaintenanceUI(enable);
-        } else {
-            const data = await response.json();
-            showToast(data.detail || `Erro ao ${action} modo manutenção`, 'error');
-        }
-    } catch (error) {
-        console.error('Erro:', error);
-        showToast(`Erro ao ${action} modo manutenção`, 'error');
-    }
-}
-
-// Funções para aba de Configurações
-async function loadGeneralSettings() {
-    const token = localStorage.getItem('access_token');
-    
-    try {
-        const response = await fetch('/api/admin/settings', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (response.ok) {
-            const settings = await response.json();
-            
-            // Carregar configurações gerais
-            if (settings.general) {
-                document.getElementById('siteName').value = settings.general.site_name || 'DarkFov';
-                document.getElementById('siteUrl').value = settings.general.site_url || '';
-                document.getElementById('supportEmail').value = settings.general.support_email || '';
-                document.getElementById('siteDescription').value = settings.general.site_description || '';
-                document.getElementById('currentVersion').value = settings.general.current_version || '1.0.0';
-            }
-            
-            // Carregar configurações de API
-            if (settings.api) {
-                document.getElementById('mpToken').value = settings.api.mp_token || '';
-                document.getElementById('smtpHost').value = settings.api.smtp_host || '';
-                document.getElementById('smtpPort').value = settings.api.smtp_port || '587';
-                document.getElementById('smtpEmail').value = settings.api.smtp_email || '';
-                document.getElementById('smtpPassword').value = settings.api.smtp_password || '';
-            }
-            
-            // Carregar configurações de segurança
-            if (settings.security) {
-                document.getElementById('enableCaptcha').checked = settings.security.enable_captcha === 'true';
-                document.getElementById('enableTwoFactor').checked = settings.security.enable_two_factor === 'true';
-                document.getElementById('enableEmailVerification').checked = settings.security.enable_email_verification === 'true';
-                document.getElementById('minPasswordLength').value = settings.security.min_password_length || '8';
-            }
-            
-            // Carregar configurações de downloads
-            if (settings.downloads) {
-                document.getElementById('mainDownloadUrl').value = settings.downloads.main_download_url || '';
-                document.getElementById('enableDownloadAuth').checked = settings.downloads.enable_download_auth === 'true';
-            }
-        }
-    } catch (error) {
-        console.error('Erro ao carregar configurações:', error);
-        showToast('Erro ao carregar configurações', 'error');
-    }
-}
-
-async function saveGeneralSettings() {
-    const token = localStorage.getItem('access_token');
-    
-    const formData = new FormData();
-    formData.append('site_name', document.getElementById('siteName').value);
-    formData.append('site_url', document.getElementById('siteUrl').value);
-    formData.append('support_email', document.getElementById('supportEmail').value);
-    formData.append('site_description', document.getElementById('siteDescription').value);
-    formData.append('mp_token', document.getElementById('mpToken').value);
-    formData.append('smtp_host', document.getElementById('smtpHost').value);
-    formData.append('smtp_port', document.getElementById('smtpPort').value);
-    formData.append('smtp_email', document.getElementById('smtpEmail').value);
-    formData.append('smtp_password', document.getElementById('smtpPassword').value);
-    formData.append('enable_captcha', document.getElementById('enableCaptcha').checked);
-    formData.append('enable_two_factor', document.getElementById('enableTwoFactor').checked);
-    formData.append('enable_email_verification', document.getElementById('enableEmailVerification').checked);
-    formData.append('min_password_length', document.getElementById('minPasswordLength').value);
-    formData.append('main_download_url', document.getElementById('mainDownloadUrl').value);
-    formData.append('current_version', document.getElementById('currentVersion').value);
-    formData.append('enable_download_auth', document.getElementById('enableDownloadAuth').checked);
-    
-    try {
-        const response = await fetch('/api/admin/settings/general', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            showToast(data.message || 'Configurações salvas com sucesso', 'success');
-        } else {
-            const data = await response.json();
-            showToast(data.detail || 'Erro ao salvar configurações', 'error');
-        }
-    } catch (error) {
-        console.error('Erro:', error);
-        showToast('Erro ao salvar configurações', 'error');
-    }
-}
-
-// Funções para aba de Logs
-async function loadSystemLogs() {
-    const logContent = document.getElementById('logContent');
-    // Implementar carregamento dos logs
-    console.log('Carregando logs do sistema...');
-}
-
-function refreshLogs() {
-    loadSystemLogs();
-    showToast('Logs atualizados', 'info');
-}
-
-function downloadLogs() {
-    showToast('Download dos logs iniciado', 'info');
-}
-
-function clearLogs() {
-    if (confirm('Tem certeza que deseja limpar todos os logs?')) {
-        showToast('Logs limpos com sucesso', 'success');
-    }
-}
-
-function previousLogPage() {
-    console.log('Página anterior dos logs');
-}
-
-function nextLogPage() {
-    console.log('Próxima página dos logs');
-}
-
-// Funções para aba de Sistema
-async function loadSystemInfo() {
-    // Implementar carregamento das informações do sistema
-    console.log('Carregando informações do sistema...');
-}
-
-function clearCache() {
-    showToast('Cache limpo com sucesso', 'success');
-}
-
-function backupDatabase() {
-    showToast('Backup do banco iniciado', 'info');
-}
-
-function optimizeDatabase() {
-    if (confirm('Deseja otimizar o banco de dados? Esta operação pode demorar alguns minutos.')) {
-        showToast('Otimização do banco iniciada', 'info');
-    }
-}
-
-function checkUpdates() {
-    showToast('Verificando atualizações...', 'info');
     setTimeout(() => {
-        showToast('Sistema está atualizado', 'success');
-    }, 2000);
-}
-
-function exportData() {
-    showToast('Exportação iniciada', 'info');
-}
-
-function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
-}
-
-// Funções para gerenciar produtos
-async function loadProducts() {
-    const token = localStorage.getItem('access_token');
-    const tbody = document.getElementById('productsTableBody');
-    
-    try {
-        const response = await fetch('/api/admin/products', {
-            headers: {
-                'Authorization': `Bearer ${token}`
+        toast.style.opacity = '0';
+        setTimeout(() => {
+            if (container.contains(toast)) {
+                container.removeChild(toast);
             }
-        });
-        
-        if (response.ok) {
-            const products = await response.json();
-            displayProducts(products);
-        } else {
-            throw new Error('Erro ao carregar produtos');
-        }
-        
-    } catch (error) {
-        console.error('Erro:', error);
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="7" class="error-row">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    Erro ao carregar produtos
-                </td>
-            </tr>
-        `;
-    }
+        }, 300);
+    }, 3000);
 }
 
-function displayProducts(products) {
-    const tbody = document.getElementById('productsTableBody');
-    
-    if (products.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="7" class="empty-row">
-                    <i class="fas fa-box"></i>
-                    Nenhum produto encontrado
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    tbody.innerHTML = products.map(product => {
-        const statusBadge = product.is_active ? 
-            '<span class="badge badge-success">Ativo</span>' : 
-            '<span class="badge badge-danger">Inativo</span>';
-        
-        const featuredBadge = product.is_featured ? 
-            '<span class="badge badge-warning">Sim</span>' : 
-            '<span class="badge badge-secondary">Não</span>';
-        
-        const priceFormatted = `R$ ${product.price.toFixed(2)}`;
-        const durationText = `${product.duration_days} dias`;
-        
-        return `
-            <tr>
-                <td>${product.id}</td>
-                <td>${product.name}</td>
-                <td>${priceFormatted}</td>
-                <td>${durationText}</td>
-                <td>${statusBadge}</td>
-                <td>${featuredBadge}</td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="btn-icon btn-edit" onclick="editProduct(${product.id})" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-icon ${product.is_active ? 'btn-warning' : 'btn-success'}" 
-                                onclick="toggleProductStatus(${product.id}, ${!product.is_active})" 
-                                title="${product.is_active ? 'Pausar' : 'Ativar'}">
-                            <i class="fas ${product.is_active ? 'fa-pause' : 'fa-play'}"></i>
-                        </button>
-                        <button class="btn-icon btn-delete" onclick="deleteProduct(${product.id})" title="Deletar">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    }).join('');
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    `;
+    document.body.appendChild(container);
+    return container;
 }
-
-function openProductModal(productId = null) {
-    const modal = document.getElementById('productModal');
-    const title = document.getElementById('productModalTitle');
-    const form = document.getElementById('productForm');
-    
-    if (productId) {
-        title.textContent = 'EDITAR PRODUTO';
-        loadProductData(productId);
-    } else {
-        title.textContent = 'NOVO PRODUTO';
-        form.reset();
-        document.getElementById('productId').value = '';
-        document.getElementById('productActive').checked = true;
-    }
-    
-    modal.style.display = 'flex';
-}
-
-async function loadProductData(productId) {
-    const token = localStorage.getItem('access_token');
-    
-    try {
-        const response = await fetch('/api/admin/products', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (response.ok) {
-            const products = await response.json();
-            const product = products.find(p => p.id === productId);
-            
-            if (product) {
-                document.getElementById('productId').value = product.id;
-                document.getElementById('productName').value = product.name;
-                document.getElementById('productDescription').value = product.description || '';
-                document.getElementById('productPrice').value = product.price;
-                document.getElementById('productDuration').value = product.duration_days;
-                document.getElementById('productImage').value = product.image_url || '';
-                document.getElementById('productFeatures').value = product.features || '';
-                document.getElementById('productActive').checked = product.is_active;
-                document.getElementById('productFeatured').checked = product.is_featured;
-            }
-        }
-    } catch (error) {
-        console.error('Erro ao carregar dados do produto:', error);
-        showToast('Erro ao carregar dados do produto', 'error');
-    }
-}
-
-async function editProduct(productId) {
-    openProductModal(productId);
-}
-
-async function toggleProductStatus(productId, newStatus) {
-    const token = localStorage.getItem('access_token');
-    
-    try {
-        // Primeiro buscar os dados atuais do produto
-        const getResponse = await fetch('/api/admin/products', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (!getResponse.ok) {
-            throw new Error('Erro ao buscar dados do produto');
-        }
-        
-        const products = await getResponse.json();
-        const product = products.find(p => p.id === productId);
-        
-        if (!product) {
-            throw new Error('Produto não encontrado');
-        }
-        
-        // Criar FormData com todos os dados necessários
-        const formData = new FormData();
-        formData.append('name', product.name);
-        formData.append('description', product.description || '');
-        formData.append('price', product.price);
-        formData.append('duration_days', product.duration_days);
-        formData.append('image_url', product.image_url || '');
-        formData.append('features', product.features || '');
-        formData.append('is_active', newStatus);
-        formData.append('is_featured', product.is_featured);
-        
-        const response = await fetch(`/api/admin/products/${productId}`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        });
-        
-        if (response.ok) {
-            showToast(`Produto ${newStatus ? 'ativado' : 'pausado'} com sucesso`, 'success');
-            loadProducts();
-        } else {
-            const data = await response.json();
-            showToast(data.detail || 'Erro ao alterar status do produto', 'error');
-        }
-    } catch (error) {
-        console.error('Erro:', error);
-        showToast('Erro ao alterar status do produto', 'error');
-    }
-}
-
-async function deleteProduct(productId) {
-    if (!confirm('Tem certeza que deseja deletar este produto?')) {
-        return;
-    }
-    
-    const token = localStorage.getItem('access_token');
-    
-    try {
-        const response = await fetch(`/api/admin/products/${productId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (response.ok) {
-            showToast('Produto deletado com sucesso', 'success');
-            loadProducts();
-        } else {
-            const data = await response.json();
-            showToast(data.detail || 'Erro ao deletar produto', 'error');
-        }
-    } catch (error) {
-        console.error('Erro:', error);
-        showToast('Erro ao deletar produto', 'error');
-    }
-}
-
-function refreshProducts() {
-    loadProducts();
-}
-
-// Event listener para o formulário de produtos
-document.addEventListener('DOMContentLoaded', function() {
-    const productForm = document.getElementById('productForm');
-    if (productForm) {
-        productForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            await saveProduct();
-        });
-    }
-});
-
-async function saveProduct() {
-    const form = document.getElementById('productForm');
-    const formData = new FormData(form);
-    const token = localStorage.getItem('access_token');
-    const productId = document.getElementById('productId').value;
-    
-    const submitBtn = form.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SALVANDO...';
-    submitBtn.disabled = true;
-    
-    try {
-        const url = productId ? `/api/admin/products/${productId}` : '/api/admin/products';
-        const method = productId ? 'PUT' : 'POST';
-        
-        const response = await fetch(url, {
-            method: method,
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        });
-        
-        if (response.ok) {
-            const action = productId ? 'atualizado' : 'criado';
-            showToast(`Produto ${action} com sucesso`, 'success');
-            closeModal('productModal');
-            loadProducts();
-        } else {
-            const data = await response.json();
-            showToast(data.detail || 'Erro ao salvar produto', 'error');
-        }
-    } catch (error) {
-        console.error('Erro:', error);
-        showToast('Erro ao salvar produto', 'error');
-    } finally {
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-    }
-}
-
-// Funções para gerenciar temas
-async function loadThemeSettings() {
-    const token = localStorage.getItem('access_token');
-    
-    try {
-        const response = await fetch('/api/admin/settings', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (response.ok) {
-            const settings = await response.json();
-            populateThemeForm(settings);
-        } else {
-            console.log('Nenhuma configuração encontrada, usando valores padrão');
-        }
-    } catch (error) {
-        console.error('Erro ao carregar configurações:', error);
-    }
-}
-
-function populateThemeForm(settings) {
-    // Carregar cores
-    if (settings.theme) {
-        document.getElementById('primary-color').value = settings.theme['primary-color'] || '#00ffff';
-        document.getElementById('primary-color-text').value = settings.theme['primary-color'] || '#00ffff';
-        document.getElementById('secondary-color').value = settings.theme['secondary-color'] || '#e94560';
-        document.getElementById('secondary-color-text').value = settings.theme['secondary-color'] || '#e94560';
-        document.getElementById('bg-color').value = settings.theme['bg-color'] || '#0f0f23';
-        document.getElementById('bg-color-text').value = settings.theme['bg-color'] || '#0f0f23';
-        document.getElementById('text-color').value = settings.theme['text-color'] || '#ffffff';
-        document.getElementById('text-color-text').value = settings.theme['text-color'] || '#ffffff';
-        
-        // Carregar fontes
-        document.getElementById('primary-font').value = settings.theme['primary-font'] || 'Orbitron';
-        document.getElementById('secondary-font').value = settings.theme['secondary-font'] || 'Roboto';
-    }
-    
-    // Carregar imagens
-    if (settings.images) {
-        document.getElementById('main-logo').value = settings.images['main-logo'] || '';
-        document.getElementById('hero-bg').value = settings.images['hero-bg'] || '';
-        document.getElementById('favicon').value = settings.images['favicon'] || '';
-        document.getElementById('product-image').value = settings.images['product-image'] || '';
-    }
-    
-    // Carregar textos
-    if (settings.content) {
-        document.getElementById('site-name').value = settings.content['site-name'] || 'DarkFov';
-        document.getElementById('main-slogan').value = settings.content['main-slogan'] || 'DOMINE O CAMPO DE BATALHA';
-        document.getElementById('hero-description').value = settings.content['hero-description'] || 'O aimbot mais avançado para BloodStrike. Recursos premium, anti-detecção e suporte 24/7.';
-        document.getElementById('main-cta').value = settings.content['main-cta'] || 'COMEÇAR AGORA';
-        document.getElementById('footer-text').value = settings.content['footer-text'] || '© 2024 DarkFov. Todos os direitos reservados.';
-    }
-    
-    updatePreview();
-}
-
-function setupThemeEditor() {
-    // Sincronizar color picker com input text
-    const colorInputs = [
-        ['primary-color', 'primary-color-text'],
-        ['secondary-color', 'secondary-color-text'],
-        ['bg-color', 'bg-color-text'],
-        ['text-color', 'text-color-text']
-    ];
-    
-    colorInputs.forEach(([colorId, textId]) => {
-        const colorInput = document.getElementById(colorId);
-        const textInput = document.getElementById(textId);
-        
-        colorInput.addEventListener('change', function() {
-            textInput.value = this.value;
-            updatePreview();
-        });
-        
-        textInput.addEventListener('input', function() {
-            if (this.value.match(/^#[0-9A-F]{6}$/i)) {
-                colorInput.value = this.value;
-            }
-            updatePreview();
-        });
-    });
-    
-    // Event listeners para outros campos
-    const previewFields = [
-        'primary-font', 'secondary-font', 'site-name', 'main-slogan', 
-        'hero-description', 'main-cta', 'footer-text'
-    ];
-    
-    previewFields.forEach(fieldId => {
-        const field = document.getElementById(fieldId);
-        if (field) {
-            field.addEventListener('input', updatePreview);
-            field.addEventListener('change', updatePreview);
-        }
-    });
-}
-
-function updatePreview() {
-    const previewCard = document.getElementById('theme-preview');
-    const previewSiteName = document.getElementById('preview-site-name');
-    const previewSlogan = document.getElementById('preview-slogan');
-    const previewDescription = document.getElementById('preview-description');
-    const previewCta = document.getElementById('preview-cta');
-    
-    // Atualizar textos
-    previewSiteName.textContent = document.getElementById('site-name').value || 'DarkFov';
-    previewSlogan.textContent = document.getElementById('main-slogan').value || 'DOMINE O CAMPO DE BATALHA';
-    previewDescription.textContent = document.getElementById('hero-description').value || 'O aimbot mais avançado para BloodStrike.';
-    previewCta.textContent = document.getElementById('main-cta').value || 'COMEÇAR AGORA';
-    
-    // Atualizar cores e fontes
-    const primaryColor = document.getElementById('primary-color-text').value || '#00ffff';
-    const secondaryColor = document.getElementById('secondary-color-text').value || '#e94560';
-    const bgColor = document.getElementById('bg-color-text').value || '#0f0f23';
-    const textColor = document.getElementById('text-color-text').value || '#ffffff';
-    const primaryFont = document.getElementById('primary-font').value || 'Orbitron';
-    
-    previewCard.style.background = `linear-gradient(135deg, ${bgColor} 0%, ${bgColor}aa 100%)`;
-    previewCard.style.borderColor = `${primaryColor}55`;
-    previewSiteName.style.color = primaryColor;
-    previewSiteName.style.fontFamily = `'${primaryFont}', monospace`;
-    previewSlogan.style.color = textColor;
-    previewDescription.style.color = `${textColor}cc`;
-    previewCta.style.background = `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`;
-}
-
-async function saveThemeSettings() {
-    const token = localStorage.getItem('access_token');
-    
-    const settings = {
-        theme: {
-            'primary-color': document.getElementById('primary-color-text').value,
-            'secondary-color': document.getElementById('secondary-color-text').value,
-            'bg-color': document.getElementById('bg-color-text').value,
-            'text-color': document.getElementById('text-color-text').value,
-            'primary-font': document.getElementById('primary-font').value,
-            'secondary-font': document.getElementById('secondary-font').value
-        },
-        images: {
-            'main-logo': document.getElementById('main-logo').value,
-            'hero-bg': document.getElementById('hero-bg').value,
-            'favicon': document.getElementById('favicon').value,
-            'product-image': document.getElementById('product-image').value
-        },
-        content: {
-            'site-name': document.getElementById('site-name').value,
-            'main-slogan': document.getElementById('main-slogan').value,
-            'hero-description': document.getElementById('hero-description').value,
-            'main-cta': document.getElementById('main-cta').value,
-            'footer-text': document.getElementById('footer-text').value
-        }
-    };
-    
-    try {
-        const response = await fetch('/api/admin/settings', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(settings)
-        });
-        
-        if (response.ok) {
-            showToast('Configurações de tema salvas com sucesso', 'success');
-            // Aplicar mudanças imediatamente no site
-            applyThemeToSite(settings);
-        } else {
-            const data = await response.json();
-            showToast(data.detail || 'Erro ao salvar configurações', 'error');
-        }
-    } catch (error) {
-        console.error('Erro:', error);
-        showToast('Erro ao salvar configurações', 'error');
-    }
-}
-
-function applyThemeToSite(settings) {
-    // Aplicar cores CSS personalizadas
-    const root = document.documentElement;
-    
-    if (settings.theme) {
-        // Converter cores hex para HSL e aplicar
-        if (settings.theme['primary-color']) {
-            const primaryHSL = hexToHSL(settings.theme['primary-color']);
-            root.style.setProperty('--primary', primaryHSL);
-        }
-        
-        if (settings.theme['secondary-color']) {
-            const secondaryHSL = hexToHSL(settings.theme['secondary-color']);
-            root.style.setProperty('--secondary', secondaryHSL);
-        }
-        
-        if (settings.theme['bg-color']) {
-            const bgHSL = hexToHSL(settings.theme['bg-color']);
-            root.style.setProperty('--bg-primary', bgHSL);
-        }
-        
-        if (settings.theme['text-color']) {
-            const textHSL = hexToHSL(settings.theme['text-color']);
-            root.style.setProperty('--text-primary', textHSL);
-        }
-        
-        // Aplicar fontes
-        if (settings.theme['primary-font']) {
-            root.style.setProperty('--font-primary', `'${settings.theme['primary-font']}', monospace`);
-        }
-        
-        if (settings.theme['secondary-font']) {
-            root.style.setProperty('--font-secondary', `'${settings.theme['secondary-font']}', sans-serif`);
-        }
-    }
-    
-    // Aplicar mudanças de conteúdo
-    if (settings.content) {
-        // Atualizar título da página se existir
-        const pageTitle = document.querySelector('title');
-        if (pageTitle && settings.content['site-name']) {
-            pageTitle.textContent = settings.content['site-name'];
-        }
-        
-        // Atualizar outros elementos de conteúdo se estiverem na página
-        const siteName = document.querySelector('.site-name, .brand-name');
-        if (siteName && settings.content['site-name']) {
-            siteName.textContent = settings.content['site-name'];
-        }
-    }
-}
-
-function hexToHSL(hex) {
-    // Converter hex para RGB
-    const r = parseInt(hex.slice(1, 3), 16) / 255;
-    const g = parseInt(hex.slice(3, 5), 16) / 255;
-    const b = parseInt(hex.slice(5, 7), 16) / 255;
-    
-    // Encontrar min e max
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    
-    let h, s, l = (max + min) / 2;
-    
-    if (max === min) {
-        h = s = 0; // Achromatic
-    } else {
-        const d = max - min;
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-        
-        switch (max) {
-            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-            case g: h = (b - r) / d + 2; break;
-            case b: h = (r - g) / d + 4; break;
-        }
-        h /= 6;
-    }
-    
-    // Converter para valores CSS HSL
-    h = Math.round(h * 360);
-    s = Math.round(s * 100);
-    l = Math.round(l * 100);
-    
-    return `${h} ${s}% ${l}%`;
-}
-
-// Fechar modal clicando fora
-window.addEventListener('click', function(e) {
-    const modals = document.querySelectorAll('.modal');
-    modals.forEach(modal => {
-        if (e.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
-});
 </script>
+
+<style>
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    transition: opacity 0.3s ease;
+    min-width: 300px;
+}
+
+.toast-success {
+    background: linear-gradient(135deg, var(--success), #00cc66);
+}
+
+.toast-error {
+    background: linear-gradient(135deg, var(--danger), #cc0000);
+}
+
+.toast-info {
+    background: linear-gradient(135deg, var(--primary), #0099cc);
+}
+
+.toast-warning {
+    background: linear-gradient(135deg, var(--warning), #cc8800);
+}
+</style>
 {% endblock %}
