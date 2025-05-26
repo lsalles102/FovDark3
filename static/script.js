@@ -547,6 +547,48 @@ function checkFeatureSupport() {
     return features;
 }
 
+// Função para abrir links externos
+function openExternalLink(url, platform) {
+    window.open(url, '_blank');
+
+    // Log da ação
+    console.log(`Link externo aberto: ${platform} - ${url}`);
+
+    // Opcional: Rastrear cliques
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'external_link_click', {
+            'platform': platform,
+            'url': url
+        });
+    }
+}
+
+// Verificar se o site tem SSL
+function checkSSL() {
+    if (location.protocol === 'https:') {
+        console.log('✓ Conexão SSL Segura');
+        return true;
+    } else {
+        console.warn('⚠ Conexão não segura');
+        return false;
+    }
+}
+
+// Inicializar verificações de segurança
+document.addEventListener('DOMContentLoaded', function() {
+    checkSSL();
+
+    // Adicionar indicador SSL ao footer se existir
+    const footer = document.querySelector('.footer');
+    if (footer && location.protocol === 'https:') {
+        const sslBadge = document.createElement('div');
+        sslBadge.className = 'ssl-badge';
+        sslBadge.innerHTML = '<i class="fas fa-lock"></i> Conexão Segura SSL';
+        sslBadge.style.cssText = 'color: #00ff8c; font-size: 0.8rem; margin-top: 1rem; text-align: center;';
+        footer.appendChild(sslBadge);
+    }
+});
+
 // Função para processar pagamento
 async function processPayment(plano) {
     const token = localStorage.getItem('access_token');
