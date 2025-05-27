@@ -69,6 +69,81 @@
     </div>
 </section>
 
+<!-- Video Demo Section -->
+<section class="video-demo-section">
+    <div class="container">
+        <h2 class="section-title">VEJA O FOVDARK EM AÇÃO</h2>
+        <p class="section-subtitle">Demonstração completa do sistema em funcionamento</p>
+        
+        <div class="video-container">
+            <div class="video-frame">
+                <div class="video-overlay">
+                    <button class="play-button" onclick="playDemoVideo()">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <div class="video-info">
+                        <h3>DEMONSTRAÇÃO OFICIAL</h3>
+                        <p>Veja como o FovDark funciona no BloodStrike</p>
+                    </div>
+                </div>
+                
+                <!-- Placeholder para thumbnail do vídeo -->
+                <div class="video-thumbnail">
+                    <img src="/static/video-thumb.jpg" alt="Demonstração FovDark" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                
+                <!-- Vídeo real (inicialmente oculto) -->
+                <video id="demoVideo" controls style="display: none; width: 100%; height: 100%;">
+                    <source src="/static/demo-video.mp4" type="video/mp4">
+                    <source src="/static/demo-video.webm" type="video/webm">
+                    Seu navegador não suporta vídeos HTML5.
+                </video>
+                
+                <!-- Alternativa: Iframe para YouTube/Vimeo -->
+                <iframe id="youtubeVideo" style="display: none; width: 100%; height: 100%;" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                </iframe>
+            </div>
+            
+            <div class="video-features">
+                <div class="feature-highlight">
+                    <i class="fas fa-crosshairs"></i>
+                    <span>Mira Precisa</span>
+                </div>
+                <div class="feature-highlight">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Anti-Detecção</span>
+                </div>
+                <div class="feature-highlight">
+                    <i class="fas fa-rocket"></i>
+                    <span>Performance</span>
+                </div>
+                <div class="feature-highlight">
+                    <i class="fas fa-cog"></i>
+                    <span>Configurável</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="video-stats">
+            <div class="stat-box">
+                <span class="stat-number">99.9%</span>
+                <span class="stat-label">Precisão</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-number">50K+</span>
+                <span class="stat-label">Usuários</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-number">24/7</span>
+                <span class="stat-label">Suporte</span>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- Features Section -->
 <section id="features" class="features-section">
     <div class="container">
@@ -513,6 +588,78 @@ document.addEventListener('mouseout', function(e) {
     if (e.target.closest('.cyber-btn')) {
         const btn = e.target.closest('.cyber-btn');
         btn.style.textShadow = '';
+    }
+});
+
+// Função para reproduzir vídeo de demonstração
+function playDemoVideo() {
+    const videoFrame = document.querySelector('.video-frame');
+    const videoOverlay = document.querySelector('.video-overlay');
+    const demoVideo = document.getElementById('demoVideo');
+    const youtubeVideo = document.getElementById('youtubeVideo');
+    const videoThumbnail = document.querySelector('.video-thumbnail');
+    
+    // Configurar qual tipo de vídeo usar
+    const useYouTube = true; // Alterar para false se usar vídeo local
+    const youtubeVideoId = 'SEU_VIDEO_ID_AQUI'; // Substituir pelo ID do vídeo do YouTube
+    
+    if (useYouTube && youtubeVideoId !== 'SEU_VIDEO_ID_AQUI') {
+        // Usar YouTube
+        youtubeVideo.src = `https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&rel=0&modestbranding=1`;
+        youtubeVideo.style.display = 'block';
+        demoVideo.style.display = 'none';
+    } else {
+        // Usar vídeo local
+        demoVideo.style.display = 'block';
+        youtubeVideo.style.display = 'none';
+        demoVideo.play();
+    }
+    
+    // Ocultar overlay e thumbnail
+    videoOverlay.style.display = 'none';
+    videoThumbnail.style.display = 'none';
+    
+    // Adicionar efeito visual
+    videoFrame.classList.add('playing');
+    
+    // Log da ação
+    console.log('Vídeo de demonstração iniciado');
+    
+    // Opcional: Rastrear visualização
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'video_play', {
+            'video_title': 'FovDark Demo',
+            'video_provider': useYouTube ? 'youtube' : 'local'
+        });
+    }
+}
+
+// Função para resetar vídeo (se necessário)
+function resetDemoVideo() {
+    const videoOverlay = document.querySelector('.video-overlay');
+    const demoVideo = document.getElementById('demoVideo');
+    const youtubeVideo = document.getElementById('youtubeVideo');
+    const videoThumbnail = document.querySelector('.video-thumbnail');
+    const videoFrame = document.querySelector('.video-frame');
+    
+    videoOverlay.style.display = 'flex';
+    videoThumbnail.style.display = 'block';
+    demoVideo.style.display = 'none';
+    youtubeVideo.style.display = 'none';
+    youtubeVideo.src = '';
+    videoFrame.classList.remove('playing');
+    
+    if (demoVideo) {
+        demoVideo.pause();
+        demoVideo.currentTime = 0;
+    }
+}
+
+// Event listener para clique no overlay do vídeo
+document.addEventListener('DOMContentLoaded', function() {
+    const videoOverlay = document.querySelector('.video-overlay');
+    if (videoOverlay) {
+        videoOverlay.addEventListener('click', playDemoVideo);
     }
 });
 </script>
