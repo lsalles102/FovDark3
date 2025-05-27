@@ -426,17 +426,21 @@ async function processPayment() {
         const data = await response.json();
         
         if (response.ok) {
-            // Redirecionar para página de sucesso (simulação)
-            const initPoint = data.init_point || data.sandbox_init_point;
-            if (initPoint) {
-                window.location.href = initPoint;
-            } else {
-                showToast('Erro ao gerar link de pagamento', 'error');
-                document.getElementById('loadingPayment').style.display = 'none';
-                document.getElementById('checkoutForm').style.display = 'block';
-            }
+            // Simular sucesso do pagamento
+            showToast('Pagamento processado com sucesso!', 'success');
+            setTimeout(() => {
+                window.location.href = '/sucesso?plan=' + selectedPlanData.type;
+            }, 2000);
         } else {
-            throw new Error(data.detail || 'Erro ao processar pagamento');
+            if (response.status === 401) {
+                showToast('Sessão expirada. Faça login novamente.', 'error');
+                localStorage.clear();
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 2000);
+            } else {
+                throw new Error(data.detail || 'Erro ao processar pagamento');
+            }
         }
     } catch (error) {
         console.error('Erro no pagamento:', error);

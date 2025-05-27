@@ -838,48 +838,45 @@ function checkAuthenticationStatus() {
     updateAuthenticationUI();
 }
 
-// Função para mostrar notificações toast
+// Função para mostrar notificações
 function showToast(message, type = 'info') {
+    // Remover toast anterior se existir
+    const existingToast = document.querySelector('.toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+    // Criar novo toast
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.innerHTML = `
         <div class="toast-content">
-            <i class="fas fa-${getToastIcon(type)}"></i>
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
             <span>${message}</span>
         </div>
-        <button class="toast-close" onclick="closeToast(this)">
-            <i class="fas fa-times"></i>
-        </button>
     `;
 
-    const container = document.getElementById('toast-container');
-    if (container) {
-        container.appendChild(toast);
+    // Adicionar estilos
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : '#3B82F6'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        animation: slideIn 0.3s ease;
+    `;
 
-        // Auto remove after 5 seconds
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.remove();
-            }
-        }, 5000);
-    }
-}
+    document.body.appendChild(toast);
 
-function getToastIcon(type) {
-    const icons = {
-        'success': 'check-circle',
-        'error': 'exclamation-circle',
-        'warning': 'exclamation-triangle',
-        'info': 'info-circle'
-    };
-    return icons[type] || 'info-circle';
-}
-
-function closeToast(button) {
-    const toast = button.closest('.toast');
-    if (toast) {
-        toast.remove();
-    }
+    // Remover após 5 segundos
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
 }
 
 // Função para logout

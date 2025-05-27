@@ -66,10 +66,23 @@ async def create_preference(
         if "error" in preference:
             raise HTTPException(status_code=400, detail=preference["error"])
         
+        # Criar registro de pagamento pendente
+        new_payment = Payment(
+            user_id=current_user.id,
+            valor=PRODUCTS[plan_id]["price"],
+            plano=plan_id,
+            status="pendente",
+            gateway_id=preference["id"]
+        )
+        db.add(new_payment)
+        db.commit()
+        
         return {
+            "success": True,
             "preference_id": preference["id"],
             "init_point": preference["init_point"],
-            "sandbox_init_point": preference.get("sandbox_init_point")
+            "sandbox_init_point": preference.get("sandbox_init_point"),
+            "message": "Preferência criada com sucesso"
         }
         
     except Exception as e:
