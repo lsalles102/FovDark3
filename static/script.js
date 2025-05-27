@@ -840,6 +840,8 @@ function checkAuthenticationStatus() {
 
 // Função para mostrar notificações
 function showToast(message, type = 'info') {
+    console.log('Mostrando toast:', message, type);
+    
     // Remover toast anterior se existir
     const existingToast = document.querySelector('.toast');
     if (existingToast) {
@@ -856,27 +858,69 @@ function showToast(message, type = 'info') {
         </div>
     `;
 
-    // Adicionar estilos
+    // Adicionar estilos inline para garantir funcionamento
+    const backgroundColor = type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : type === 'warning' ? '#F59E0B' : '#3B82F6';
+    
     toast.style.cssText = `
         position: fixed;
-        top: 20px;
+        top: 100px;
         right: 20px;
-        background: ${type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : '#3B82F6'};
+        background: ${backgroundColor};
         color: white;
-        padding: 12px 20px;
+        padding: 15px 20px;
         border-radius: 8px;
-        z-index: 10000;
+        z-index: 10001;
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        animation: slideIn 0.3s ease;
+        font-weight: 500;
+        font-size: 14px;
+        max-width: 400px;
+        animation: slideInRight 0.3s ease;
+        border-left: 4px solid rgba(255,255,255,0.3);
     `;
+
+    // Adicionar animação CSS se não existir
+    if (!document.querySelector('#toast-animations')) {
+        const style = document.createElement('style');
+        style.id = 'toast-animations';
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+            .toast-content {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+        `;
+        document.head.appendChild(style);
+    }
 
     document.body.appendChild(toast);
 
     // Remover após 5 segundos
     setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
+        toast.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, 300);
     }, 5000);
+    
+    // Permitir fechar clicando no toast
+    toast.addEventListener('click', () => {
+        toast.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, 300);
+    });
 }
 
 // Função para logout

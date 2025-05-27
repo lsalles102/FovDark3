@@ -371,27 +371,49 @@
 let selectedPlanData = null;
 
 function selectPlan(planType, price) {
+    console.log('Selecionando plano:', planType, price);
     selectedPlanData = { type: planType, price: price };
     
     // Verificar se o usuário está logado
     const token = localStorage.getItem('access_token');
+    console.log('Token encontrado:', !!token);
+    
+    const modal = document.getElementById('checkoutModal');
+    const loginPrompt = document.getElementById('loginPrompt');
+    const checkoutForm = document.getElementById('checkoutForm');
+    const loadingPayment = document.getElementById('loadingPayment');
+    
+    // Reset modal state
+    if (loadingPayment) loadingPayment.style.display = 'none';
     
     if (!token) {
         // Mostrar modal de login
-        document.getElementById('loginPrompt').style.display = 'block';
-        document.getElementById('checkoutForm').style.display = 'none';
+        if (loginPrompt) loginPrompt.style.display = 'block';
+        if (checkoutForm) checkoutForm.style.display = 'none';
     } else {
         // Mostrar formulário de checkout
-        document.getElementById('loginPrompt').style.display = 'none';
-        document.getElementById('checkoutForm').style.display = 'block';
+        if (loginPrompt) loginPrompt.style.display = 'none';
+        if (checkoutForm) checkoutForm.style.display = 'block';
         
         // Atualizar resumo
-        document.getElementById('selectedPlan').textContent = planType.toUpperCase();
-        document.getElementById('selectedPrice').textContent = `R$ ${price.toFixed(2).replace('.', ',')}`;
+        const selectedPlanElement = document.getElementById('selectedPlan');
+        const selectedPriceElement = document.getElementById('selectedPrice');
+        
+        if (selectedPlanElement) {
+            selectedPlanElement.textContent = planType.toUpperCase();
+        }
+        if (selectedPriceElement) {
+            selectedPriceElement.textContent = `R$ ${price.toFixed(2).replace('.', ',')}`;
+        }
     }
     
     // Abrir modal
-    document.getElementById('checkoutModal').style.display = 'flex';
+    if (modal) {
+        modal.style.display = 'flex';
+        console.log('Modal aberto');
+    } else {
+        console.error('Modal não encontrado');
+    }
 }
 
 function closeCheckoutModal() {
@@ -399,38 +421,62 @@ function closeCheckoutModal() {
 }
 
 async function processPayment() {
-    if (!selectedPlanData) return;
+    console.log('Processando pagamento...');
+    
+    if (!selectedPlanData) {
+        console.error('Nenhum plano selecionado');
+        showToast('Erro: Nenhum plano selecionado', 'error');
+        return;
+    }
     
     const token = localStorage.getItem('access_token');
     if (!token) {
+        console.error('Token não encontrado');
         showToast('Erro: Usuário não autenticado', 'error');
         return;
     }
     
+    console.log('Enviando para servidor:', selectedPlanData);
+    
     // Mostrar loading
-    document.getElementById('checkoutForm').style.display = 'none';
-    document.getElementById('loadingPayment').style.display = 'block';
+    const checkoutForm = document.getElementById('checkoutForm');
+    const loadingPayment = document.getElementById('loadingPayment');
+    
+    if (checkoutForm) checkoutForm.style.display = 'none';
+    if (loadingPayment) loadingPayment.style.display = 'block';
     
     try {
+        const requestBody = {
+            plan_id: selectedPlanData.type
+        };
+        
+        console.log('Fazendo requisição para:', '/api/mercadopago/create-preference');
+        console.log('Body:', requestBody);
+        
         const response = await fetch('/api/mercadopago/create-preference', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({
-                plan_id: selectedPlanData.type
-            })
+            body: JSON.stringify(requestBody)
         });
         
+        console.log('Status da resposta:', response.status);
+        
         const data = await response.json();
+        console.log('Dados da resposta:', data);
         
         if (response.ok) {
-            // Simular sucesso do pagamento
             showToast('Pagamento processado com sucesso!', 'success');
+            
+            // Fechar modal
+            closeCheckoutModal();
+            
+            // Redirecionar após delay
             setTimeout(() => {
                 window.location.href = '/sucesso?plan=' + selectedPlanData.type;
-            }, 2000);
+            }, 1500);
         } else {
             if (response.status === 401) {
                 showToast('Sessão expirada. Faça login novamente.', 'error');
@@ -447,8 +493,8 @@ async function processPayment() {
         showToast('Erro ao processar pagamento: ' + error.message, 'error');
         
         // Voltar ao formulário
-        document.getElementById('loadingPayment').style.display = 'none';
-        document.getElementById('checkoutForm').style.display = 'block';
+        if (loadingPayment) loadingPayment.style.display = 'none';
+        if (checkoutForm) checkoutForm.style.display = 'block';
     }
 }
 
@@ -486,8 +532,23 @@ window.onclick = function(event) {
     }
 }
 
-// Animações ao carregar
+// Debug e inicialização
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Página de compras carregada');
+    
+    // Verificar se elementos existem
+    const modal = document.getElementById('checkoutModal');
+    const loginPrompt = document.getElementById('loginPrompt');
+    const checkoutForm = document.getElementById('checkoutForm');
+    
+    console.log('Modal encontrado:', !!modal);
+    console.log('Login prompt encontrado:', !!loginPrompt);
+    console.log('Checkout form encontrado:', !!checkoutForm);
+    
+    // Verificar botões dos planos
+    const planButtons = document.querySelectorAll('[onclick^="selectPlan"]');
+    console.log('Botões de plano encontrados:', planButtons.length);
+    
     // Animar cards de pricing
     const cards = document.querySelectorAll('.pricing-card');
     cards.forEach((card, index) => {
@@ -495,6 +556,10 @@ document.addEventListener('DOMContentLoaded', function() {
             card.classList.add('animate-slide-up');
         }, index * 200);
     });
+    
+    // Verificar autenticação
+    const token = localStorage.getItem('access_token');
+    console.log('Usuário autenticado:', !!token);
 });
 </script>
 {% endblock %}
