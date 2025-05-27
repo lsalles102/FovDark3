@@ -1064,7 +1064,7 @@ function showToast(message, type = 'info') {
         color: white;
         padding: 15px 20px;
         border-radius: 8px;
-        z-index: 10001;```text
+        z-index: 10001;
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         font-weight: 500;
         font-size: 14px;
