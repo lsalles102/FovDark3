@@ -233,6 +233,21 @@ async def login_user(
             detail="Email ou senha incorretos"
         )
     
+    # Lista de emails autorizados como admin
+    AUTHORIZED_ADMIN_EMAILS = [
+        "admin@fovdark.com",
+        "lsalles102@gmail.com"
+    ]
+    
+    # Verificar e corrigir status de admin
+    is_authorized_admin = user.email in AUTHORIZED_ADMIN_EMAILS
+    if is_authorized_admin and not user.is_admin:
+        user.is_admin = True
+        db.commit()
+    elif not is_authorized_admin and user.is_admin:
+        user.is_admin = False
+        db.commit()
+    
     access_token = create_access_token(data={"sub": user.email})
     return {
         "access_token": access_token,
