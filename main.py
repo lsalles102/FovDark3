@@ -227,27 +227,31 @@ async def login_user(
     db: Session = Depends(get_db)
 ):
     try:
-        print(f"Tentativa de login para: {email}")
+        print(f"=== TENTATIVA DE LOGIN ===")
+        print(f"Email: {email}")
+        print(f"Timestamp: {datetime.utcnow()}")
         
         # Verificar se o usuário existe
         user_check = db.query(User).filter(User.email == email).first()
         if not user_check:
-            print(f"Usuário não encontrado: {email}")
+            print(f"❌ Usuário não encontrado: {email}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Email ou senha incorretos"
             )
+        
+        print(f"✅ Usuário encontrado: {email}")
         
         # Autenticar usuário
         user = authenticate_user(db, email, password)
         if not user:
-            print(f"Falha na autenticação para: {email}")
+            print(f"❌ Falha na autenticação para: {email}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Email ou senha incorretos"
             )
         
-        print(f"Login bem-sucedido para: {email}")
+        print(f"✅ Autenticação bem-sucedida para: {email}")
         
         # Lista de emails autorizados como admin
         AUTHORIZED_ADMIN_EMAILS = [
@@ -260,11 +264,11 @@ async def login_user(
         if is_authorized_admin and not user.is_admin:
             user.is_admin = True
             db.commit()
-            print(f"Usuário {email} promovido a admin")
+            print(f"👑 Usuário {email} promovido a admin")
         elif not is_authorized_admin and user.is_admin:
             user.is_admin = False
             db.commit()
-            print(f"Privilégios de admin removidos de {email}")
+            print(f"👤 Privilégios de admin removidos de {email}")
         
         # Criar token de acesso
         access_token = create_access_token(data={"sub": user.email})
@@ -280,13 +284,19 @@ async def login_user(
             }
         }
         
-        print(f"Token gerado com sucesso para: {email}")
+        print(f"🔑 Token gerado com sucesso para: {email}")
+        print(f"Admin: {user.is_admin}")
+        print(f"=== LOGIN CONCLUÍDO ===")
+        
         return response_data
         
-    except HTTPException:
-        raise
+    except HTTPException as he:
+        print(f"❌ HTTPException: {he.detail}")
+        raise he
     except Exception as e:
-        print(f"Erro inesperado no login: {str(e)}")
+        print(f"💥 Erro inesperado no login: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Erro interno do servidor durante o login"

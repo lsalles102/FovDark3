@@ -808,25 +808,11 @@ function selectPlan(productId, price, planName, durationDays) {
     document.getElementById('checkoutModal').style.display = 'flex';
 }
 
-// Função de login
-async function login(event) {
-    event.preventDefault();
-
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-
-    if (!email || !password) {
-        showToast('Preencha todos os campos', 'error');
-        return;
-    }
-
-    // Mostrar loading
-    const submitBtn = document.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
-    submitBtn.textContent = 'Conectando...';
-    submitBtn.disabled = true;
-
+// Função de login melhorada
+async function loginUser(email, password) {
     try {
+        console.log('Tentando fazer login para:', email);
+        
         const formData = new FormData();
         formData.append('email', email);
         formData.append('password', password);
@@ -839,49 +825,125 @@ async function login(event) {
             }
         });
 
+        console.log('Resposta do servidor:', response.status);
+
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.detail || `Erro ${response.status}: ${response.statusText}`);
+            let errorMessage = 'Erro no login';
+            
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.detail || errorMessage;
+            } catch (e) {
+                console.error('Erro ao parsear resposta de erro:', e);
+                if (response.status === 401) {
+                    errorMessage = 'Email ou senha incorretos';
+                } else if (response.status === 500) {
+                    errorMessage = 'Erro interno do servidor';
+                } else {
+                    errorMessage = `Erro ${response.status}: ${response.statusText}`;
+                }
+            }
+            
+            throw new Error(errorMessage);
         }
 
         const data = await response.json();
+        console.log('Login bem-sucedido:', data);
 
-        if (data.access_token) {
+        if (data.access_token && data.user) {
+            // Salvar dados do usuário
             localStorage.setItem('access_token', data.access_token);
             localStorage.setItem('user_data', JSON.stringify(data.user));
 
             showToast('Login realizado com sucesso!', 'success');
 
-            // Redirecionar baseado no tipo de usuário
-            setTimeout(() => {
-                if (data.user && data.user.is_admin) {
-                    window.location.href = '/admin';
-                } else {
-                    window.location.href = '/painel';
-                }
-            }, 1000);
+            // Atualizar UI
+            updateAuthenticationUI();
+
+            return data;
         } else {
-            throw new Error('Token de acesso não recebido');
+            throw new Error('Dados de login incompletos recebidos');
         }
     } catch (error) {
         console.error('Erro no login:', error);
-        let errorMessage = 'Erro de conexão com o servidor';
-
-        if (error.message.includes('Failed to fetch')) {
+        
+        let errorMessage = 'Erro de conexão';
+        
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
             errorMessage = 'Erro de conexão - Verifique sua internet';
-        } else if (error.message.includes('401')) {
-            errorMessage = 'Email ou senha incorretos';
-        } else if (error.message.includes('500')) {
-            errorMessage = 'Erro interno do servidor';
         } else if (error.message) {
             errorMessage = error.message;
         }
 
         showToast(errorMessage, 'error');
+        throw error;
+    }
+}
+
+// Função de login principal
+async function login(event) {
+    if (event) {
+        event.preventDefault();
+    }
+
+    const emailField = document.getElementById('email');
+    const passwordField = document.getElementById('password');
+    
+    if (!emailField || !passwordField) {
+        showToast('Campos de login não encontrados', 'error');
+        return;
+    }
+
+    const email = emailField.value.trim();
+    const password = passwordField.value;
+
+    if (!email || !password) {
+        showToast('Preencha todos os campos', 'error');
+        return;
+    }
+
+    // Validar email
+    if (!validateEmail(email)) {
+        showToast('Email inválido', 'error');
+        return;
+    }
+
+    // Mostrar loading
+    const submitBtn = document.querySelector('button[type="submit"]') || document.getElementById('login-btn');
+    if (!submitBtn) {
+        showToast('Botão de login não encontrado', 'error');
+        return;
+    }
+
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CONECTANDO...';
+    submitBtn.disabled = true;
+
+    try {
+        const loginData = await loginUser(email, password);
+        
+        // Verificar se há redirecionamento específico
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirect = urlParams.get('redirect');
+
+        setTimeout(() => {
+            if (redirect === 'comprar') {
+                window.location.href = '/comprar?from=login';
+            } else if (loginData.user && loginData.user.is_admin) {
+                window.location.href = '/admin';
+            } else {
+                window.location.href = '/painel';
+            }
+        }, 1000);
+
+    } catch (error) {
+        // Erro já foi tratado na função loginUser
     } finally {
         // Restaurar botão
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
+        if (submitBtn) {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
     }
 }
 
