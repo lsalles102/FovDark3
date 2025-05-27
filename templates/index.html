@@ -111,7 +111,12 @@
         
         <div class="video-container">
             <div class="video-frame">
-                <div class="video-overlay">
+                <!-- Placeholder para thumbnail do vídeo -->
+                <div class="video-thumbnail">
+                    <img src="/static/cyberpunk-soldier.jpg" alt="Demonstração FovDark" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1;">
+                </div>
+                
+                <div class="video-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2;">
                     <button class="play-button" onclick="playDemoVideo()">
                         <i class="fas fa-play"></i>
                     </button>
@@ -121,20 +126,15 @@
                     </div>
                 </div>
                 
-                <!-- Placeholder para thumbnail do vídeo -->
-                <div class="video-thumbnail">
-                    <img src="/static/cyberpunk-soldier.jpg" alt="Demonstração FovDark" style="width: 100%; height: 100%; object-fit: cover;">
-                </div>
-                
                 <!-- Vídeo real (inicialmente oculto) -->
-                <video id="demoVideo" controls style="display: none; width: 100%; height: 100%;">
+                <video id="demoVideo" controls style="display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 3;">
                     <source src="/static/demo-video.mp4" type="video/mp4">
                     <source src="/static/demo-video.webm" type="video/webm">
                     Seu navegador não suporta vídeos HTML5.
                 </video>
                 
                 <!-- Alternativa: Iframe para YouTube/Vimeo -->
-                <iframe id="youtubeVideo" style="display: none; width: 100%; height: 100%;" 
+                <iframe id="youtubeVideo" style="display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 3;" 
                         frameborder="0" 
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                         allowfullscreen>
