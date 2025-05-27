@@ -637,7 +637,11 @@ function toggleFaq(element) {
         if (item !== faqItem && item.classList.contains('active')) {
             item.classList.remove('active');
             const otherAnswer = item.querySelector('.faq-answer');
+            const otherIcon = item.querySelector('.faq-question i');
             otherAnswer.style.maxHeight = '0';
+            if (otherIcon) {
+                otherIcon.style.transform = 'rotate(0deg)';
+            }
         }
     });
 
@@ -648,6 +652,9 @@ function toggleFaq(element) {
         // Fechar
         faqItem.classList.remove('active');
         answer.style.maxHeight = '0';
+        if (icon) {
+            icon.style.transform = 'rotate(0deg)';
+        }
     } else {
         // Abrir
         faqItem.classList.add('active');
@@ -656,6 +663,10 @@ function toggleFaq(element) {
         const scrollHeight = answer.scrollHeight;
         answer.style.maxHeight = scrollHeight + 'px';
 
+        if (icon) {
+            icon.style.transform = 'rotate(180deg)';
+        }
+
         // Adicionar efeito de bounce sutil
         setTimeout(() => {
             answer.style.maxHeight = (scrollHeight + 10) + 'px';
@@ -663,10 +674,8 @@ function toggleFaq(element) {
                 answer.style.maxHeight = scrollHeight + 'px';
             }, 100);
         }, 200);
-    }
 
-    // Scroll suave para o item se necessário
-    if (!isActive) {
+        // Scroll suave para o item se necessário
         setTimeout(() => {
             const rect = faqItem.getBoundingClientRect();
             const isVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
@@ -677,7 +686,7 @@ function toggleFaq(element) {
                     block: 'nearest'
                 });
             }
-        }, 100);
+        }, 300);
     }
 }
 

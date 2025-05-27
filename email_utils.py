@@ -1,4 +1,3 @@
-
 import os
 import smtplib
 import email.mime.text
@@ -12,14 +11,14 @@ def get_email_settings():
     try:
         db = next(get_db())
         settings = {}
-        
+
         email_settings = db.query(SiteSettings).filter(
             SiteSettings.category == "api"
         ).all()
-        
+
         for setting in email_settings:
             settings[setting.key] = setting.value
-        
+
         db.close()
         return settings
     except:
@@ -35,30 +34,30 @@ def send_email(to_email, subject, html_content):
     """Enviar email usando SMTP"""
     try:
         settings = get_email_settings()
-        
+
         if not all([settings.get("smtp_email"), settings.get("smtp_password")]):
             print("Configurações de email não encontradas")
             return False
-        
+
         # Criar mensagem
         msg = email.mime.multipart.MIMEMultipart('alternative')
         msg['Subject'] = subject
         msg['From'] = settings["smtp_email"]
         msg['To'] = to_email
-        
+
         # Adicionar conteúdo HTML
         html_part = email.mime.text.MIMEText(html_content, 'html')
         msg.attach(html_part)
-        
+
         # Conectar e enviar
         server = smtplib.SMTP(settings["smtp_host"], int(settings.get("smtp_port", 587)))
         server.starttls()
         server.login(settings["smtp_email"], settings["smtp_password"])
         server.send_message(msg)
         server.quit()
-        
+
         return True
-        
+
     except Exception as e:
         print(f"Erro ao enviar email: {e}")
         return False
@@ -66,7 +65,7 @@ def send_email(to_email, subject, html_content):
 def send_confirmation_email(email):
     """Enviar email de confirmação de registro"""
     subject = "Bem-vindo ao FovDark!"
-    
+
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -136,14 +135,14 @@ def send_confirmation_email(email):
     </body>
     </html>
     """
-    
+
     return send_email(email, subject, html_content)
 
 def send_recovery_email(email, recovery_token):
     """Enviar email de recuperação de senha"""
     subject = "Recuperação de Senha - FovDark"
     recovery_link = f"https://fovdark.repl.co/reset-password/{recovery_token}"
-    
+
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -202,16 +201,16 @@ def send_recovery_email(email, recovery_token):
                 <h2>Solicitação de Nova Senha</h2>
                 <p>Olá, <strong>{email}</strong>!</p>
                 <p>Recebemos uma solicitação para redefinir a senha da sua conta FovDark.</p>
-                
+
                 <div class="warning">
                     <strong>⚠️ Importante:</strong> Se você não solicitou esta recuperação, ignore este email. Sua conta permanecerá segura.
                 </div>
-                
+
                 <p>Para criar uma nova senha, clique no botão abaixo:</p>
                 <a href="{recovery_link}" class="button">REDEFINIR SENHA</a>
-                
+
                 <p><strong>Este link expira em 1 hora por segurança.</strong></p>
-                
+
                 <p>Ou copie e cole este link no seu navegador:</p>
                 <p style="word-break: break-all; background: #1a1a1a; padding: 10px; border-radius: 5px; font-family: monospace;">
                     {recovery_link}
@@ -225,13 +224,13 @@ def send_recovery_email(email, recovery_token):
     </body>
     </html>
     """
-    
+
     return send_email(email, subject, html_content)
 
 def send_purchase_confirmation(email, plan_name, expiration_date):
     """Enviar confirmação de compra"""
     subject = "Compra Confirmada - FovDark"
-    
+
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -290,12 +289,12 @@ def send_purchase_confirmation(email, plan_name, expiration_date):
             </div>
             <div class="content">
                 <h2>Parabéns, <strong>{email}</strong>!</h2>
-                
+
                 <div class="success-box">
                     <h3>🎯 Plano: {plan_name}</h3>
                     <p>Válido até: <strong>{expiration_date}</strong></p>
                 </div>
-                
+
                 <p>Sua compra foi processada com sucesso! Agora você pode:</p>
                 <ul>
                     <li>✅ Baixar o software FovDark</li>
@@ -303,10 +302,10 @@ def send_purchase_confirmation(email, plan_name, expiration_date):
                     <li>✅ Receber suporte prioritário</li>
                     <li>✅ Participar da comunidade Discord exclusiva</li>
                 </ul>
-                
+
                 <p>Acesse seu painel para baixar o software:</p>
                 <a href="https://fovdark.repl.co/painel" class="button">ACESSAR PAINEL</a>
-                
+
                 <p><strong>🔒 Lembre-se:</strong> Mantenha suas credenciais seguras e não compartilhe seu acesso.</p>
             </div>
             <div class="footer">
@@ -317,5 +316,5 @@ def send_purchase_confirmation(email, plan_name, expiration_date):
     </body>
     </html>
     """
-    
+
     return send_email(email, subject, html_content)
