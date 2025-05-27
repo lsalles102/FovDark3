@@ -276,22 +276,28 @@ async def login_user(
         
         print(f"✅ Autenticação bem-sucedida para: {email}")
         
-        # Lista de emails autorizados como admin
+        # Lista de emails autorizados como admin (case-insensitive)
         AUTHORIZED_ADMIN_EMAILS = [
             "admin@fovdark.com",
             "lsalles102@gmail.com"
         ]
         
-        # Verificar e corrigir status de admin
-        is_authorized_admin = user.email.lower() in [e.lower() for e in AUTHORIZED_ADMIN_EMAILS]
-        if is_authorized_admin and not user.is_admin:
-            user.is_admin = True
-            db.commit()
-            print(f"👑 Usuário {email} promovido a admin")
-        elif not is_authorized_admin and user.is_admin:
-            user.is_admin = False
-            db.commit()
-            print(f"👤 Privilégios de admin removidos de {email}")
+        # Verificar e corrigir status de admin (comparação case-insensitive)
+        user_email_lower = user.email.lower().strip()
+        is_authorized_admin = user_email_lower in [email.lower() for email in AUTHORIZED_ADMIN_EMAILS]
+        
+        if is_authorized_admin:
+            # Garantir que usuários autorizados sejam admin
+            if not user.is_admin:
+                user.is_admin = True
+                db.commit()
+                print(f"👑 Usuário {email} promovido a admin")
+        else:
+            # Garantir que usuários não autorizados NÃO sejam admin
+            if user.is_admin:
+                user.is_admin = False
+                db.commit()
+                print(f"👤 Privilégios de admin removidos de {email}")
         
         # Criar token de acesso
         access_token = create_access_token(data={"sub": user.email})

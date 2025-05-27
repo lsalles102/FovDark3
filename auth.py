@@ -107,23 +107,28 @@ async def get_current_user(
     if user is None:
         raise credentials_exception
 
-    # Lista de emails autorizados como admin
+    # Lista de emails autorizados como admin (case-insensitive)
     AUTHORIZED_ADMIN_EMAILS = [
         "admin@fovdark.com",
         "lsalles102@gmail.com"
     ]
 
-    # Verificar se o email está autorizado como admin
-    if user.email in AUTHORIZED_ADMIN_EMAILS:
+    # Verificar se o email está autorizado como admin (comparação case-insensitive)
+    user_email_lower = user.email.lower().strip()
+    is_authorized_admin = user_email_lower in [email.lower() for email in AUTHORIZED_ADMIN_EMAILS]
+    
+    if is_authorized_admin:
         # Garantir que usuários autorizados sejam admin
         if not user.is_admin:
             user.is_admin = True
             db.commit()
+            print(f"👑 Usuário {user.email} promovido a admin")
     else:
         # Garantir que usuários não autorizados NÃO sejam admin
         if user.is_admin:
             user.is_admin = False
             db.commit()
+            print(f"👤 Privilégios de admin removidos de {user.email}")
 
     return user
 
