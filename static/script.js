@@ -627,6 +627,60 @@ async function processPayment(plano) {
     }
 }
 
+function toggleFaq(element) {
+    const faqItem = element.parentElement;
+    const answer = faqItem.querySelector('.faq-answer');
+    const icon = element.querySelector('i');
+
+    // Fechar outros FAQs
+    document.querySelectorAll('.faq-item').forEach(item => {
+        if (item !== faqItem && item.classList.contains('active')) {
+            item.classList.remove('active');
+            const otherAnswer = item.querySelector('.faq-answer');
+            otherAnswer.style.maxHeight = '0';
+        }
+    });
+
+    // Toggle atual
+    const isActive = faqItem.classList.contains('active');
+
+    if (isActive) {
+        // Fechar
+        faqItem.classList.remove('active');
+        answer.style.maxHeight = '0';
+    } else {
+        // Abrir
+        faqItem.classList.add('active');
+
+        // Calcular altura necessária
+        const scrollHeight = answer.scrollHeight;
+        answer.style.maxHeight = scrollHeight + 'px';
+
+        // Adicionar efeito de bounce sutil
+        setTimeout(() => {
+            answer.style.maxHeight = (scrollHeight + 10) + 'px';
+            setTimeout(() => {
+                answer.style.maxHeight = scrollHeight + 'px';
+            }, 100);
+        }, 200);
+    }
+
+    // Scroll suave para o item se necessário
+    if (!isActive) {
+        setTimeout(() => {
+            const rect = faqItem.getBoundingClientRect();
+            const isVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
+
+            if (!isVisible) {
+                faqItem.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest'
+                });
+            }
+        }, 100);
+    }
+}
+
 // ===== INITIALIZATION COMPLETE =====
 console.log('FovDark Script carregado com sucesso');
 
