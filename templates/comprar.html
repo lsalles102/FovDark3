@@ -17,7 +17,7 @@
                     <h3>MENSAL</h3>
                     <div class="price">
                         <span class="currency">R$</span>
-                        <span class="amount">79</span>
+                        <span class="amount">29</span>
                         <span class="period">,90/mês</span>
                     </div>
                 </div>
@@ -31,7 +31,7 @@
                         <li><i class="fas fa-check"></i> Configurações Básicas</li>
                     </ul>
 
-                    <button class="btn btn-primary btn-full" onclick="selectPlan('mensal', 79.90)">
+                    <button class="btn btn-primary btn-full" onclick="selectPlan('mensal', 29.90)">
                         <i class="fas fa-shopping-cart"></i>
                         ESCOLHER PLANO
                     </button>
@@ -45,10 +45,10 @@
                     <h3>TRIMESTRAL</h3>
                     <div class="price">
                         <span class="currency">R$</span>
-                        <span class="amount">199</span>
+                        <span class="amount">79</span>
                         <span class="period">,90/3 meses</span>
                     </div>
-                    <div class="savings">Economize 17%</div>
+                    <div class="savings">Economize 28%</div>
                 </div>
 
                 <div class="card-body">
@@ -60,7 +60,7 @@
                         <li><i class="fas fa-check"></i> Recursos Avançados</li>
                     </ul>
 
-                    <button class="btn btn-primary btn-full" onclick="selectPlan('trimestral', 199.90)">
+                    <button class="btn btn-primary btn-full" onclick="selectPlan('trimestral', 79.90)">
                         <i class="fas fa-crown"></i>
                         ESCOLHER PLANO
                     </button>
@@ -76,7 +76,7 @@
                         <span class="amount">299</span>
                         <span class="period">,90/ano</span>
                     </div>
-                    <div class="savings">Economize 68%</div>
+                    <div class="savings">Economize 43%</div>
                 </div>
 
                 <div class="card-body">
@@ -88,7 +88,7 @@
                         <li><i class="fas fa-check"></i> Configurações Elite</li>
                     </ul>
 
-                    <button class="btn btn-primary btn-full" onclick="selectPlan('anual', 299.90)">
+                    <button class="btn btn-primary btn-full" onclick="selectPlan('anual', 199.90)">
                         <i class="fas fa-star"></i>
                         ESCOLHER PLANO
                     </button>
@@ -445,7 +445,9 @@ async function processPayment() {
     if (loadingPayment) loadingPayment.style.display = 'block';
 
     try {
-        const requestBody = {
+        const requestBody = selectedPlanData.product_id ? {
+            product_id: selectedPlanData.product_id
+        } : {
             plan_id: selectedPlanData.type
         };
 
@@ -531,9 +533,124 @@ window.onclick = function(event) {
     }
 }
 
+async function loadProducts() {
+    try {
+        const response = await fetch('/api/products');
+        if (response.ok) {
+            const products = await response.json();
+            console.log('Produtos carregados:', products);
+            
+            // Atualizar preços na página se houver produtos disponíveis
+            if (products.length > 0) {
+                updatePricingFromProducts(products);
+            }
+        }
+    } catch (error) {
+        console.error('Erro ao carregar produtos:', error);
+    }
+}
+
+function updatePricingFromProducts(products) {
+    // Mapear produtos por duração (mensal = 30 dias, trimestral = 90 dias, anual = 365 dias)
+    const productMap = {};
+    products.forEach(product => {
+        if (product.duration_days === 30) {
+            productMap.mensal = product;
+        } else if (product.duration_days === 90) {
+            productMap.trimestral = product;
+        } else if (product.duration_days === 365) {
+            productMap.anual = product;
+        }
+    });
+
+    // Atualizar preços e IDs dos produtos
+    Object.keys(productMap).forEach(planType => {
+        const product = productMap[planType];
+        const card = document.querySelector(`[onclick*="${planType}"]`)?.closest('.pricing-card');
+        
+        if (card && product) {
+            // Atualizar preço
+            const priceAmount = card.querySelector('.amount');
+            if (priceAmount) {
+                priceAmount.textContent = Math.floor(product.price);
+            }
+            
+            // Atualizar nome do produto
+            const title = card.querySelector('h3');
+            if (title) {
+                title.textContent = product.name.toUpperCase();
+            }
+            
+            // Atualizar recursos se disponível
+            if (product.features) {
+                const featuresList = card.querySelector('.pricing-features');
+                if (featuresList) {
+                    const features = product.features.split(',');
+                    featuresList.innerHTML = features.map(feature => 
+                        `<li><i class="fas fa-check"></i> ${feature.trim()}</li>`
+                    ).join('');
+                }
+            }
+            
+            // Atualizar botão com product_id
+            const button = card.querySelector('button');
+            if (button) {
+                button.setAttribute('onclick', `selectProduct(${product.id}, '${planType}', ${product.price})`);
+            }
+        }
+    });
+}
+
+function selectProduct(productId, planType, price) {
+    console.log('Selecionando produto:', productId, planType, price);
+    selectedPlanData = { 
+        product_id: productId,
+        type: planType, 
+        price: price 
+    };
+
+    // Verificar se o usuário está logado
+    const token = localStorage.getItem('access_token');
+    console.log('Token encontrado:', !!token);
+
+    const modal = document.getElementById('checkoutModal');
+    const loginPrompt = document.getElementById('loginPrompt');
+    const checkoutForm = document.getElementById('checkoutForm');
+    const loadingPayment = document.getElementById('loadingPayment');
+
+    // Reset modal state
+    if (loadingPayment) loadingPayment.style.display = 'none';
+
+    if (!token) {
+        if (loginPrompt) loginPrompt.style.display = 'block';
+        if (checkoutForm) checkoutForm.style.display = 'none';
+    } else {
+        if (loginPrompt) loginPrompt.style.display = 'none';
+        if (checkoutForm) checkoutForm.style.display = 'block';
+
+        // Atualizar resumo
+        const selectedPlanElement = document.getElementById('selectedPlan');
+        const selectedPriceElement = document.getElementById('selectedPrice');
+
+        if (selectedPlanElement) {
+            selectedPlanElement.textContent = planType.toUpperCase();
+        }
+        if (selectedPriceElement) {
+            selectedPriceElement.textContent = `R$ ${price.toFixed(2).replace('.', ',')}`;
+        }
+    }
+
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
 // Debug e inicialização
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Página de compras carregada');
+    
+    // Carregar produtos disponíveis
+    loadProducts();
 
     // Verificar se elementos existem
     const modal = document.getElementById('checkoutModal');
@@ -543,10 +660,6 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Modal encontrado:', !!modal);
     console.log('Login prompt encontrado:', !!loginPrompt);
     console.log('Checkout form encontrado:', !!checkoutForm);
-
-    // Verificar botões dos planos
-    const planButtons = document.querySelectorAll('[onclick^="selectPlan"]');
-    console.log('Botões de plano encontrados:', planButtons.length);
 
     // Animar cards de pricing
     const cards = document.querySelectorAll('.pricing-card');
@@ -560,12 +673,5 @@ document.addEventListener('DOMContentLoaded', function() {
     const token = localStorage.getItem('access_token');
     console.log('Usuário autenticado:', !!token);
 });
-    // Carregar produtos disponíveis
-    loadProducts();
-
-    // Carregar produtos ao inicializar
-    document.addEventListener('DOMContentLoaded', function() {
-        loadProducts();
-    });
 </script>
 {% endblock %}

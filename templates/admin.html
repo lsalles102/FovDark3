@@ -1723,13 +1723,20 @@ function createProductModal() {
                     "></textarea>
                 </div>
 
-                <div style="margin-bottom: 2rem;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
                     <label style="color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
                         <input type="checkbox" name="is_active" checked style="
                             width: 18px;
                             height: 18px;
                         ">
                         Produto Ativo
+                    </label>
+                    <label style="color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="checkbox" name="is_featured" style="
+                            width: 18px;
+                            height: 18px;
+                        ">
+                        Produto em Destaque
                     </label>
                 </div>
 

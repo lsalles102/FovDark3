@@ -267,50 +267,79 @@ async def check_license(
     }
 
 
-# Processar compra
+# Processar compra com produtos dinâmicos
 @app.post("/api/purchase")
 async def process_purchase(
-    plano: str = Form(...),
+    product_id: int = Form(None),
+    plano: str = Form(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Definir preços e durações
-    planos = {
-        "mensal": {"preco": 29.90, "dias": 30},
-        "trimestral": {"preco": 79.90, "dias": 90},
-        "anual": {"preco": 299.90, "dias": 365}
-    }
+    product = None
     
-    if plano not in planos:
+    # Verificar se é um produto específico ou plano padrão
+    if product_id:
+        product = db.query(Product).filter(
+            Product.id == product_id, 
+            Product.is_active == True
+        ).first()
+        if not product:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Produto não encontrado ou inativo"
+            )
+        preco = product.price
+        dias = product.duration_days
+    elif plano:
+        # Fallback para planos fixos se não especificar produto
+        planos = {
+            "mensal": {"preco": 29.90, "dias": 30},
+            "trimestral": {"preco": 79.90, "dias": 90},
+            "anual": {"preco": 199.90, "dias": 365}
+        }
+        
+        if plano not in planos:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Plano inválido"
+            )
+        
+        plano_info = planos[plano]
+        preco = plano_info["preco"]
+        dias = plano_info["dias"]
+    else:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Plano inválido"
+            detail="Produto ou plano deve ser especificado"
         )
     
-    plano_info = planos[plano]
-    
-    # Simular processamento de pagamento (em produção, integrar com gateway)
-    # Aqui você integraria com Mercado Pago, PagSeguro, etc.
-    
     # Criar registro de pagamento
-    payment = create_payment_record(
-        db, current_user.id, plano_info["preco"]
+    payment = Payment(
+        user_id=current_user.id,
+        product_id=product.id if product else None,
+        valor=preco,
+        plano=plano if plano else f"Produto {product.name}",
+        status="completed"
     )
+    
+    db.add(payment)
     
     # Atualizar data de expiração do usuário
     if current_user.data_expiracao and current_user.data_expiracao > datetime.utcnow():
         # Estender licença existente
-        new_expiration = current_user.data_expiracao + timedelta(days=plano_info["dias"])
+        new_expiration = current_user.data_expiracao + timedelta(days=dias)
     else:
         # Nova licença
-        new_expiration = datetime.utcnow() + timedelta(days=plano_info["dias"])
+        new_expiration = datetime.utcnow() + timedelta(days=dias)
     
     current_user.data_expiracao = new_expiration
     db.commit()
+    db.refresh(payment)
     
     return {
         "message": "Compra processada com sucesso",
         "payment_id": payment.id,
+        "product_name": product.name if product else plano,
         "nova_expiracao": new_expiration.isoformat()
     }
 
@@ -477,25 +506,43 @@ async def create_product(
     image_url: str = Form(""),
     features: str = Form(""),
     is_featured: bool = Form(False),
+    is_active: bool = Form(True),
     admin_user: User = Depends(get_admin_user),
     db: Session = Depends(get_db)
 ):
-    new_product = Product(
-        name=name,
-        description=description,
-        price=price,
-        duration_days=duration_days,
-        image_url=image_url,
-        features=features,
-        is_featured=is_featured,
-        is_active=True
-    )
-    
-    db.add(new_product)
-    db.commit()
-    db.refresh(new_product)
-    
-    return {"message": "Produto criado com sucesso", "product_id": new_product.id}
+    try:
+        new_product = Product(
+            name=name,
+            description=description,
+            price=price,
+            duration_days=duration_days,
+            image_url=image_url,
+            features=features,
+            is_featured=is_featured,
+            is_active=is_active
+        )
+        
+        db.add(new_product)
+        db.commit()
+        db.refresh(new_product)
+        
+        return {
+            "message": "Produto criado com sucesso", 
+            "product_id": new_product.id,
+            "product": {
+                "id": new_product.id,
+                "name": new_product.name,
+                "price": new_product.price,
+                "duration_days": new_product.duration_days,
+                "is_active": new_product.is_active
+            }
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao criar produto: {str(e)}"
+        )
 
 
 @app.put("/api/admin/products/{product_id}")
