@@ -368,6 +368,7 @@
 {% block scripts %}
 <script>
 let selectedPlanData = null;
+let availableProducts = [];
 
 function selectPlan(planType, price) {
     console.log('Selecionando plano:', planType, price);
@@ -379,10 +380,29 @@ function selectPlan(planType, price) {
 
     if (!token) {
         // Se não estiver logado, redirecionar para login
-        showToast('Faça login para continuar com a compra', 'warning');
-        setTimeout(() => {
-            window.location.href = '/login?redirect=comprar';
-        }, 1500);
+        window.location.href = '/login?redirect=comprar';
+        return;
+    }
+
+    // Se estiver logado, abrir modal de checkout
+    openCheckoutModal(planType, price);
+}
+
+function selectProduct(productId, planType, price) {
+    console.log('Selecionando produto:', productId, planType, price);
+    selectedPlanData = { 
+        product_id: productId,
+        type: planType, 
+        price: price 
+    };
+
+    // Verificar se o usuário está logado
+    const token = localStorage.getItem('access_token');
+    console.log('Token encontrado:', !!token);
+
+    if (!token) {
+        // Se não estiver logado, redirecionar para login
+        window.location.href = '/login?redirect=comprar';
         return;
     }
 
@@ -455,30 +475,31 @@ async function processPayment() {
 
     try {
         // Preparar dados da compra
-        const requestBody = selectedPlanData.product_id ? {
-            product_id: selectedPlanData.product_id
-        } : {
-            plano: selectedPlanData.type
-        };
+        const formData = new FormData();
+        
+        if (selectedPlanData.product_id) {
+            formData.append('product_id', selectedPlanData.product_id);
+        } else {
+            formData.append('plano', selectedPlanData.type);
+        }
 
-        console.log('Processando compra diretamente:', requestBody);
+        console.log('Processando compra:', selectedPlanData);
 
-        // Processar compra diretamente (simulação de pagamento)
+        // Processar compra
         const response = await fetch('/api/purchase', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
                 'Authorization': `Bearer ${token}`
             },
-            body: new URLSearchParams(requestBody).toString()
+            body: formData
         });
 
         console.log('Status da resposta:', response.status);
 
-        const data = await response.json();
-        console.log('Dados da resposta:', data);
-
         if (response.ok) {
+            const data = await response.json();
+            console.log('Dados da resposta:', data);
+            
             showToast('Compra realizada com sucesso!', 'success');
 
             // Fechar modal
@@ -489,6 +510,8 @@ async function processPayment() {
                 window.location.href = '/sucesso?plan=' + (selectedPlanData.type || 'produto');
             }, 1500);
         } else {
+            const errorData = await response.json().catch(() => ({}));
+            
             if (response.status === 401) {
                 showToast('Sessão expirada. Faça login novamente.', 'error');
                 localStorage.clear();
@@ -496,7 +519,7 @@ async function processPayment() {
                     window.location.href = '/login?redirect=comprar';
                 }, 2000);
             } else {
-                throw new Error(data.detail || 'Erro ao processar compra');
+                throw new Error(errorData.detail || `Erro ${response.status}: ${response.statusText}`);
             }
         }
     } catch (error) {
@@ -561,7 +584,9 @@ async function loadProducts() {
 }
 
 function updatePricingFromProducts(products) {
-    // Mapear produtos por duração (mensal = 30 dias, trimestral = 90 dias, anual = 365 dias)
+    availableProducts = products;
+    
+    // Mapear produtos por duração
     const productMap = {};
     products.forEach(product => {
         if (product.duration_days === 30) {
@@ -573,25 +598,33 @@ function updatePricingFromProducts(products) {
         }
     });
 
-    // Atualizar preços e IDs dos produtos
-    Object.keys(productMap).forEach(planType => {
+    // Atualizar cards com produtos do banco
+    const cards = document.querySelectorAll('.pricing-card');
+    cards.forEach((card, index) => {
+        const planTypes = ['mensal', 'trimestral', 'anual'];
+        const planType = planTypes[index];
         const product = productMap[planType];
-        const card = document.querySelector(`[onclick*="${planType}"]`)?.closest('.pricing-card');
         
-        if (card && product) {
+        if (product) {
             // Atualizar preço
             const priceAmount = card.querySelector('.amount');
             if (priceAmount) {
                 priceAmount.textContent = Math.floor(product.price);
             }
             
-            // Atualizar nome do produto
-            const title = card.querySelector('h3');
-            if (title) {
-                title.textContent = product.name.toUpperCase();
+            // Atualizar período
+            const period = card.querySelector('.period');
+            if (period) {
+                if (product.duration_days === 30) {
+                    period.textContent = ',90/mês';
+                } else if (product.duration_days === 90) {
+                    period.textContent = ',90/3 meses';
+                } else if (product.duration_days === 365) {
+                    period.textContent = ',90/ano';
+                }
             }
             
-            // Atualizar recursos se disponível
+            // Atualizar recursos
             if (product.features) {
                 const featuresList = card.querySelector('.pricing-features');
                 if (featuresList) {
@@ -602,7 +635,7 @@ function updatePricingFromProducts(products) {
                 }
             }
             
-            // Atualizar botão com product_id
+            // Atualizar botão
             const button = card.querySelector('button');
             if (button) {
                 button.setAttribute('onclick', `selectProduct(${product.id}, '${planType}', ${product.price})`);
@@ -636,6 +669,34 @@ function selectProduct(productId, planType, price) {
     openCheckoutModal(planType, price);
 }
 
+// Função para exibir toast (caso não exista)
+function showToast(message, type = 'info') {
+    console.log(`Toast ${type}: ${message}`);
+    
+    // Criar elemento toast se não existir sistema de toast
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#00ff8c' : type === 'error' ? '#ff006b' : '#007bff'};
+        color: #000;
+        padding: 1rem;
+        border-radius: 5px;
+        z-index: 10000;
+        max-width: 300px;
+        animation: slideIn 0.3s ease;
+    `;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
 // Debug e inicialização
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Página de compras carregada');
@@ -663,6 +724,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Verificar autenticação
     const token = localStorage.getItem('access_token');
     console.log('Usuário autenticado:', !!token);
+    
+    // Verificar se há redirecionamento de login
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('from') === 'login') {
+        showToast('Login realizado com sucesso! Escolha seu plano.', 'success');
+    }
 });
 </script>
 {% endblock %}

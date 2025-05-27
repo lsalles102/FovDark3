@@ -275,73 +275,92 @@ async def process_purchase(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    product = None
-    
-    # Verificar se é um produto específico ou plano padrão
-    if product_id:
-        product = db.query(Product).filter(
-            Product.id == product_id, 
-            Product.is_active == True
-        ).first()
-        if not product:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Produto não encontrado ou inativo"
-            )
-        preco = product.price
-        dias = product.duration_days
-    elif plano:
-        # Fallback para planos fixos se não especificar produto
-        planos = {
-            "mensal": {"preco": 29.90, "dias": 30},
-            "trimestral": {"preco": 79.90, "dias": 90},
-            "anual": {"preco": 199.90, "dias": 365}
-        }
+    try:
+        product = None
+        preco = 0
+        dias = 0
+        nome_produto = ""
         
-        if plano not in planos:
+        # Verificar se é um produto específico ou plano padrão
+        if product_id:
+            product = db.query(Product).filter(
+                Product.id == product_id, 
+                Product.is_active == True
+            ).first()
+            if not product:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Produto não encontrado ou inativo"
+                )
+            preco = product.price
+            dias = product.duration_days
+            nome_produto = product.name
+        elif plano:
+            # Fallback para planos fixos se não especificar produto
+            planos = {
+                "mensal": {"preco": 29.90, "dias": 30, "nome": "Plano Mensal"},
+                "trimestral": {"preco": 79.90, "dias": 90, "nome": "Plano Trimestral"},
+                "anual": {"preco": 199.90, "dias": 365, "nome": "Plano Anual"}
+            }
+            
+            if plano not in planos:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Plano inválido"
+                )
+            
+            plano_info = planos[plano]
+            preco = plano_info["preco"]
+            dias = plano_info["dias"]
+            nome_produto = plano_info["nome"]
+        else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Plano inválido"
+                detail="Produto ou plano deve ser especificado"
             )
         
-        plano_info = planos[plano]
-        preco = plano_info["preco"]
-        dias = plano_info["dias"]
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Produto ou plano deve ser especificado"
+        # Criar registro de pagamento
+        payment = Payment(
+            user_id=current_user.id,
+            product_id=product.id if product else None,
+            valor=preco,
+            plano=plano if plano else nome_produto,
+            status="completed"
         )
-    
-    # Criar registro de pagamento
-    payment = Payment(
-        user_id=current_user.id,
-        product_id=product.id if product else None,
-        valor=preco,
-        plano=plano if plano else f"Produto {product.name}",
-        status="completed"
-    )
-    
-    db.add(payment)
-    
-    # Atualizar data de expiração do usuário
-    if current_user.data_expiracao and current_user.data_expiracao > datetime.utcnow():
-        # Estender licença existente
-        new_expiration = current_user.data_expiracao + timedelta(days=dias)
-    else:
-        # Nova licença
-        new_expiration = datetime.utcnow() + timedelta(days=dias)
-    
-    current_user.data_expiracao = new_expiration
-    db.commit()
-    db.refresh(payment)
-    
-    return {
-        "message": "Compra processada com sucesso",
-        "payment_id": payment.id,
-        "product_name": product.name if product else plano,
-        "nova_expiracao": new_expiration.isoformat()
-    }
+        
+        db.add(payment)
+        
+        # Atualizar data de expiração do usuário
+        if current_user.data_expiracao and current_user.data_expiracao > datetime.utcnow():
+            # Estender licença existente
+            new_expiration = current_user.data_expiracao + timedelta(days=dias)
+        else:
+            # Nova licença
+            new_expiration = datetime.utcnow() + timedelta(days=dias)
+        
+        current_user.data_expiracao = new_expiration
+        db.commit()
+        db.refresh(payment)
+        
+        return {
+            "success": True,
+            "message": "Compra processada com sucesso",
+            "payment_id": payment.id,
+            "product_name": nome_produto,
+            "nova_expiracao": new_expiration.isoformat(),
+            "days_added": dias,
+            "amount_paid": preco
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        print(f"Erro na compra: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro interno do servidor: {str(e)}"
+        )
 
 
 # Download do script (protegido)
