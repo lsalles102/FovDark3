@@ -377,6 +377,20 @@ function selectPlan(planType, price) {
     const token = localStorage.getItem('access_token');
     console.log('Token encontrado:', !!token);
 
+    if (!token) {
+        // Se não estiver logado, redirecionar para login
+        showToast('Faça login para continuar com a compra', 'warning');
+        setTimeout(() => {
+            window.location.href = '/login?redirect=comprar';
+        }, 1500);
+        return;
+    }
+
+    // Se estiver logado, abrir modal de checkout
+    openCheckoutModal(planType, price);
+}
+
+function openCheckoutModal(planType, price) {
     const modal = document.getElementById('checkoutModal');
     const loginPrompt = document.getElementById('loginPrompt');
     const checkoutForm = document.getElementById('checkoutForm');
@@ -384,26 +398,18 @@ function selectPlan(planType, price) {
 
     // Reset modal state
     if (loadingPayment) loadingPayment.style.display = 'none';
+    if (loginPrompt) loginPrompt.style.display = 'none';
+    if (checkoutForm) checkoutForm.style.display = 'block';
 
-    if (!token) {
-        // Mostrar modal de login
-        if (loginPrompt) loginPrompt.style.display = 'block';
-        if (checkoutForm) checkoutForm.style.display = 'none';
-    } else {
-        // Mostrar formulário de checkout
-        if (loginPrompt) loginPrompt.style.display = 'none';
-        if (checkoutForm) checkoutForm.style.display = 'block';
+    // Atualizar resumo
+    const selectedPlanElement = document.getElementById('selectedPlan');
+    const selectedPriceElement = document.getElementById('selectedPrice');
 
-        // Atualizar resumo
-        const selectedPlanElement = document.getElementById('selectedPlan');
-        const selectedPriceElement = document.getElementById('selectedPrice');
-
-        if (selectedPlanElement) {
-            selectedPlanElement.textContent = planType.toUpperCase();
-        }
-        if (selectedPriceElement) {
-            selectedPriceElement.textContent = `R$ ${price.toFixed(2).replace('.', ',')}`;
-        }
+    if (selectedPlanElement) {
+        selectedPlanElement.textContent = planType.toUpperCase();
+    }
+    if (selectedPriceElement) {
+        selectedPriceElement.textContent = `R$ ${price.toFixed(2).replace('.', ',')}`;
     }
 
     // Abrir modal
@@ -431,7 +437,10 @@ async function processPayment() {
     const token = localStorage.getItem('access_token');
     if (!token) {
         console.error('Token não encontrado');
-        showToast('Erro: Usuário não autenticado', 'error');
+        showToast('Sessão expirada. Redirecionando para login...', 'error');
+        setTimeout(() => {
+            window.location.href = '/login?redirect=comprar';
+        }, 2000);
         return;
     }
 
@@ -445,22 +454,23 @@ async function processPayment() {
     if (loadingPayment) loadingPayment.style.display = 'block';
 
     try {
+        // Preparar dados da compra
         const requestBody = selectedPlanData.product_id ? {
             product_id: selectedPlanData.product_id
         } : {
-            plan_id: selectedPlanData.type
+            plano: selectedPlanData.type
         };
 
-        console.log('Fazendo requisição para:', '/api/mercadopago/create-preference');
-        console.log('Body:', requestBody);
+        console.log('Processando compra diretamente:', requestBody);
 
-        const response = await fetch('/api/mercadopago/create-preference', {
+        // Processar compra diretamente (simulação de pagamento)
+        const response = await fetch('/api/purchase', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify(requestBody)
+            body: new URLSearchParams(requestBody).toString()
         });
 
         console.log('Status da resposta:', response.status);
@@ -469,29 +479,29 @@ async function processPayment() {
         console.log('Dados da resposta:', data);
 
         if (response.ok) {
-            showToast('Pagamento processado com sucesso!', 'success');
+            showToast('Compra realizada com sucesso!', 'success');
 
             // Fechar modal
             closeCheckoutModal();
 
-            // Redirecionar após delay
+            // Redirecionar para página de sucesso
             setTimeout(() => {
-                window.location.href = '/sucesso?plan=' + selectedPlanData.type;
+                window.location.href = '/sucesso?plan=' + (selectedPlanData.type || 'produto');
             }, 1500);
         } else {
             if (response.status === 401) {
                 showToast('Sessão expirada. Faça login novamente.', 'error');
                 localStorage.clear();
                 setTimeout(() => {
-                    window.location.href = '/login';
+                    window.location.href = '/login?redirect=comprar';
                 }, 2000);
             } else {
-                throw new Error(data.detail || 'Erro ao processar pagamento');
+                throw new Error(data.detail || 'Erro ao processar compra');
             }
         }
     } catch (error) {
-        console.error('Erro no pagamento:', error);
-        showToast('Erro ao processar pagamento: ' + error.message, 'error');
+        console.error('Erro na compra:', error);
+        showToast('Erro ao processar compra: ' + error.message, 'error');
 
         // Voltar ao formulário
         if (loadingPayment) loadingPayment.style.display = 'none';
@@ -613,36 +623,17 @@ function selectProduct(productId, planType, price) {
     const token = localStorage.getItem('access_token');
     console.log('Token encontrado:', !!token);
 
-    const modal = document.getElementById('checkoutModal');
-    const loginPrompt = document.getElementById('loginPrompt');
-    const checkoutForm = document.getElementById('checkoutForm');
-    const loadingPayment = document.getElementById('loadingPayment');
-
-    // Reset modal state
-    if (loadingPayment) loadingPayment.style.display = 'none';
-
     if (!token) {
-        if (loginPrompt) loginPrompt.style.display = 'block';
-        if (checkoutForm) checkoutForm.style.display = 'none';
-    } else {
-        if (loginPrompt) loginPrompt.style.display = 'none';
-        if (checkoutForm) checkoutForm.style.display = 'block';
-
-        // Atualizar resumo
-        const selectedPlanElement = document.getElementById('selectedPlan');
-        const selectedPriceElement = document.getElementById('selectedPrice');
-
-        if (selectedPlanElement) {
-            selectedPlanElement.textContent = planType.toUpperCase();
-        }
-        if (selectedPriceElement) {
-            selectedPriceElement.textContent = `R$ ${price.toFixed(2).replace('.', ',')}`;
-        }
+        // Se não estiver logado, redirecionar para login
+        showToast('Faça login para continuar com a compra', 'warning');
+        setTimeout(() => {
+            window.location.href = '/login?redirect=comprar';
+        }, 1500);
+        return;
     }
 
-    if (modal) {
-        modal.style.display = 'flex';
-    }
+    // Se estiver logado, abrir modal de checkout
+    openCheckoutModal(planType, price);
 }
 
 // Debug e inicialização

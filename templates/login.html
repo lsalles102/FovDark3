@@ -124,9 +124,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 showToast('Login realizado com sucesso!', 'success');
                 
-                // Redirecionar baseado no tipo de usuário
+                // Verificar se há redirecionamento pendente
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirectTo = urlParams.get('redirect');
+                
+                // Redirecionar após delay
                 setTimeout(() => {
-                    if (data.user.is_admin) {
+                    if (redirectTo) {
+                        window.location.href = '/' + redirectTo;
+                    } else if (data.user.is_admin) {
                         window.location.href = '/admin';
                     } else {
                         window.location.href = '/painel';

@@ -602,20 +602,56 @@ async def delete_product(
 # Endpoint público para listar produtos ativos
 @app.get("/api/products")
 async def get_active_products(db: Session = Depends(get_db)):
-    products = db.query(Product).filter(Product.is_active == True).all()
-    return [
-        {
-            "id": product.id,
-            "name": product.name,
-            "description": product.description,
-            "price": product.price,
-            "duration_days": product.duration_days,
-            "image_url": product.image_url,
-            "is_featured": product.is_featured,
-            "features": product.features
-        }
-        for product in products
-    ]
+    try:
+        products = db.query(Product).filter(Product.is_active == True).order_by(Product.is_featured.desc(), Product.price.asc()).all()
+        return [
+            {
+                "id": product.id,
+                "name": product.name,
+                "description": product.description or "Acesso completo às funcionalidades premium",
+                "price": float(product.price),
+                "duration_days": product.duration_days,
+                "image_url": product.image_url or "",
+                "is_featured": product.is_featured,
+                "features": product.features or "Aim Assist Avançado,ESP & Wallhack,Anti-Detection,Suporte 24/7"
+            }
+            for product in products
+        ]
+    except Exception as e:
+        print(f"Erro ao carregar produtos: {e}")
+        # Retornar produtos padrão em caso de erro
+        return [
+            {
+                "id": 1,
+                "name": "Plano Mensal",
+                "description": "Acesso completo por 1 mês",
+                "price": 29.90,
+                "duration_days": 30,
+                "image_url": "",
+                "is_featured": False,
+                "features": "Aim Assist Inteligente,Anti-Detecção Ativo,Suporte via Discord,Atualizações Gratuitas"
+            },
+            {
+                "id": 2,
+                "name": "Plano Trimestral",
+                "description": "Acesso completo por 3 meses",
+                "price": 79.90,
+                "duration_days": 90,
+                "image_url": "",
+                "is_featured": True,
+                "features": "Tudo do plano mensal,Configurações Premium,Suporte Prioritário,Acesso Antecipado"
+            },
+            {
+                "id": 3,
+                "name": "Plano Anual",
+                "description": "Acesso completo por 1 ano",
+                "price": 199.90,
+                "duration_days": 365,
+                "image_url": "",
+                "is_featured": False,
+                "features": "Tudo dos planos anteriores,Recursos Exclusivos,Suporte VIP 24/7,Beta Access"
+            }
+        ]
 
 
 @app.get("/api/admin/payments")

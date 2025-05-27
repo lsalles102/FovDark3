@@ -1452,14 +1452,35 @@ async function loadProducts() {
     const token = localStorage.getItem('access_token');
     const tbody = document.getElementById('productsTableBody');
 
+    if (!tbody) {
+        console.error('Elemento productsTableBody não encontrado');
+        return;
+    }
+
     try {
         const response = await fetch('/api/admin/products', {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
         });
 
         if (response.ok) {
             const products = await response.json();
             displayProducts(products);
+        } else if (response.status === 401) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="error-row">
+                        <i class="fas fa-lock"></i>
+                        Sessão expirada. Faça login novamente.
+                    </td>
+                </tr>
+            `;
+            setTimeout(() => {
+                localStorage.clear();
+                window.location.href = '/login';
+            }, 2000);
         } else {
             throw new Error('Erro ao carregar produtos');
         }
@@ -1469,7 +1490,7 @@ async function loadProducts() {
             <tr>
                 <td colspan="6" class="error-row">
                     <i class="fas fa-exclamation-triangle"></i>
-                    Erro ao carregar produtos
+                    Erro ao carregar produtos: ${error.message}
                 </td>
             </tr>
         `;
