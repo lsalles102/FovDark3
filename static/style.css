@@ -3077,28 +3077,6 @@ h6 { font-size: 1rem; }
         gap: 2rem;
     }
 
-    .admin-table-container {
-        overflow-x: auto;
-    }
-
-    .toast-container {
-        left: 1rem;
-        right: 1rem;
-    }
-
-    .toast {
-        max-width: none;
-    }
-
-    .container {
-        padding: 0 1rem;
-    }
-
-    h1 { font-size: 2.5rem; }
-    h2 { font-size: 2rem; }
-    h3 { font-size: 1.5rem; }
-}
-
 /* ====== DARKFOV - CYBERPUNK THEME ====== */
 
 /* === Variáveis Cyberpunk === */
