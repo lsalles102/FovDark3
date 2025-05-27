@@ -343,8 +343,8 @@
         <h1 class="painel-title">PAINEL FOVDARK</h1>
         <div class="user-badge">
             <i class="fas fa-user"></i>
-            <span id="userBadge">admin</span>
-            <span style="background: var(--success); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">ADMIN</span>
+            <span id="userBadge">carregando...</span>
+            <span id="adminBadge" style="background: var(--success); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; display: none;">ADMIN</span>
         </div>
     </div>
 
@@ -521,10 +521,24 @@ async function loadUserInfo() {
 
         if (response.ok) {
             const data = await response.json();
+            console.log('Dados do usuário:', data);
+            
+            // Atualizar email do usuário
             document.getElementById('userBadge').textContent = data.email;
+            
+            // Verificar se é admin e mostrar/ocultar a tag
+            const adminBadge = document.getElementById('adminBadge');
+            if (data.is_admin === true) {
+                console.log('Usuário é admin - mostrando tag');
+                adminBadge.style.display = 'inline-block';
+            } else {
+                console.log('Usuário não é admin - ocultando tag');
+                adminBadge.style.display = 'none';
+            }
         }
     } catch (error) {
         console.error('Erro ao carregar informações do usuário:', error);
+        document.getElementById('userBadge').textContent = 'Erro ao carregar';
     }
 }
 

@@ -343,6 +343,7 @@ async def check_license(
     return {
         "valid": is_valid,
         "email": current_user.email,
+        "is_admin": current_user.is_admin,
         "data_expiracao": current_user.data_expiracao.isoformat() if current_user.data_expiracao else None,
         "license_status": license_status["status"],
         "message": license_status["message"],
