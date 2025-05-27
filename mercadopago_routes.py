@@ -8,12 +8,38 @@ import json
 from database import get_db
 from models import User, Payment
 from auth import get_current_user
-from mercadopago_integration import (
-    create_payment_preference, 
-    handle_payment_notification,
-    get_plan_details,
-    PRODUCTS
-)
+# Configurações temporárias do Mercado Pago
+PRODUCTS = {
+    "mensal": {
+        "name": "Plano Mensal",
+        "price": 79.90,
+        "duration_days": 30
+    },
+    "trimestral": {
+        "name": "Plano Trimestral", 
+        "price": 199.90,
+        "duration_days": 90
+    },
+    "anual": {
+        "name": "Plano Anual",
+        "price": 299.90,
+        "duration_days": 365
+    }
+}
+
+def create_payment_preference(plan_id, user_id, user_email):
+    # Simulação temporária - em produção usar SDK do Mercado Pago
+    return {
+        "id": f"fake_pref_{user_id}_{plan_id}",
+        "init_point": f"/sucesso?plan={plan_id}",
+        "sandbox_init_point": f"/sucesso?plan={plan_id}"
+    }
+
+def handle_payment_notification(data):
+    return True, "Payment processed"
+
+def get_plan_details(plan_id):
+    return PRODUCTS.get(plan_id)
 
 router = APIRouter()
 

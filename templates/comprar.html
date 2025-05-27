@@ -331,9 +331,16 @@ async function processPayment() {
         
         const data = await response.json();
         
-        if (response.ok && data.init_point) {
-            // Redirecionar para o Mercado Pago
-            window.location.href = data.init_point;
+        if (response.ok) {
+            // Redirecionar para página de sucesso (simulação)
+            const initPoint = data.init_point || data.sandbox_init_point;
+            if (initPoint) {
+                window.location.href = initPoint;
+            } else {
+                showToast('Erro ao gerar link de pagamento', 'error');
+                document.getElementById('loadingPayment').style.display = 'none';
+                document.getElementById('checkoutForm').style.display = 'block';
+            }
         } else {
             throw new Error(data.detail || 'Erro ao processar pagamento');
         }

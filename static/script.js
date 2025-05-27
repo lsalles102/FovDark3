@@ -599,13 +599,13 @@ async function processPayment(plano) {
     }
 
     try {
-        const response = await fetch('/api/criar-preferencia', {
+        const response = await fetch('/api/mercadopago/create-preference', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ plano: plano })
+            body: JSON.stringify({ plan_id: plano })
         });
 
         const data = await response.json();

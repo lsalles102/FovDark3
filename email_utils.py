@@ -1,8 +1,8 @@
 
 import os
 import smtplib
-from email.mime.text import MimeText
-from email.mime.multipart import MimeMultipart
+import email.mime.text
+import email.mime.multipart
 from sqlalchemy.orm import Session
 from database import get_db
 from models import SiteSettings
@@ -41,13 +41,13 @@ def send_email(to_email, subject, html_content):
             return False
         
         # Criar mensagem
-        msg = MimeMultipart('alternative')
+        msg = email.mime.multipart.MIMEMultipart('alternative')
         msg['Subject'] = subject
         msg['From'] = settings["smtp_email"]
         msg['To'] = to_email
         
         # Adicionar conteúdo HTML
-        html_part = MimeText(html_content, 'html')
+        html_part = email.mime.text.MIMEText(html_content, 'html')
         msg.attach(html_part)
         
         # Conectar e enviar

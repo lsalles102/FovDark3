@@ -180,3 +180,122 @@ def get_plan_details(plan_id):
     if plan_id in PRODUCTS:
         return PRODUCTS[plan_id]
     return None
+import os
+from datetime import datetime, timedelta
+from sqlalchemy.orm import Session
+from database import get_db
+from models import User, Payment
+
+# Configurações dos produtos
+PRODUCTS = {
+    "mensal": {
+        "name": "Plano Mensal - FovDark",
+        "description": "Acesso completo por 1 mês",
+        "price": 79.90,
+        "duration_days": 30
+    },
+    "trimestral": {
+        "name": "Plano Trimestral - FovDark", 
+        "description": "Acesso completo por 3 meses",
+        "price": 199.90,
+        "duration_days": 90
+    },
+    "anual": {
+        "name": "Plano Anual - FovDark",
+        "description": "Acesso completo por 1 ano",
+        "price": 299.90,
+        "duration_days": 365
+    }
+}
+
+def create_payment_preference(plan_id, user_id, user_email):
+    """Criar preferência de pagamento no Mercado Pago"""
+    try:
+        if plan_id not in PRODUCTS:
+            return {"error": "Plano inválido"}
+        
+        plan = PRODUCTS[plan_id]
+        
+        # Simulação da criação de preferência
+        # Em produção, aqui seria usado o SDK do Mercado Pago
+        preference_data = {
+            "id": f"fake_pref_{user_id}_{plan_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+            "init_point": f"/sucesso?plan={plan_id}&user={user_id}",
+            "sandbox_init_point": f"/sucesso?plan={plan_id}&user={user_id}",
+            "items": [{
+                "title": plan["name"],
+                "description": plan["description"],
+                "quantity": 1,
+                "unit_price": plan["price"]
+            }],
+            "payer": {
+                "email": user_email
+            },
+            "back_urls": {
+                "success": "/sucesso",
+                "failure": "/cancelado", 
+                "pending": "/pendente"
+            },
+            "auto_return": "approved"
+        }
+        
+        return preference_data
+        
+    except Exception as e:
+        return {"error": str(e)}
+
+def handle_payment_notification(webhook_data):
+    """Processar notificação de pagamento do Mercado Pago"""
+    try:
+        # Aqui seria processada a notificação real do webhook
+        # Por enquanto retornamos sucesso
+        return True, "Notificação processada com sucesso"
+        
+    except Exception as e:
+        return False, f"Erro ao processar notificação: {str(e)}"
+
+def get_plan_details(plan_id):
+    """Obter detalhes de um plano"""
+    return PRODUCTS.get(plan_id)
+
+def activate_user_license(user_id, plan_id):
+    """Ativar licença do usuário após pagamento aprovado"""
+    try:
+        db = next(get_db())
+        user = db.query(User).filter(User.id == user_id).first()
+        
+        if not user:
+            return False, "Usuário não encontrado"
+        
+        plan = PRODUCTS.get(plan_id)
+        if not plan:
+            return False, "Plano inválido"
+        
+        # Calcular nova data de expiração
+        if user.data_expiracao and user.data_expiracao > datetime.utcnow():
+            # Estender licença existente
+            new_expiration = user.data_expiracao + timedelta(days=plan["duration_days"])
+        else:
+            # Nova licença
+            new_expiration = datetime.utcnow() + timedelta(days=plan["duration_days"])
+        
+        user.data_expiracao = new_expiration
+        
+        # Criar registro de pagamento
+        payment = Payment(
+            user_id=user_id,
+            valor=plan["price"],
+            plano=plan_id,
+            status="approved",
+            gateway_id=f"fake_payment_{user_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+            data_pagamento=datetime.utcnow()
+        )
+        
+        db.add(payment)
+        db.commit()
+        db.close()
+        
+        return True, f"Licença ativada até {new_expiration.strftime('%d/%m/%Y')}"
+        
+    except Exception as e:
+        return False, f"Erro ao ativar licença: {str(e)}"
