@@ -6,12 +6,26 @@ from database import get_db
 
 
 async def get_admin_user(current_user: User = Depends(get_current_user)) -> User:
-    """Verificar se o usuário atual é administrador"""
-    if not current_user.is_admin:
+    """Verificar se o usuário é administrador"""
+    # Verificação rigorosa de administrador
+    if not current_user or not hasattr(current_user, 'is_admin') or current_user.is_admin != True:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Acesso negado. Privilégios de administrador necessários."
         )
+
+    # Lista de emails de administradores permitidos (configuração adicional de segurança)
+    ADMIN_EMAILS = [
+        "admin@fovdark.com",
+        "lsalles102@gmail.com"  # Adicione emails de admin aqui
+    ]
+
+    if current_user.email not in ADMIN_EMAILS:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso negado. Email não autorizado para administração."
+        )
+
     return current_user
 
 

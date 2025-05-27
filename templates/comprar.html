@@ -302,67 +302,503 @@
     </div>
 </section>
 
-<!-- Modal de Checkout -->
-<div id="checkoutModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3><i class="fas fa-shopping-cart"></i> FINALIZAR COMPRA</h3>
-            <span class="close" onclick="closeCheckoutModal()">&times;</span>
+<!-- Modal de Checkout Melhorado -->
+<div id="checkoutModal" class="checkout-modal-overlay">
+    <div class="checkout-modal">
+        <div class="checkout-header">
+            <div class="checkout-title">
+                <i class="fas fa-shopping-cart"></i>
+                <h3>FINALIZAR COMPRA</h3>
+            </div>
+            <button class="checkout-close" onclick="closeCheckoutModal()">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-        <div class="modal-body">
+
+        <div class="checkout-body">
             <div id="loginPrompt" style="display: none;">
                 <div class="auth-prompt">
-                    <i class="fas fa-user-lock" style="font-size: 3rem; color: hsl(var(--primary)); margin-bottom: 1rem;"></i>
-                    <h4>Acesso Necessário</h4>
-                    <p>Faça login para continuar com a compra:</p>
-                    <div class="auth-buttons">
-                        <a href="/login" class="btn btn-primary">
+                    <div class="auth-icon">
+                        <i class="fas fa-user-lock"></i>
+                    </div>
+                    <h4>LOGIN NECESSÁRIO</h4>
+                    <p>Entre na sua conta para continuar:</p>
+                    <div class="auth-actions">
+                        <a href="/login?redirect=comprar" class="btn btn-primary">
                             <i class="fas fa-sign-in-alt"></i>
-                            Fazer Login
+                            FAZER LOGIN
                         </a>
-                        <a href="/register" class="btn btn-secondary">
+                        <a href="/register" class="btn btn-outline">
                             <i class="fas fa-user-plus"></i>
-                            Criar Conta
+                            CRIAR CONTA
                         </a>
                     </div>
                 </div>
             </div>
 
             <div id="checkoutForm" style="display: none;">
-                <div class="order-summary">
-                    <h4><i class="fas fa-receipt"></i> Resumo do Pedido</h4>
-                    <div class="summary-item">
-                        <span>Plano:</span>
-                        <span id="selectedPlan" class="plan-name"></span>
+                <div class="order-card">
+                    <div class="order-header">
+                        <i class="fas fa-receipt"></i>
+                        <h4>RESUMO DO PEDIDO</h4>
                     </div>
-                    <div class="summary-item total">
-                        <span>Total:</span>
-                        <span id="selectedPrice" class="price-value"></span>
+                    
+                    <div class="order-details">
+                        <div class="order-item">
+                            <span class="item-label">Produto:</span>
+                            <span id="selectedPlan" class="item-value"></span>
+                        </div>
+                        <div class="order-item">
+                            <span class="item-label">Duração:</span>
+                            <span id="selectedDuration" class="item-value"></span>
+                        </div>
+                        <div class="order-separator"></div>
+                        <div class="order-item total">
+                            <span class="item-label">TOTAL:</span>
+                            <span id="selectedPrice" class="item-price"></span>
+                        </div>
                     </div>
                 </div>
 
-                <button class="btn btn-primary btn-large" onclick="processPayment()">
-                    <i class="fas fa-credit-card"></i>
-                    PAGAR AGORA
+                <div class="payment-methods">
+                    <h5><i class="fas fa-credit-card"></i> MÉTODOS DE PAGAMENTO</h5>
+                    <div class="payment-options">
+                        <div class="payment-option active" data-method="mercadopago">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSIjMDBBNkZCIi8+Cjwvc3ZnPgo=" alt="Mercado Pago">
+                            <span>Mercado Pago</span>
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-checkout" onclick="processPayment()">
+                    <i class="fas fa-lock"></i>
+                    PAGAR COM SEGURANÇA
+                    <span class="checkout-secure">Pagamento 100% Seguro</span>
                 </button>
 
-                <div class="payment-security">
-                    <p><i class="fas fa-shield-alt"></i> Pagamento 100% seguro via Mercado Pago</p>
+                <div class="security-badges">
+                    <div class="security-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>SSL Seguro</span>
+                    </div>
+                    <div class="security-badge">
+                        <i class="fas fa-lock"></i>
+                        <span>Dados Protegidos</span>
+                    </div>
+                    <div class="security-badge">
+                        <i class="fas fa-certificate"></i>
+                        <span>Site Verificado</span>
+                    </div>
                 </div>
             </div>
 
             <div id="loadingPayment" style="display: none;">
-                <div class="loading-container">
-                    <div class="loading-spinner">
-                        <i class="fas fa-spinner fa-spin"></i>
+                <div class="loading-payment">
+                    <div class="loading-animation">
+                        <div class="loading-circle"></div>
+                        <div class="loading-circle"></div>
+                        <div class="loading-circle"></div>
                     </div>
-                    <h4>Processando Pagamento</h4>
-                    <p>Aguarde enquanto redirecionamos você para o Mercado Pago...</p>
+                    <h4>PROCESSANDO PAGAMENTO</h4>
+                    <p>Redirecionando para o Mercado Pago...</p>
+                    <div class="loading-progress">
+                        <div class="progress-bar"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+/* Modal de Checkout Melhorado */
+.checkout-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.checkout-modal {
+    background: hsl(var(--bg-secondary));
+    border: 2px solid hsl(var(--border-primary));
+    border-radius: var(--radius-xl);
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.checkout-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 2px solid hsl(var(--border-primary));
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--secondary) / 0.1));
+}
+
+.checkout-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.checkout-title i {
+    color: hsl(var(--primary));
+    font-size: 1.5rem;
+}
+
+.checkout-title h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.checkout-close {
+    background: none;
+    border: 2px solid hsl(var(--border-primary));
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: hsl(var(--text-secondary));
+    cursor: pointer;
+    transition: all var(--transition-medium);
+}
+
+.checkout-close:hover {
+    border-color: hsl(var(--danger));
+    color: hsl(var(--danger));
+    background: hsl(var(--danger) / 0.1);
+}
+
+.checkout-body {
+    padding: 2rem;
+}
+
+/* Auth Prompt */
+.auth-prompt {
+    text-align: center;
+    padding: 2rem 0;
+}
+
+.auth-icon {
+    font-size: 4rem;
+    color: hsl(var(--primary));
+    margin-bottom: 1.5rem;
+}
+
+.auth-prompt h4 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: hsl(var(--text-primary));
+}
+
+.auth-prompt p {
+    color: hsl(var(--text-secondary));
+    margin-bottom: 2rem;
+}
+
+.auth-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* Order Card */
+.order-card {
+    background: hsl(var(--bg-tertiary));
+    border: 1px solid hsl(var(--border-primary));
+    border-radius: var(--radius-lg);
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.order-header {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--secondary) / 0.1));
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid hsl(var(--border-primary));
+}
+
+.order-header i {
+    color: hsl(var(--primary));
+}
+
+.order-header h4 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.order-details {
+    padding: 1.5rem;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.order-item.total {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 2px solid hsl(var(--border-primary));
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.item-label {
+    color: hsl(var(--text-secondary));
+    font-size: 0.9rem;
+}
+
+.item-value {
+    color: hsl(var(--text-primary));
+    font-weight: 600;
+}
+
+.item-price {
+    color: hsl(var(--primary));
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.order-separator {
+    height: 1px;
+    background: hsl(var(--border-primary));
+    margin: 1rem 0;
+}
+
+/* Payment Methods */
+.payment-methods {
+    margin-bottom: 2rem;
+}
+
+.payment-methods h5 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: hsl(var(--text-secondary));
+}
+
+.payment-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 2px solid hsl(var(--border-primary));
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-medium);
+}
+
+.payment-option:hover {
+    border-color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.1);
+}
+
+.payment-option.active {
+    border-color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.1);
+}
+
+.payment-option img {
+    width: 24px;
+    height: 24px;
+}
+
+.payment-option span {
+    flex: 1;
+    font-weight: 600;
+}
+
+.payment-option i {
+    color: hsl(var(--primary));
+}
+
+/* Checkout Button */
+.btn-checkout {
+    width: 100%;
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    border: none;
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 2rem;
+    color: #000;
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all var(--transition-medium);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-checkout:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--glow);
+}
+
+.btn-checkout:active {
+    transform: translateY(0);
+}
+
+.checkout-secure {
+    font-size: 0.75rem;
+    font-weight: 500;
+    opacity: 0.8;
+}
+
+/* Security Badges */
+.security-badges {
+    display: flex;
+    justify-content: space-around;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.security-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: hsl(var(--text-muted));
+}
+
+.security-badge i {
+    color: hsl(var(--success));
+    font-size: 1rem;
+}
+
+/* Loading Payment */
+.loading-payment {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.loading-animation {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.loading-circle {
+    width: 12px;
+    height: 12px;
+    background: hsl(var(--primary));
+    border-radius: 50%;
+    animation: loadingBounce 1.4s ease-in-out infinite both;
+}
+
+.loading-circle:nth-child(1) { animation-delay: -0.32s; }
+.loading-circle:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes loadingBounce {
+    0%, 80%, 100% {
+        transform: scale(0);
+    }
+    40% {
+        transform: scale(1);
+    }
+}
+
+.loading-payment h4 {
+    margin-bottom: 0.5rem;
+    color: hsl(var(--text-primary));
+}
+
+.loading-payment p {
+    color: hsl(var(--text-secondary));
+    margin-bottom: 2rem;
+}
+
+.loading-progress {
+    width: 100%;
+    height: 4px;
+    background: hsl(var(--border-primary));
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary)));
+    animation: progressAnimation 2s ease-in-out infinite;
+}
+
+@keyframes progressAnimation {
+    0% { width: 0%; }
+    50% { width: 60%; }
+    100% { width: 100%; }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .checkout-modal {
+        margin: 1rem;
+        max-width: calc(100% - 2rem);
+    }
+    
+    .checkout-header,
+    .checkout-body {
+        padding: 1rem;
+    }
+    
+    .auth-actions {
+        flex-direction: column;
+    }
+    
+    .security-badges {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+}
+</style>
 {% endblock %}
 
 {% block scripts %}
@@ -424,6 +860,7 @@ function openCheckoutModal(planType, price) {
     // Atualizar resumo
     const selectedPlanElement = document.getElementById('selectedPlan');
     const selectedPriceElement = document.getElementById('selectedPrice');
+    const selectedDurationElement = document.getElementById('selectedDuration');
 
     if (selectedPlanElement) {
         selectedPlanElement.textContent = planType.toUpperCase();
@@ -431,18 +868,37 @@ function openCheckoutModal(planType, price) {
     if (selectedPriceElement) {
         selectedPriceElement.textContent = `R$ ${price.toFixed(2).replace('.', ',')}`;
     }
+    if (selectedDurationElement) {
+        const durations = {
+            'mensal': '30 dias',
+            'trimestral': '90 dias',
+            'anual': '365 dias'
+        };
+        selectedDurationElement.textContent = durations[planType] || '30 dias';
+    }
 
     // Abrir modal
     if (modal) {
         modal.style.display = 'flex';
         console.log('Modal aberto');
+        
+        // Adicionar animação
+        setTimeout(() => {
+            modal.classList.add('active');
+        }, 10);
     } else {
         console.error('Modal não encontrado');
     }
 }
 
 function closeCheckoutModal() {
-    document.getElementById('checkoutModal').style.display = 'none';
+    const modal = document.getElementById('checkoutModal');
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+    }
 }
 
 async function processPayment() {
@@ -464,7 +920,7 @@ async function processPayment() {
         return;
     }
 
-    console.log('Enviando para servidor:', selectedPlanData);
+    console.log('Criando preferência de pagamento:', selectedPlanData);
 
     // Mostrar loading
     const checkoutForm = document.getElementById('checkoutForm');
@@ -483,10 +939,10 @@ async function processPayment() {
             formData.append('plano', selectedPlanData.type);
         }
 
-        console.log('Processando compra:', selectedPlanData);
+        console.log('Criando preferência de pagamento...');
 
-        // Processar compra
-        const response = await fetch('/api/purchase', {
+        // Criar preferência de pagamento
+        const response = await fetch('/api/create-payment-preference', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -500,15 +956,19 @@ async function processPayment() {
             const data = await response.json();
             console.log('Dados da resposta:', data);
             
-            showToast('Compra realizada com sucesso!', 'success');
-
-            // Fechar modal
-            closeCheckoutModal();
-
-            // Redirecionar para página de sucesso
-            setTimeout(() => {
-                window.location.href = '/sucesso?plan=' + (selectedPlanData.type || 'produto');
-            }, 1500);
+            if (data.success && data.init_point) {
+                showToast('Redirecionando para o pagamento...', 'success');
+                
+                // Fechar modal
+                closeCheckoutModal();
+                
+                // Redirecionar para o Mercado Pago
+                setTimeout(() => {
+                    window.location.href = data.init_point;
+                }, 1000);
+            } else {
+                throw new Error('Erro ao criar preferência de pagamento');
+            }
         } else {
             const errorData = await response.json().catch(() => ({}));
             

@@ -267,15 +267,31 @@ async def check_license(
     }
 
 
-# Processar compra com produtos dinâmicos
-@app.post("/api/purchase")
-async def process_purchase(
+# Criar preferência de pagamento no Mercado Pago
+@app.post("/api/create-payment-preference")
+async def create_payment_preference(
     product_id: int = Form(None),
     plano: str = Form(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    import mercadopago
+    
     try:
+        # Obter token do Mercado Pago das configurações
+        mp_token_setting = db.query(SiteSettings).filter(
+            SiteSettings.key == "mp_token",
+            SiteSettings.category == "api"
+        ).first()
+        
+        if not mp_token_setting or not mp_token_setting.value:
+            # Token de teste para desenvolvimento
+            mp_access_token = "TEST-2938304570307551-052414-48874ac1e8c43adcb81c86fd3b9c6c18-191783240"
+        else:
+            mp_access_token = mp_token_setting.value
+        
+        sdk = mercadopago.SDK(mp_access_token)
+        
         product = None
         preco = 0
         dias = 0
@@ -292,7 +308,7 @@ async def process_purchase(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Produto não encontrado ou inativo"
                 )
-            preco = product.price
+            preco = float(product.price)
             dias = product.duration_days
             nome_produto = product.name
         elif plano:
@@ -319,48 +335,86 @@ async def process_purchase(
                 detail="Produto ou plano deve ser especificado"
             )
         
-        # Criar registro de pagamento
+        # Criar registro de pagamento pendente
         payment = Payment(
             user_id=current_user.id,
             product_id=product.id if product else None,
             valor=preco,
             plano=plano if plano else nome_produto,
-            status="completed"
+            status="pending"
         )
         
         db.add(payment)
-        
-        # Atualizar data de expiração do usuário
-        if current_user.data_expiracao and current_user.data_expiracao > datetime.utcnow():
-            # Estender licença existente
-            new_expiration = current_user.data_expiracao + timedelta(days=dias)
-        else:
-            # Nova licença
-            new_expiration = datetime.utcnow() + timedelta(days=dias)
-        
-        current_user.data_expiracao = new_expiration
         db.commit()
         db.refresh(payment)
         
-        return {
-            "success": True,
-            "message": "Compra processada com sucesso",
-            "payment_id": payment.id,
-            "product_name": nome_produto,
-            "nova_expiracao": new_expiration.isoformat(),
-            "days_added": dias,
-            "amount_paid": preco
+        # Configurar preferência de pagamento
+        preference_data = {
+            "items": [
+                {
+                    "title": nome_produto,
+                    "description": f"Licença FovDark - {nome_produto} ({dias} dias)",
+                    "quantity": 1,
+                    "currency_id": "BRL",
+                    "unit_price": preco
+                }
+            ],
+            "payer": {
+                "email": current_user.email
+            },
+            "back_urls": {
+                "success": f"{os.getenv('SITE_URL', 'https://your-repl-url.replit.dev')}/sucesso",
+                "failure": f"{os.getenv('SITE_URL', 'https://your-repl-url.replit.dev')}/cancelado",
+                "pending": f"{os.getenv('SITE_URL', 'https://your-repl-url.replit.dev')}/pendente"
+            },
+            "auto_return": "approved",
+            "external_reference": str(payment.id),
+            "notification_url": f"{os.getenv('SITE_URL', 'https://your-repl-url.replit.dev')}/api/mercadopago/webhook",
+            "statement_descriptor": "FOVDARK",
+            "expires": True,
+            "expiration_date_from": datetime.utcnow().isoformat(),
+            "expiration_date_to": (datetime.utcnow() + timedelta(hours=1)).isoformat()
         }
+        
+        preference_response = sdk.preference().create(preference_data)
+        
+        if preference_response["status"] == 201:
+            preference = preference_response["response"]
+            return {
+                "success": True,
+                "preference_id": preference["id"],
+                "init_point": preference["init_point"],
+                "sandbox_init_point": preference["sandbox_init_point"],
+                "payment_id": payment.id
+            }
+        else:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Erro ao criar preferência de pagamento"
+            )
         
     except HTTPException:
         raise
     except Exception as e:
         db.rollback()
-        print(f"Erro na compra: {e}")
+        print(f"Erro ao criar preferência: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erro interno do servidor: {str(e)}"
         )
+
+
+# Processar compra (mantido para compatibilidade)
+@app.post("/api/purchase")
+async def process_purchase(
+    product_id: int = Form(None),
+    plano: str = Form(None),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Redirecionar para criação de preferência
+    return await create_payment_preference(product_id, plano, current_user, db)
 
 
 # Download do script (protegido)

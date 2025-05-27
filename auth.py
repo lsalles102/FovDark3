@@ -89,6 +89,11 @@ async def get_current_user(
     if user is None:
         raise credentials_exception
 
+    # Garantir que is_admin seja sempre boolean
+    if user.is_admin is None:
+        user.is_admin = False
+        db.commit()
+
     return user
 
 
