@@ -1683,15 +1683,31 @@ function createProductModal() {
                 </div>
 
                 <div style="margin-bottom: 1rem;">
-                    <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">URL da Imagem:</label>
-                    <input type="url" name="image_url" style="
-                        width: 100%;
-                        padding: 0.75rem;
-                        background: var(--bg-tertiary);
-                        border: 1px solid var(--border);
-                        border-radius: 8px;
-                        color: var(--text-primary);
-                    ">
+                    <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Imagem do Produto:</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="url" name="image_url" placeholder="URL da imagem ou upload abaixo" style="
+                            flex: 1;
+                            padding: 0.75rem;
+                            background: var(--bg-tertiary);
+                            border: 1px solid var(--border);
+                            border-radius: 8px;
+                            color: var(--text-primary);
+                        ">
+                        <button type="button" onclick="document.getElementById('imageUpload').click()" style="
+                            padding: 0.75rem 1rem;
+                            background: var(--bg-tertiary);
+                            border: 1px solid var(--border);
+                            border-radius: 8px;
+                            color: var(--primary);
+                            cursor: pointer;
+                        ">
+                            <i class="fas fa-upload"></i> Upload
+                        </button>
+                    </div>
+                    <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="uploadProductImage(this)">
+                    <div id="imagePreview" style="margin-top: 0.5rem; display: none;">
+                        <img id="previewImg" style="max-width: 100%; max-height: 120px; border-radius: 8px; border: 1px solid var(--border);">
+                    </div>
                 </div>
 
                 <div style="margin-bottom: 1rem;">
@@ -1744,6 +1760,48 @@ function closeModal(button) {
     const modal = button.closest('.modal-overlay');
     if (modal) {
         modal.remove();
+    }
+}
+
+async function uploadProductImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    const token = localStorage.getItem('access_token');
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        showToast('Fazendo upload da imagem...', 'info');
+        
+        const response = await fetch('/api/admin/upload-image', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Atualizar campo URL da imagem
+            const imageUrlInput = document.querySelector('input[name="image_url"]');
+            imageUrlInput.value = data.image_url;
+            
+            // Mostrar preview
+            const preview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            previewImg.src = data.image_url;
+            preview.style.display = 'block';
+            
+            showToast('Imagem enviada com sucesso!', 'success');
+        } else {
+            showToast(data.detail || 'Erro ao enviar imagem', 'error');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        showToast('Erro ao enviar imagem', 'error');
     }
 }
 

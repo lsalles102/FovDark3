@@ -690,6 +690,124 @@ function toggleFaq(element) {
     }
 }
 
+// Função para carregar produtos da API
+async function loadProducts() {
+    try {
+        console.log('Carregando produtos...');
+        const response = await fetch('/api/products');
+
+        if (response.ok) {
+            const products = await response.json();
+            console.log('Produtos carregados:', products);
+            displayProducts(products);
+        } else {
+            console.error('Erro ao carregar produtos:', response.status);
+            showToast('Erro ao carregar produtos', 'error');
+        }
+    } catch (error) {
+        console.error('Erro de conexão:', error);
+        showToast('Erro de conexão ao carregar produtos', 'error');
+    }
+}
+
+// Função para exibir produtos na página
+function displayProducts(products) {
+    const container = document.querySelector('.pricing-grid');
+    if (!container) {
+        console.warn('Container de produtos não encontrado');
+        return;
+    }
+
+    if (products.length === 0) {
+        container.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-secondary);">
+                <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                <h3>Nenhum produto disponível</h3>
+                <p>Novos produtos serão adicionados em breve.</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Limpar container
+    container.innerHTML = '';
+
+    // Adicionar produtos
+    products.forEach(product => {
+        const productCard = createProductCard(product);
+        container.appendChild(productCard);
+    });
+}
+
+// Função para criar card de produto
+function createProductCard(product) {
+    const card = document.createElement('div');
+    card.className = 'pricing-plan';
+
+    const features = product.features ? product.features.split(',') : [];
+    const featuresHTML = features.map(feature => `<li><i class="fas fa-check"></i>${feature.trim()}</li>`).join('');
+
+    card.innerHTML = `
+        ${product.is_featured ? '<div class="plan-badge">RECOMENDADO</div>' : ''}
+        <div class="plan-header">
+            <h3 class="plan-name">${product.name}</h3>
+            <div class="plan-price">
+                <span class="currency">R$</span>
+                <span class="amount">${product.price.toFixed(2)}</span>
+                <span class="period">/${product.duration_days} dias</span>
+            </div>
+        </div>
+
+        <div class="plan-description">
+            <p>${product.description || 'Acesso completo às funcionalidades premium'}</p>
+        </div>
+
+        <ul class="plan-features">
+            ${featuresHTML || `
+                <li><i class="fas fa-check"></i>Aim Assist Avançado</li>
+                <li><i class="fas fa-check"></i>ESP & Wallhack</li>
+                <li><i class="fas fa-check"></i>Anti-Detection</li>
+                <li><i class="fas fa-check"></i>Suporte 24/7</li>
+            `}
+        </ul>
+
+        <button class="plan-button" onclick="selectPlan('${product.id}', ${product.price}, '${product.name}', ${product.duration_days})">
+            ESCOLHER PLANO
+        </button>
+    `;
+
+    return card;
+}
+
+function selectPlan(productId, price, planName, durationDays) {
+    selectedPlanData = { 
+        id: productId, 
+        type: productId, 
+        price: price, 
+        name: planName,
+        duration: durationDays
+    };
+
+    // Verificar se usuário está logado
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+        // Mostrar prompt de login
+        document.getElementById('loginPrompt').style.display = 'block';
+        document.getElementById('checkoutForm').style.display = 'none';
+    } else {
+        // Mostrar formulário de checkout
+        document.getElementById('loginPrompt').style.display = 'none';
+        document.getElementById('checkoutForm').style.display = 'block';
+
+        // Atualizar informações do plano
+        document.getElementById('selectedPlanName').textContent = planName;
+        document.getElementById('selectedPlanPrice').textContent = `R$ ${price.toFixed(2)}`;
+    }
+
+    // Abrir modal
+    document.getElementById('checkoutModal').style.display = 'flex';
+}
+
 // ===== INITIALIZATION COMPLETE =====
 console.log('FovDark Script carregado com sucesso');
 
@@ -841,7 +959,7 @@ function checkAuthenticationStatus() {
 // Função para mostrar notificações
 function showToast(message, type = 'info') {
     console.log('Mostrando toast:', message, type);
-    
+
     // Remover toast anterior se existir
     const existingToast = document.querySelector('.toast');
     if (existingToast) {
@@ -860,7 +978,7 @@ function showToast(message, type = 'info') {
 
     // Adicionar estilos inline para garantir funcionamento
     const backgroundColor = type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : type === 'warning' ? '#F59E0B' : '#3B82F6';
-    
+
     toast.style.cssText = `
         position: fixed;
         top: 100px;
@@ -911,7 +1029,7 @@ function showToast(message, type = 'info') {
             }
         }, 300);
     }, 5000);
-    
+
     // Permitir fechar clicando no toast
     toast.addEventListener('click', () => {
         toast.style.animation = 'slideOutRight 0.3s ease';

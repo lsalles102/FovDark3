@@ -405,6 +405,44 @@ async def get_all_users(
     ]
 
 
+# Upload de imagens
+@app.post("/api/admin/upload-image")
+async def upload_image(
+    file: UploadFile = File(...),
+    admin_user: User = Depends(get_admin_user)
+):
+    if not file.content_type.startswith('image/'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Arquivo deve ser uma imagem"
+        )
+    
+    # Criar diretório de uploads se não existir
+    uploads_dir = "static/uploads"
+    if not os.path.exists(uploads_dir):
+        os.makedirs(uploads_dir)
+    
+    # Gerar nome único para o arquivo
+    file_extension = file.filename.split('.')[-1]
+    unique_filename = f"{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
+    file_path = os.path.join(uploads_dir, unique_filename)
+    
+    try:
+        # Salvar arquivo
+        with open(file_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+        
+        # Retornar URL pública da imagem
+        image_url = f"/static/uploads/{unique_filename}"
+        return {"image_url": image_url, "filename": unique_filename}
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao salvar imagem: {str(e)}"
+        )
+
 # Endpoints administrativos - Produtos
 @app.get("/api/admin/products")
 async def get_all_products(

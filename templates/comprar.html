@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Comprar - FovDark{% endblock %}
@@ -22,7 +21,7 @@
                         <span class="period">,90/mês</span>
                     </div>
                 </div>
-                
+
                 <div class="card-body">
                     <ul class="pricing-features">
                         <li><i class="fas fa-check"></i> Aim Assist Inteligente</li>
@@ -31,7 +30,7 @@
                         <li><i class="fas fa-check"></i> Atualizações Gratuitas</li>
                         <li><i class="fas fa-check"></i> Configurações Básicas</li>
                     </ul>
-                    
+
                     <button class="btn btn-primary btn-full" onclick="selectPlan('mensal', 79.90)">
                         <i class="fas fa-shopping-cart"></i>
                         ESCOLHER PLANO
@@ -51,7 +50,7 @@
                     </div>
                     <div class="savings">Economize 17%</div>
                 </div>
-                
+
                 <div class="card-body">
                     <ul class="pricing-features">
                         <li><i class="fas fa-check"></i> Tudo do plano mensal</li>
@@ -60,7 +59,7 @@
                         <li><i class="fas fa-check"></i> Acesso Antecipado</li>
                         <li><i class="fas fa-check"></i> Recursos Avançados</li>
                     </ul>
-                    
+
                     <button class="btn btn-primary btn-full" onclick="selectPlan('trimestral', 199.90)">
                         <i class="fas fa-crown"></i>
                         ESCOLHER PLANO
@@ -79,7 +78,7 @@
                     </div>
                     <div class="savings">Economize 68%</div>
                 </div>
-                
+
                 <div class="card-body">
                     <ul class="pricing-features">
                         <li><i class="fas fa-check"></i> Tudo dos planos anteriores</li>
@@ -88,7 +87,7 @@
                         <li><i class="fas fa-check"></i> Beta Access</li>
                         <li><i class="fas fa-check"></i> Configurações Elite</li>
                     </ul>
-                    
+
                     <button class="btn btn-primary btn-full" onclick="selectPlan('anual', 299.90)">
                         <i class="fas fa-star"></i>
                         ESCOLHER PLANO
@@ -163,7 +162,7 @@
                     <p>Conexão criptografada</p>
                 </div>
             </div>
-            
+
             <div class="trust-item">
                 <div class="trust-icon secure">
                     <i class="fas fa-lock"></i>
@@ -173,7 +172,7 @@
                     <p>Processamento confiável</p>
                 </div>
             </div>
-            
+
             <div class="trust-item">
                 <div class="trust-icon verified">
                     <i class="fas fa-certificate"></i>
@@ -183,7 +182,7 @@
                     <p>Empresa registrada</p>
                 </div>
             </div>
-            
+
             <div class="trust-item">
                 <div class="trust-icon privacy">
                     <i class="fas fa-user-shield"></i>
@@ -268,7 +267,7 @@
                         <p>Sim. Nosso software utiliza tecnologia avançada de bypass que analisa automaticamente para evitar detecção. Mantemos nossos métodos privados para garantir máxima segurança.</p>
                     </div>
                 </div>
-                
+
                 <div class="faq-item">
                     <div class="faq-question" onclick="toggleFaq(this)">
                         <span>COMO FUNCIONA O SISTEMA DE LICENÇAS?</span>
@@ -278,7 +277,7 @@
                         <p>Após a compra, você recebe uma licença única vinculada ao seu e-mail. A licença é válida por 30, 90 ou 365 dias dependendo do plano escolhido.</p>
                     </div>
                 </div>
-                
+
                 <div class="faq-item">
                     <div class="faq-question" onclick="toggleFaq(this)">
                         <span>POSSO USAR EM MAIS DE UM COMPUTADOR?</span>
@@ -288,7 +287,7 @@
                         <p>Cada licença permite uso em até 2 computadores diferentes. Para mais dispositivos, será necessário adquirir licenças adicionais.</p>
                     </div>
                 </div>
-                
+
                 <div class="faq-item">
                     <div class="faq-question" onclick="toggleFaq(this)">
                         <span>COMO RECEBO ATUALIZAÇÕES?</span>
@@ -328,7 +327,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div id="checkoutForm" style="display: none;">
                 <div class="order-summary">
                     <h4><i class="fas fa-receipt"></i> Resumo do Pedido</h4>
@@ -341,17 +340,17 @@
                         <span id="selectedPrice" class="price-value"></span>
                     </div>
                 </div>
-                
+
                 <button class="btn btn-primary btn-large" onclick="processPayment()">
                     <i class="fas fa-credit-card"></i>
                     PAGAR AGORA
                 </button>
-                
+
                 <div class="payment-security">
                     <p><i class="fas fa-shield-alt"></i> Pagamento 100% seguro via Mercado Pago</p>
                 </div>
             </div>
-            
+
             <div id="loadingPayment" style="display: none;">
                 <div class="loading-container">
                     <div class="loading-spinner">
@@ -373,19 +372,19 @@ let selectedPlanData = null;
 function selectPlan(planType, price) {
     console.log('Selecionando plano:', planType, price);
     selectedPlanData = { type: planType, price: price };
-    
+
     // Verificar se o usuário está logado
     const token = localStorage.getItem('access_token');
     console.log('Token encontrado:', !!token);
-    
+
     const modal = document.getElementById('checkoutModal');
     const loginPrompt = document.getElementById('loginPrompt');
     const checkoutForm = document.getElementById('checkoutForm');
     const loadingPayment = document.getElementById('loadingPayment');
-    
+
     // Reset modal state
     if (loadingPayment) loadingPayment.style.display = 'none';
-    
+
     if (!token) {
         // Mostrar modal de login
         if (loginPrompt) loginPrompt.style.display = 'block';
@@ -394,11 +393,11 @@ function selectPlan(planType, price) {
         // Mostrar formulário de checkout
         if (loginPrompt) loginPrompt.style.display = 'none';
         if (checkoutForm) checkoutForm.style.display = 'block';
-        
+
         // Atualizar resumo
         const selectedPlanElement = document.getElementById('selectedPlan');
         const selectedPriceElement = document.getElementById('selectedPrice');
-        
+
         if (selectedPlanElement) {
             selectedPlanElement.textContent = planType.toUpperCase();
         }
@@ -406,7 +405,7 @@ function selectPlan(planType, price) {
             selectedPriceElement.textContent = `R$ ${price.toFixed(2).replace('.', ',')}`;
         }
     }
-    
+
     // Abrir modal
     if (modal) {
         modal.style.display = 'flex';
@@ -422,37 +421,37 @@ function closeCheckoutModal() {
 
 async function processPayment() {
     console.log('Processando pagamento...');
-    
+
     if (!selectedPlanData) {
         console.error('Nenhum plano selecionado');
         showToast('Erro: Nenhum plano selecionado', 'error');
         return;
     }
-    
+
     const token = localStorage.getItem('access_token');
     if (!token) {
         console.error('Token não encontrado');
         showToast('Erro: Usuário não autenticado', 'error');
         return;
     }
-    
+
     console.log('Enviando para servidor:', selectedPlanData);
-    
+
     // Mostrar loading
     const checkoutForm = document.getElementById('checkoutForm');
     const loadingPayment = document.getElementById('loadingPayment');
-    
+
     if (checkoutForm) checkoutForm.style.display = 'none';
     if (loadingPayment) loadingPayment.style.display = 'block';
-    
+
     try {
         const requestBody = {
             plan_id: selectedPlanData.type
         };
-        
+
         console.log('Fazendo requisição para:', '/api/mercadopago/create-preference');
         console.log('Body:', requestBody);
-        
+
         const response = await fetch('/api/mercadopago/create-preference', {
             method: 'POST',
             headers: {
@@ -461,18 +460,18 @@ async function processPayment() {
             },
             body: JSON.stringify(requestBody)
         });
-        
+
         console.log('Status da resposta:', response.status);
-        
+
         const data = await response.json();
         console.log('Dados da resposta:', data);
-        
+
         if (response.ok) {
             showToast('Pagamento processado com sucesso!', 'success');
-            
+
             // Fechar modal
             closeCheckoutModal();
-            
+
             // Redirecionar após delay
             setTimeout(() => {
                 window.location.href = '/sucesso?plan=' + selectedPlanData.type;
@@ -491,7 +490,7 @@ async function processPayment() {
     } catch (error) {
         console.error('Erro no pagamento:', error);
         showToast('Erro ao processar pagamento: ' + error.message, 'error');
-        
+
         // Voltar ao formulário
         if (loadingPayment) loadingPayment.style.display = 'none';
         if (checkoutForm) checkoutForm.style.display = 'block';
@@ -502,7 +501,7 @@ function toggleFaq(element) {
     const faqItem = element.parentElement;
     const answer = faqItem.querySelector('.faq-answer');
     const icon = element.querySelector('i');
-    
+
     // Fechar outros FAQs
     document.querySelectorAll('.faq-item').forEach(item => {
         if (item !== faqItem && item.classList.contains('active')) {
@@ -511,10 +510,10 @@ function toggleFaq(element) {
             item.querySelector('.faq-question i').style.transform = 'rotate(0deg)';
         }
     });
-    
+
     // Toggle atual
     faqItem.classList.toggle('active');
-    
+
     if (faqItem.classList.contains('active')) {
         answer.style.maxHeight = answer.scrollHeight + 'px';
         icon.style.transform = 'rotate(180deg)';
@@ -535,20 +534,20 @@ window.onclick = function(event) {
 // Debug e inicialização
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Página de compras carregada');
-    
+
     // Verificar se elementos existem
     const modal = document.getElementById('checkoutModal');
     const loginPrompt = document.getElementById('loginPrompt');
     const checkoutForm = document.getElementById('checkoutForm');
-    
+
     console.log('Modal encontrado:', !!modal);
     console.log('Login prompt encontrado:', !!loginPrompt);
     console.log('Checkout form encontrado:', !!checkoutForm);
-    
+
     // Verificar botões dos planos
     const planButtons = document.querySelectorAll('[onclick^="selectPlan"]');
     console.log('Botões de plano encontrados:', planButtons.length);
-    
+
     // Animar cards de pricing
     const cards = document.querySelectorAll('.pricing-card');
     cards.forEach((card, index) => {
@@ -556,10 +555,17 @@ document.addEventListener('DOMContentLoaded', function() {
             card.classList.add('animate-slide-up');
         }, index * 200);
     });
-    
+
     // Verificar autenticação
     const token = localStorage.getItem('access_token');
     console.log('Usuário autenticado:', !!token);
 });
+    // Carregar produtos disponíveis
+    loadProducts();
+
+    // Carregar produtos ao inicializar
+    document.addEventListener('DOMContentLoaded', function() {
+        loadProducts();
+    });
 </script>
 {% endblock %}
