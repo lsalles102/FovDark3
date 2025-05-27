@@ -174,7 +174,29 @@ async def pagamento_pendente(request: Request):
     return templates.TemplateResponse("pending.html", {"request": request})
 
 
-# API Endpoints
+# ===== ERROR HANDLERS =====
+@app.exception_handler(500)
+async def internal_server_error(request: Request, exc: Exception):
+    return templates.TemplateResponse(
+        "error.html", 
+        {"request": request, "error_code": 500, "error_message": "Erro interno do servidor"}, 
+        status_code=500
+    )
+
+@app.exception_handler(404)
+async def not_found_error(request: Request, exc: Exception):
+    return templates.TemplateResponse(
+        "error.html", 
+        {"request": request, "error_code": 404, "error_message": "Página não encontrada"}, 
+        status_code=404
+    )
+
+# ===== HEALTH CHECK =====
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "timestamp": datetime.utcnow().isoformat()}
+
+# ===== API ENDPOINTS =====
 
 # Registro de usuário
 @app.post("/api/register")

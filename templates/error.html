@@ -1,0 +1,135 @@
+
+{% extends "base.html" %}
+
+{% block title %}Erro {{ error_code }} - FovDark{% endblock %}
+
+{% block content %}
+<section class="error-section">
+    <div class="container">
+        <div class="error-content">
+            <div class="error-icon">
+                {% if error_code == 404 %}
+                    <i class="fas fa-search"></i>
+                {% else %}
+                    <i class="fas fa-exclamation-triangle"></i>
+                {% endif %}
+            </div>
+            
+            <h1 class="error-code">{{ error_code }}</h1>
+            
+            <h2 class="error-title">
+                {% if error_code == 404 %}
+                    PÁGINA NÃO ENCONTRADA
+                {% elif error_code == 500 %}
+                    ERRO INTERNO
+                {% else %}
+                    ERRO ENCONTRADO
+                {% endif %}
+            </h2>
+            
+            <p class="error-message">
+                {{ error_message }}
+            </p>
+            
+            <div class="error-actions">
+                <a href="/" class="btn btn-primary">
+                    <i class="fas fa-home"></i>
+                    VOLTAR AO INÍCIO
+                </a>
+                
+                <button onclick="history.back()" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    PÁGINA ANTERIOR
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.error-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, hsl(var(--bg-primary)), hsl(var(--bg-secondary)));
+}
+
+.error-content {
+    text-align: center;
+    max-width: 600px;
+    background: hsl(var(--bg-glass));
+    backdrop-filter: blur(10px);
+    border: 1px solid hsl(var(--border-primary));
+    border-radius: var(--radius-xl);
+    padding: 3rem;
+    box-shadow: var(--shadow-lg);
+}
+
+.error-icon {
+    font-size: 4rem;
+    color: hsl(var(--warning));
+    margin-bottom: 2rem;
+    text-shadow: 0 0 20px hsl(var(--warning) / 0.5);
+}
+
+.error-code {
+    font-size: 6rem;
+    font-weight: 900;
+    color: hsl(var(--primary));
+    margin: 0;
+    text-shadow: 0 0 30px hsl(var(--primary) / 0.5);
+    font-family: var(--font-primary);
+}
+
+.error-title {
+    font-size: 2rem;
+    color: hsl(var(--text-primary));
+    margin: 1rem 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.error-message {
+    color: hsl(var(--text-secondary));
+    font-size: 1.1rem;
+    margin: 2rem 0;
+    line-height: 1.6;
+}
+
+.error-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 3rem;
+}
+
+.btn {
+    padding: 1rem 2rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all var(--transition-medium);
+}
+
+@media (max-width: 768px) {
+    .error-content {
+        padding: 2rem;
+    }
+    
+    .error-code {
+        font-size: 4rem;
+    }
+    
+    .error-title {
+        font-size: 1.5rem;
+    }
+    
+    .error-actions {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}

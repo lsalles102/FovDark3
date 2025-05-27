@@ -99,8 +99,6 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const loginForm = document.getElementById('loginForm');
-
     // Verificar se já está logado
     const token = localStorage.getItem('access_token');
     if (token) {
@@ -113,11 +111,12 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
+    const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', login);
     }
 
-    // Adicionar listeners para Enter nos campos
+    // Listeners para tecla Enter
     const emailField = document.getElementById('email');
     const passwordField = document.getElementById('password');
 
@@ -147,116 +146,6 @@ function togglePassword(fieldId) {
         } else {
             field.type = 'password';
             toggle.className = 'fas fa-eye';
-        }
-    }
-}
-
-async function login(e) {
-    e.preventDefault();
-
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-
-    // Limpar erros anteriores
-    document.getElementById('email-error').textContent = '';
-    document.getElementById('password-error').textContent = '';
-
-    // Validações básicas
-    if (!email) {
-        document.getElementById('email-error').textContent = 'Email é obrigatório';
-        return;
-    }
-
-    if (!password) {
-        document.getElementById('password-error').textContent = 'Senha é obrigatória';
-        return;
-    }
-
-    // Validar formato do email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        document.getElementById('email-error').textContent = 'Digite um email válido';
-        return;
-    }
-
-    const submitBtn = document.getElementById('login-btn');
-    if (!submitBtn) {
-        alert('Botão de login não encontrado');
-        return;
-    }
-
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CONECTANDO...';
-    submitBtn.disabled = true;
-
-    try {
-        const formData = new FormData();
-        formData.append('email', email);
-        formData.append('password', password);
-
-        const response = await fetch('/api/login', {
-            method: 'POST',
-            body: formData
-        });
-
-        console.log('Status da resposta:', response.status);
-
-        if (!response.ok) {
-            let errorMessage = 'Erro no login';
-
-            try {
-                const errorData = await response.json();
-                errorMessage = errorData.detail || errorMessage;
-            } catch (parseError) {
-                console.error('Erro ao parsear resposta:', parseError);
-                if (response.status === 401) {
-                    errorMessage = 'Email ou senha incorretos';
-                } else if (response.status === 500) {
-                    errorMessage = 'Erro interno do servidor';
-                } else {
-                    errorMessage = `Erro ${response.status}`;
-                }
-            }
-
-            alert(errorMessage);
-            return;
-        }
-
-        const loginData = await response.json();
-        console.log('Login bem-sucedido:', loginData);
-
-        if (loginData.access_token && loginData.user) {
-            // Salvar dados do usuário
-            localStorage.setItem('access_token', loginData.access_token);
-            localStorage.setItem('user_data', JSON.stringify(loginData.user));
-
-            alert('Login realizado com sucesso!');
-
-            // Verificar se há redirecionamento específico
-            const urlParams = new URLSearchParams(window.location.search);
-            const redirect = urlParams.get('redirect');
-
-            setTimeout(() => {
-                if (redirect === 'comprar') {
-                    window.location.href = '/comprar?from=login';
-                } else if (loginData.user && loginData.user.is_admin) {
-                    window.location.href = '/admin';
-                } else {
-                    window.location.href = '/painel';
-                }
-            }, 500);
-        } else {
-            alert('Dados de resposta inválidos');
-        }
-
-    } catch (error) {
-        console.error('Erro no login:', error);
-        alert('Erro inesperado: ' + error.message);
-    } finally {
-        // Restaurar botão
-        if (submitBtn) {
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
         }
     }
 }
