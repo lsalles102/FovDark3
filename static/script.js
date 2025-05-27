@@ -123,9 +123,26 @@ function updateAuthenticationUI() {
         if (logoutLink) logoutLink.style.display = 'flex';
         if (painelLink) painelLink.style.display = 'flex';
 
-        // Mostrar link admin apenas para administradores
-        if (adminLink) {
-            adminLink.style.display = userData.is_admin ? 'flex' : 'none';
+        // Lista de emails autorizados como admin
+        const AUTHORIZED_ADMIN_EMAILS = [
+            'admin@fovdark.com',
+            'lsalles102@gmail.com'
+        ];
+
+        // Verificar se é admin autorizado
+        const userEmailLower = userData.email.toLowerCase().trim();
+        const isAuthorizedAdmin = AUTHORIZED_ADMIN_EMAILS.some(email => 
+            email.toLowerCase() === userEmailLower
+        );
+
+        // Mostrar menu admin apenas se for autorizado E se is_admin for true
+        const adminMenuLink = document.querySelector('.nav-link[href="/admin"]');
+        if (adminMenuLink) {
+            if (isAuthorizedAdmin && userData.is_admin) {
+                adminMenuLink.style.display = 'flex';
+            } else {
+                adminMenuLink.style.display = 'none';
+            }
         }
     } else {
         // Usuário não logado
@@ -698,3 +715,31 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 console.log('✅ FovDark Script carregado com sucesso');
+
+function updateUserInfo(user) {
+    const userInfo = document.querySelector('.user-info');
+    if (userInfo) {
+        // Lista de emails autorizados como admin
+        const AUTHORIZED_ADMIN_EMAILS = [
+            'admin@fovdark.com',
+            'lsalles102@gmail.com'
+        ];
+
+        // Verificar se o email está na lista de autorizados (case-insensitive)
+        const userEmailLower = user.email.toLowerCase().trim();
+        const isAuthorizedAdmin = AUTHORIZED_ADMIN_EMAILS.some(email => 
+            email.toLowerCase() === userEmailLower
+        );
+
+        // Mostrar badge apenas se for autorizado E se is_admin for true
+        const adminBadge = (isAuthorizedAdmin && user.is_admin) ? '<span class="admin-badge">ADMIN</span>' : '';
+
+        userInfo.innerHTML = `
+            <div class="user-avatar">${user.email.charAt(0).toUpperCase()}</div>
+            <div class="user-details">
+                <div class="user-email">${user.email} ${adminBadge}</div>
+                <div class="user-since">Membro desde ${new Date().getFullYear()}</div>
+            </div>
+        `;
+    }
+}
