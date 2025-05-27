@@ -11,79 +11,97 @@
             <p>Domine o campo de batalha com precisão absoluta</p>
         </div>
 
-        <div class="pricing-cards">
+        <div class="pricing-grid">
+            <!-- Card Mensal -->
             <div class="pricing-card">
                 <div class="card-header">
                     <h3>MENSAL</h3>
                     <div class="price">
                         <span class="currency">R$</span>
                         <span class="amount">79</span>
-                        <span class="cents">,90</span>
+                        <span class="period">,90/mês</span>
                     </div>
-                    <div class="period">por mês</div>
                 </div>
-                <ul class="features">
-                    <li><i class="fas fa-check"></i> Aim Assist Inteligente</li>
-                    <li><i class="fas fa-check"></i> Anti-Detecção Ativo</li>
-                    <li><i class="fas fa-check"></i> Suporte via Discord</li>
-                    <li><i class="fas fa-check"></i> Atualizações Gratuitas</li>
-                </ul>
-                <button class="btn btn-primary" onclick="selectPlan('mensal', 79.90)">
-                    ESCOLHER PLANO
-                </button>
+                
+                <div class="card-body">
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check"></i> Aim Assist Inteligente</li>
+                        <li><i class="fas fa-check"></i> Anti-Detecção Ativo</li>
+                        <li><i class="fas fa-check"></i> Suporte via Discord</li>
+                        <li><i class="fas fa-check"></i> Atualizações Gratuitas</li>
+                        <li><i class="fas fa-check"></i> Configurações Básicas</li>
+                    </ul>
+                    
+                    <button class="btn btn-primary btn-full" onclick="selectPlan('mensal', 79.90)">
+                        <i class="fas fa-shopping-cart"></i>
+                        ESCOLHER PLANO
+                    </button>
+                </div>
             </div>
 
-            <div class="pricing-card featured">
-                <div class="featured-badge">MAIS POPULAR</div>
+            <!-- Card Trimestral (Mais Popular) -->
+            <div class="pricing-card pricing-popular">
+                <div class="popular-badge">MAIS POPULAR</div>
                 <div class="card-header">
                     <h3>TRIMESTRAL</h3>
                     <div class="price">
                         <span class="currency">R$</span>
                         <span class="amount">199</span>
-                        <span class="cents">,90</span>
+                        <span class="period">,90/3 meses</span>
                     </div>
-                    <div class="period">por 3 meses</div>
                     <div class="savings">Economize 17%</div>
                 </div>
-                <ul class="features">
-                    <li><i class="fas fa-check"></i> Tudo do plano mensal</li>
-                    <li><i class="fas fa-check"></i> Configurações Premium</li>
-                    <li><i class="fas fa-check"></i> Suporte Prioritário</li>
-                    <li><i class="fas fa-check"></i> Acesso Antecipado</li>
-                </ul>
-                <button class="btn btn-primary" onclick="selectPlan('trimestral', 199.90)">
-                    ESCOLHER PLANO
-                </button>
+                
+                <div class="card-body">
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check"></i> Tudo do plano mensal</li>
+                        <li><i class="fas fa-check"></i> Configurações Premium</li>
+                        <li><i class="fas fa-check"></i> Suporte Prioritário</li>
+                        <li><i class="fas fa-check"></i> Acesso Antecipado</li>
+                        <li><i class="fas fa-check"></i> Recursos Avançados</li>
+                    </ul>
+                    
+                    <button class="btn btn-primary btn-full" onclick="selectPlan('trimestral', 199.90)">
+                        <i class="fas fa-crown"></i>
+                        ESCOLHER PLANO
+                    </button>
+                </div>
             </div>
 
+            <!-- Card Anual -->
             <div class="pricing-card">
                 <div class="card-header">
                     <h3>ANUAL</h3>
                     <div class="price">
                         <span class="currency">R$</span>
                         <span class="amount">299</span>
-                        <span class="cents">,90</span>
+                        <span class="period">,90/ano</span>
                     </div>
-                    <div class="period">por ano</div>
                     <div class="savings">Economize 68%</div>
                 </div>
-                <ul class="features">
-                    <li><i class="fas fa-check"></i> Tudo dos planos anteriores</li>
-                    <li><i class="fas fa-check"></i> Recursos Exclusivos</li>
-                    <li><i class="fas fa-check"></i> Suporte VIP 24/7</li>
-                    <li><i class="fas fa-check"></i> Beta Access</li>
-                </ul>
-                <button class="btn btn-primary" onclick="selectPlan('anual', 299.90)">
-                    ESCOLHER PLANO
-                </button>
+                
+                <div class="card-body">
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check"></i> Tudo dos planos anteriores</li>
+                        <li><i class="fas fa-check"></i> Recursos Exclusivos</li>
+                        <li><i class="fas fa-check"></i> Suporte VIP 24/7</li>
+                        <li><i class="fas fa-check"></i> Beta Access</li>
+                        <li><i class="fas fa-check"></i> Configurações Elite</li>
+                    </ul>
+                    
+                    <button class="btn btn-primary btn-full" onclick="selectPlan('anual', 299.90)">
+                        <i class="fas fa-star"></i>
+                        ESCOLHER PLANO
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- Comparação de Recursos -->
+        <!-- Seção de Recursos -->
         <div class="features-comparison">
             <h2>COMPARAÇÃO DE RECURSOS</h2>
-            <div class="comparison-table-container">
-                <table class="comparison-table">
+            <div class="comparison-table">
+                <table>
                     <thead>
                         <tr>
                             <th>Recursos</th>
@@ -134,60 +152,104 @@
             </div>
         </div>
 
-        <!-- Segurança e Avaliações -->
-        <div class="security-reviews">
-            <h2>SEGURANÇA E AVALIAÇÕES</h2>
-            
-            <div class="security-badges">
-                <div class="security-badge">
+        <!-- Badges de Segurança -->
+        <div class="trust-badges">
+            <div class="trust-item">
+                <div class="trust-icon ssl">
                     <i class="fas fa-shield-alt"></i>
-                    <span>SSL Seguro</span>
                 </div>
-                <div class="security-badge">
-                    <i class="fas fa-lock"></i>
-                    <span>Pagamentos Seguros</span>
-                </div>
-                <div class="security-badge">
-                    <i class="fas fa-certificate"></i>
-                    <span>Site Verificado</span>
+                <div class="trust-info">
+                    <h4>SSL Seguro</h4>
+                    <p>Conexão criptografada</p>
                 </div>
             </div>
+            
+            <div class="trust-item">
+                <div class="trust-icon secure">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <div class="trust-info">
+                    <h4>Pagamentos Seguros</h4>
+                    <p>Processamento confiável</p>
+                </div>
+            </div>
+            
+            <div class="trust-item">
+                <div class="trust-icon verified">
+                    <i class="fas fa-certificate"></i>
+                </div>
+                <div class="trust-info">
+                    <h4>Site Verificado</h4>
+                    <p>Empresa registrada</p>
+                </div>
+            </div>
+            
+            <div class="trust-item">
+                <div class="trust-icon privacy">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div class="trust-info">
+                    <h4>Privacidade</h4>
+                    <p>Dados protegidos</p>
+                </div>
+            </div>
+        </div>
 
-            <div class="customer-reviews">
-                <h3>O que nossos clientes dizem:</h3>
-                <div class="reviews-grid">
-                    <div class="review">
-                        <div class="stars">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                        </div>
-                        <p>"Excelente produto! Suporte rápido e eficiente."</p>
-                        <p class="author">- João Silva</p>
+        <!-- Avaliações dos Clientes -->
+        <div class="reviews-section">
+            <h2>AVALIAÇÕES DOS CLIENTES</h2>
+            <div class="reviews-grid">
+                <div class="review-card">
+                    <div class="review-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
                     </div>
-                    <div class="review">
-                        <div class="stars">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
+                    <p class="review-text">"Excelente produto! O aim assist funciona perfeitamente e o suporte é muito rápido. Recomendo!"</p>
+                    <div class="review-author">
+                        <div class="author-avatar">JS</div>
+                        <div class="author-info">
+                            <div class="author-name">João Silva</div>
+                            <div class="author-date">Há 2 dias</div>
                         </div>
-                        <p>"O melhor aim assist que já usei! Vale cada centavo."</p>
-                        <p class="author">- Maria Santos</p>
                     </div>
-                    <div class="review">
-                        <div class="stars">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
+                </div>
+
+                <div class="review-card">
+                    <div class="review-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="review-text">"O melhor aim assist que já usei! Vale cada centavo investido. Sistema anti-detecção funciona perfeitamente."</p>
+                    <div class="review-author">
+                        <div class="author-avatar">MS</div>
+                        <div class="author-info">
+                            <div class="author-name">Maria Santos</div>
+                            <div class="author-date">Há 1 semana</div>
                         </div>
-                        <p>"Anti-detecção funciona perfeitamente. Recomendo!"</p>
-                        <p class="author">- Pedro Costa</p>
+                    </div>
+                </div>
+
+                <div class="review-card">
+                    <div class="review-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="review-text">"Produto incrível! Nunca fui detectado e minha precisão melhorou muito. Suporte técnico nota 10!"</p>
+                    <div class="review-author">
+                        <div class="author-avatar">PC</div>
+                        <div class="author-info">
+                            <div class="author-name">Pedro Costa</div>
+                            <div class="author-date">Há 3 dias</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -206,6 +268,7 @@
                         <p>Nosso sistema utiliza tecnologia avançada de bypass que é constantemente atualizada para evitar detecção pelos sistemas anti-cheat mais modernos.</p>
                     </div>
                 </div>
+                
                 <div class="faq-item">
                     <div class="faq-question" onclick="toggleFaq(this)">
                         <span>Posso cancelar minha assinatura a qualquer momento?</span>
@@ -215,6 +278,7 @@
                         <p>Sim, você pode cancelar sua assinatura a qualquer momento através do painel do usuário. Não há taxas de cancelamento.</p>
                     </div>
                 </div>
+                
                 <div class="faq-item">
                     <div class="faq-question" onclick="toggleFaq(this)">
                         <span>Qual é o tempo de resposta do suporte?</span>
@@ -222,6 +286,16 @@
                     </div>
                     <div class="faq-answer">
                         <p>Nosso suporte responde em até 2 horas durante horário comercial. Clientes VIP têm prioridade e resposta em até 30 minutos.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>O produto é seguro contra banimentos?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Sim, utilizamos as mais avançadas técnicas de anti-detecção. Oferecemos garantia de segurança e atualizações constantes.</p>
                     </div>
                 </div>
             </div>
@@ -233,38 +307,58 @@
 <div id="checkoutModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>FINALIZAR COMPRA</h3>
+            <h3><i class="fas fa-shopping-cart"></i> FINALIZAR COMPRA</h3>
             <span class="close" onclick="closeCheckoutModal()">&times;</span>
         </div>
         <div class="modal-body">
             <div id="loginPrompt" style="display: none;">
-                <p>Faça login para continuar com a compra:</p>
-                <div class="auth-buttons">
-                    <a href="/login" class="btn btn-primary">Fazer Login</a>
-                    <a href="/register" class="btn btn-secondary">Criar Conta</a>
+                <div class="auth-prompt">
+                    <i class="fas fa-user-lock" style="font-size: 3rem; color: hsl(var(--primary)); margin-bottom: 1rem;"></i>
+                    <h4>Acesso Necessário</h4>
+                    <p>Faça login para continuar com a compra:</p>
+                    <div class="auth-buttons">
+                        <a href="/login" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Fazer Login
+                        </a>
+                        <a href="/register" class="btn btn-secondary">
+                            <i class="fas fa-user-plus"></i>
+                            Criar Conta
+                        </a>
+                    </div>
                 </div>
             </div>
+            
             <div id="checkoutForm" style="display: none;">
                 <div class="order-summary">
-                    <h4>Resumo do Pedido</h4>
+                    <h4><i class="fas fa-receipt"></i> Resumo do Pedido</h4>
                     <div class="summary-item">
                         <span>Plano:</span>
-                        <span id="selectedPlan"></span>
+                        <span id="selectedPlan" class="plan-name"></span>
                     </div>
-                    <div class="summary-item">
-                        <span>Valor:</span>
-                        <span id="selectedPrice"></span>
+                    <div class="summary-item total">
+                        <span>Total:</span>
+                        <span id="selectedPrice" class="price-value"></span>
                     </div>
                 </div>
+                
                 <button class="btn btn-primary btn-large" onclick="processPayment()">
                     <i class="fas fa-credit-card"></i>
                     PAGAR AGORA
                 </button>
+                
+                <div class="payment-security">
+                    <p><i class="fas fa-shield-alt"></i> Pagamento 100% seguro via Mercado Pago</p>
+                </div>
             </div>
+            
             <div id="loadingPayment" style="display: none;">
-                <div class="loading-spinner">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <p>Processando pagamento...</p>
+                <div class="loading-container">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                    <h4>Processando Pagamento</h4>
+                    <p>Aguarde enquanto redirecionamos você para o Mercado Pago...</p>
                 </div>
             </div>
         </div>
@@ -297,7 +391,7 @@ function selectPlan(planType, price) {
     }
     
     // Abrir modal
-    document.getElementById('checkoutModal').style.display = 'block';
+    document.getElementById('checkoutModal').style.display = 'flex';
 }
 
 function closeCheckoutModal() {
@@ -359,6 +453,16 @@ function toggleFaq(element) {
     const answer = faqItem.querySelector('.faq-answer');
     const icon = element.querySelector('i');
     
+    // Fechar outros FAQs
+    document.querySelectorAll('.faq-item').forEach(item => {
+        if (item !== faqItem && item.classList.contains('active')) {
+            item.classList.remove('active');
+            item.querySelector('.faq-answer').style.maxHeight = '0';
+            item.querySelector('.faq-question i').style.transform = 'rotate(0deg)';
+        }
+    });
+    
+    // Toggle atual
     faqItem.classList.toggle('active');
     
     if (faqItem.classList.contains('active')) {
@@ -377,5 +481,16 @@ window.onclick = function(event) {
         closeCheckoutModal();
     }
 }
+
+// Animações ao carregar
+document.addEventListener('DOMContentLoaded', function() {
+    // Animar cards de pricing
+    const cards = document.querySelectorAll('.pricing-card');
+    cards.forEach((card, index) => {
+        setTimeout(() => {
+            card.classList.add('animate-slide-up');
+        }, index * 200);
+    });
+});
 </script>
 {% endblock %}
