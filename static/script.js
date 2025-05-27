@@ -819,8 +819,54 @@ async function loginUser(email, password) {
 
         const response = await fetch('/api/login', {
             method: 'POST',
-            body: formData,
-            headers: {
+            body: formData
+        });
+
+        console.log('Resposta do servidor:', response.status);
+
+        if (!response.ok) {
+            let errorMessage = 'Erro no login';
+            
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.detail || errorMessage;
+            } catch (e) {
+                console.error('Erro ao parsear resposta de erro:', e);
+                if (response.status === 401) {
+                    errorMessage = 'Email ou senha incorretos';
+                } else if (response.status === 500) {
+                    errorMessage = 'Erro interno do servidor';
+                } else {
+                    errorMessage = `Erro ${response.status}: ${response.statusText}`;
+                }
+            }
+            
+            showToast(errorMessage, 'error');
+            throw new Error(errorMessage);
+        }
+
+        const data = await response.json();
+        console.log('Login bem-sucedido:', data);
+
+        if (data.access_token && data.user) {
+            // Salvar dados do usuário
+            localStorage.setItem('access_token', data.access_token);
+            localStorage.setItem('user_data', JSON.stringify(data.user));
+
+            showToast('Login realizado com sucesso!', 'success');
+            updateAuthenticationUI();
+            
+            return data;
+        } else {
+            throw new Error('Dados de resposta inválidos');
+        }
+        
+    } catch (error) {
+        console.error('Erro no login:', error);
+        showToast(error.message || 'Erro inesperado no login', 'error');
+        throw error;
+    }
+}
                 'Accept': 'application/json'
             }
         });

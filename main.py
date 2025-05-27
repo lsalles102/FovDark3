@@ -232,7 +232,7 @@ async def login_user(
         print(f"Timestamp: {datetime.utcnow()}")
         
         # Verificar se o usuário existe
-        user_check = db.query(User).filter(User.email == email).first()
+        user_check = db.query(User).filter(User.email.ilike(email.strip())).first()
         if not user_check:
             print(f"❌ Usuário não encontrado: {email}")
             raise HTTPException(
@@ -241,9 +241,10 @@ async def login_user(
             )
         
         print(f"✅ Usuário encontrado: {email}")
+        print(f"Hash da senha no banco: {user_check.senha_hash[:20]}...")
         
         # Autenticar usuário
-        user = authenticate_user(db, email, password)
+        user = authenticate_user(db, email.strip(), password)
         if not user:
             print(f"❌ Falha na autenticação para: {email}")
             raise HTTPException(
@@ -260,7 +261,7 @@ async def login_user(
         ]
         
         # Verificar e corrigir status de admin
-        is_authorized_admin = user.email in AUTHORIZED_ADMIN_EMAILS
+        is_authorized_admin = user.email.lower() in [e.lower() for e in AUTHORIZED_ADMIN_EMAILS]
         if is_authorized_admin and not user.is_admin:
             user.is_admin = True
             db.commit()

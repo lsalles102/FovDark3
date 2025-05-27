@@ -34,19 +34,28 @@ def get_password_hash(password: str) -> str:
 def authenticate_user(db: Session, email: str, password: str) -> Optional[User]:
     """Autenticar usuário"""
     try:
-        user = db.query(User).filter(User.email == email).first()
+        print(f"🔍 Buscando usuário no banco: {email}")
+        user = db.query(User).filter(User.email.ilike(email.strip())).first()
         if not user:
-            print(f"Usuário não encontrado: {email}")
+            print(f"❌ Usuário não encontrado no banco: {email}")
             return None
         
-        if not verify_password(password, user.senha_hash):
-            print(f"Senha incorreta para: {email}")
+        print(f"✅ Usuário encontrado no banco: {user.email}")
+        print(f"🔐 Verificando senha...")
+        
+        password_valid = verify_password(password, user.senha_hash)
+        print(f"🔐 Resultado da verificação da senha: {password_valid}")
+        
+        if not password_valid:
+            print(f"❌ Senha incorreta para: {email}")
             return None
         
-        print(f"Autenticação bem-sucedida para: {email}")
+        print(f"✅ Autenticação bem-sucedida para: {email}")
         return user
     except Exception as e:
-        print(f"Erro na autenticação: {str(e)}")
+        print(f"💥 Erro na autenticação: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return None
 
 
