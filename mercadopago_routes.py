@@ -1,84 +1,101 @@
-from fastapi import APIRouter, Request, HTTPException, Depends
+
+from fastapi import APIRouter, Depends, HTTPException, Request, Form
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
-from database import get_db
-from models import User
-from mercadopago_integration import create_payment_preference, handle_payment_notification
-from auth import decode_access_token
+from datetime import datetime, timedelta
 import json
-import os  # Import the os module
+
+from database import get_db
+from models import User, Payment
+from auth import get_current_user
+from mercadopago_integration import (
+    create_payment_preference, 
+    handle_payment_notification,
+    get_plan_details,
+    PRODUCTS
+)
 
 router = APIRouter()
 
-@router.post("/criar-preferencia")
-async def criar_preferencia(request: Request, db: Session = Depends(get_db)):
-    body = await request.json()
-    plano = body.get('plano')
-
-    auth_header = request.headers.get('Authorization')
-    if not auth_header or not auth_header.startswith('Bearer '):
-        raise HTTPException(status_code=401, detail="Token não fornecido")
-
-    token = auth_header.split(' ')[1]
-    payload = decode_access_token(token)
-    if not payload:
-        raise HTTPException(status_code=401, detail="Token inválido")
-
-    email = payload.get('sub')
-    user = db.query(User).filter(User.email == email).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="Usuário não encontrado")
-
+@router.post("/mercadopago/create-preference")
+async def create_preference(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     try:
-        preference = create_payment_preference(plano, user.id, user.email)
-        if 'error' in preference:
-            raise HTTPException(status_code=400, detail=preference['error'])
-
+        data = await request.json()
+        plan_id = data.get("plan_id")
+        
+        if not plan_id or plan_id not in PRODUCTS:
+            raise HTTPException(status_code=400, detail="Plano inválido")
+        
+        # Criar preferência no Mercado Pago
+        preference = create_payment_preference(
+            plan_id=plan_id,
+            user_id=current_user.id,
+            user_email=current_user.email
+        )
+        
+        if "error" in preference:
+            raise HTTPException(status_code=400, detail=preference["error"])
+        
         return {
-            "preference_id": preference.get("id"),
-            "init_point": preference.get("init_point"),
+            "preference_id": preference["id"],
+            "init_point": preference["init_point"],
             "sandbox_init_point": preference.get("sandbox_init_point")
         }
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/webhook/mercadopago")
-async def mercadopago_webhook(request: Request):
+async def mercadopago_webhook(request: Request, db: Session = Depends(get_db)):
     try:
-        # Verificar se o MercadoPago está configurado
-        if not os.getenv("MERCADOPAGO_ACCESS_TOKEN"):
-            return {"status": "disabled", "message": "MercadoPago não configurado"}
-
-        # Verificar se é uma notificação de pagamento
-        content_type = request.headers.get('content-type', '')
-
-        if 'application/json' in content_type:
-            body = await request.json()
+        # Obter dados do webhook
+        body = await request.body()
+        data = json.loads(body)
+        
+        # Processar notificação
+        success, message = handle_payment_notification(data)
+        
+        if success:
+            return {"status": "ok", "message": message}
         else:
-            # Mercado Pago pode enviar como form data
-            form_data = await request.form()
-            body = {
-                "action": form_data.get("action"),
-                "api_version": form_data.get("api_version"),
-                "data": {
-                    "id": form_data.get("data.id")
-                },
-                "date_created": form_data.get("date_created"),
-                "id": form_data.get("id"),
-                "live_mode": form_data.get("live_mode"),
-                "type": form_data.get("type"),
-                "user_id": form_data.get("user_id")
-            }
-
-        # Processar apenas notificações de pagamento
-        if body.get("type") == "payment":
-            success, message = handle_payment_notification(body)
-            if not success:
-                print(f"Erro ao processar webhook: {message}")
-                # Retorna 200 mesmo em erro para evitar reenvios desnecessários
-                return {"status": "error", "message": message}
-
-        return {"status": "success"}
-
+            raise HTTPException(status_code=400, detail=message)
+            
     except Exception as e:
-        print(f"Erro no webhook: {str(e)}")
+        print(f"Erro no webhook: {e}")
         return {"status": "error", "message": str(e)}
+
+@router.get("/payment/status/{payment_id}")
+async def check_payment_status(
+    payment_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        # Buscar pagamento no banco
+        payment = db.query(Payment).filter(
+            Payment.gateway_id == payment_id,
+            Payment.user_id == current_user.id
+        ).first()
+        
+        if not payment:
+            raise HTTPException(status_code=404, detail="Pagamento não encontrado")
+        
+        return {
+            "payment_id": payment.id,
+            "status": payment.status,
+            "amount": payment.valor,
+            "plan": payment.plano,
+            "date": payment.data_pagamento.isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/plans")
+async def get_available_plans():
+    """Retorna os planos disponíveis"""
+    return PRODUCTS

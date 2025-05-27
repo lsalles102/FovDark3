@@ -690,3 +690,174 @@ const additionalCSS = `
 const style = document.createElement('style');
 style.textContent = additionalCSS;
 document.head.appendChild(style);
+
+// Verificar autenticação ao carregar a página
+document.addEventListener('DOMContentLoaded', function() {
+    checkAuthenticationStatus();
+    updateAuthenticationUI();
+
+    // Configurar navegação mobile
+    setupMobileNavigation();
+
+    // Configurar tooltips
+    setupTooltips();
+});
+
+function setupMobileNavigation() {
+    const navToggle = document.getElementById('navToggle');
+    const navMenu = document.getElementById('navMenu');
+
+    if (navToggle && navMenu) {
+        navToggle.addEventListener('click', function() {
+            navMenu.classList.toggle('active');
+            navToggle.classList.toggle('active');
+        });
+
+        // Fechar menu ao clicar em link
+        const navLinks = navMenu.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+                navToggle.classList.remove('active');
+            });
+        });
+    }
+}
+
+function setupTooltips() {
+    const tooltipElements = document.querySelectorAll('[data-tooltip]');
+    tooltipElements.forEach(element => {
+        element.addEventListener('mouseenter', showTooltip);
+        element.addEventListener('mouseleave', hideTooltip);
+    });
+}
+
+function showTooltip(event) {
+    const text = event.target.getAttribute('data-tooltip');
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip';
+    tooltip.textContent = text;
+    document.body.appendChild(tooltip);
+
+    const rect = event.target.getBoundingClientRect();
+    tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
+    tooltip.style.top = rect.top - tooltip.offsetHeight - 10 + 'px';
+}
+
+function hideTooltip() {
+    const tooltip = document.querySelector('.tooltip');
+    if (tooltip) {
+        tooltip.remove();
+    }
+}
+
+// Função para verificar o status de autenticação
+function checkAuthenticationStatus() {
+    const token = localStorage.getItem('access_token');
+    const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+
+    if (token && userData) {
+        // Verificar se o token ainda é válido
+        fetch('/api/license/check', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        }).then(response => {
+            if (response.status === 401) {
+                // Token expirado
+                logout();
+            }
+        }).catch(error => {
+            console.log('Erro ao verificar token:', error);
+        });
+    }
+
+    updateAuthenticationUI();
+}
+
+// Função para mostrar notificações toast
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+        <div class="toast-content">
+            <i class="fas fa-${getToastIcon(type)}"></i>
+            <span>${message}</span>
+        </div>
+        <button class="toast-close" onclick="closeToast(this)">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, 5000);
+    }
+}
+
+function getToastIcon(type) {
+    const icons = {
+        'success': 'check-circle',
+        'error': 'exclamation-circle',
+        'warning': 'exclamation-triangle',
+        'info': 'info-circle'
+    };
+    return icons[type] || 'info-circle';
+}
+
+function closeToast(button) {
+    const toast = button.closest('.toast');
+    if (toast) {
+        toast.remove();
+    }
+}
+
+// Função para logout
+function logout() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user_data');
+    updateAuthenticationUI();
+    showToast('Logout realizado com sucesso', 'success');
+
+    // Redirecionar para home se estiver em página protegida
+    const protectedPages = ['/painel', '/admin'];
+    if (protectedPages.some(page => window.location.pathname.includes(page))) {
+        window.location.href = '/';
+    }
+}
+
+// Atualizar interface baseada no status de autenticação
+function updateAuthenticationUI() {
+    const token = localStorage.getItem('access_token');
+    const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+
+    const loginLink = document.getElementById('loginLink');
+    const logoutLink = document.getElementById('logoutLink');
+    const painelLink = document.getElementById('painelLink');
+    const adminLink = document.getElementById('adminLink');
+
+    if (token && userData.email) {
+        // Usuário logado
+        if (loginLink) loginLink.style.display = 'none';
+        if (logoutLink) logoutLink.style.display = 'block';
+        if (painelLink) painelLink.style.display = 'block';
+
+        // Mostrar link admin apenas para admins
+        if (adminLink) {
+            adminLink.style.display = userData.is_admin ? 'block' : 'none';
+        }
+    } else {
+        // Usuário não logado
+        if (loginLink) loginLink.style.display = 'block';
+        if (logoutLink) logoutLink.style.display = 'none';
+        if (painelLink) painelLink.style.display = 'none';
+        if (adminLink) adminLink.style.display = 'none';
+    }
+}
