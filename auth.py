@@ -33,12 +33,21 @@ def get_password_hash(password: str) -> str:
 
 def authenticate_user(db: Session, email: str, password: str) -> Optional[User]:
     """Autenticar usuário"""
-    user = db.query(User).filter(User.email == email).first()
-    if not user:
+    try:
+        user = db.query(User).filter(User.email == email).first()
+        if not user:
+            print(f"Usuário não encontrado: {email}")
+            return None
+        
+        if not verify_password(password, user.senha_hash):
+            print(f"Senha incorreta para: {email}")
+            return None
+        
+        print(f"Autenticação bem-sucedida para: {email}")
+        return user
+    except Exception as e:
+        print(f"Erro na autenticação: {str(e)}")
         return None
-    if not verify_password(password, user.senha_hash):
-        return None
-    return user
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):

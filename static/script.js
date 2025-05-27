@@ -808,6 +808,83 @@ function selectPlan(productId, price, planName, durationDays) {
     document.getElementById('checkoutModal').style.display = 'flex';
 }
 
+// Função de login
+async function login(event) {
+    event.preventDefault();
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    if (!email || !password) {
+        showToast('Preencha todos os campos', 'error');
+        return;
+    }
+
+    // Mostrar loading
+    const submitBtn = document.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Conectando...';
+    submitBtn.disabled = true;
+
+    try {
+        const formData = new FormData();
+        formData.append('email', email);
+        formData.append('password', password);
+
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail || `Erro ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if (data.access_token) {
+            localStorage.setItem('access_token', data.access_token);
+            localStorage.setItem('user_data', JSON.stringify(data.user));
+
+            showToast('Login realizado com sucesso!', 'success');
+
+            // Redirecionar baseado no tipo de usuário
+            setTimeout(() => {
+                if (data.user && data.user.is_admin) {
+                    window.location.href = '/admin';
+                } else {
+                    window.location.href = '/painel';
+                }
+            }, 1000);
+        } else {
+            throw new Error('Token de acesso não recebido');
+        }
+    } catch (error) {
+        console.error('Erro no login:', error);
+        let errorMessage = 'Erro de conexão com o servidor';
+
+        if (error.message.includes('Failed to fetch')) {
+            errorMessage = 'Erro de conexão - Verifique sua internet';
+        } else if (error.message.includes('401')) {
+            errorMessage = 'Email ou senha incorretos';
+        } else if (error.message.includes('500')) {
+            errorMessage = 'Erro interno do servidor';
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+
+        showToast(errorMessage, 'error');
+    } finally {
+        // Restaurar botão
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
 // ===== INITIALIZATION COMPLETE =====
 console.log('FovDark Script carregado com sucesso');
 
@@ -987,7 +1064,7 @@ function showToast(message, type = 'info') {
         color: white;
         padding: 15px 20px;
         border-radius: 8px;
-        z-index: 10001;
+        z-index: 10001;```text
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         font-weight: 500;
         font-size: 14px;
