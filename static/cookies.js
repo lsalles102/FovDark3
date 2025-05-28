@@ -144,7 +144,9 @@ class CookieManager {
         this.initializePreferences();
         
         console.log('🍪 Preferências resetadas');
-        showToast('Preferências resetadas para padrão', 'success');
+        if (window.showToast) {
+            showToast('Preferências resetadas para padrão', 'success');
+        }
     }
 
     // Exportar preferências
@@ -176,10 +178,14 @@ class CookieManager {
                     }
                 });
                 
-                showToast('Preferências importadas com sucesso', 'success');
+                if (window.showToast) {
+                    showToast('Preferências importadas com sucesso', 'success');
+                }
                 console.log('🍪 Preferências importadas:', importedPrefs);
             } catch (error) {
-                showToast('Erro ao importar preferências', 'error');
+                if (window.showToast) {
+                    showToast('Erro ao importar preferências', 'error');
+                }
                 console.error('❌ Erro ao importar preferências:', error);
             }
         };
@@ -249,11 +255,12 @@ class CookieManager {
                 left: 0;
                 right: 0;
                 bottom: 0;
-                z-index: 99999;
+                z-index: 999999;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 animation: fadeIn 0.5s ease;
+                pointer-events: auto;
             }
             
             .cookie-consent-overlay {
@@ -262,8 +269,9 @@ class CookieManager {
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: rgba(0, 0, 0, 0.8);
-                backdrop-filter: blur(5px);
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(10px);
+                pointer-events: auto;
             }
             
             .cookie-consent-content {
@@ -431,10 +439,14 @@ class CookieManager {
             }
         `;
         
-        if (document.head) {
+        // Aguardar DOM estar pronto antes de adicionar elementos
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                document.head.appendChild(style);
+                document.body.appendChild(banner);
+            });
+        } else {
             document.head.appendChild(style);
-        }
-        if (document.body) {
             document.body.appendChild(banner);
         }
     }
@@ -512,17 +524,30 @@ class CookieManager {
 
 // Inicializar gerenciador de cookies quando DOM estiver pronto
 function initializeCookieManager() {
+    // Verificar se já foi inicializado
+    if (window.cookieManager) {
+        console.log('🍪 Cookie manager já inicializado');
+        return;
+    }
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
             window.cookieManager = new CookieManager();
-            window.cookieManager.checkCookieConsent();
+            setTimeout(() => {
+                window.cookieManager.checkCookieConsent();
+            }, 500);
         });
     } else {
         window.cookieManager = new CookieManager();
-        window.cookieManager.checkCookieConsent();
+        setTimeout(() => {
+            window.cookieManager.checkCookieConsent();
+        }, 500);
     }
 }
 
-initializeCookieManager();
+// Só inicializar se não estiver já inicializado
+if (typeof window !== 'undefined') {
+    initializeCookieManager();
+}
 
 console.log('🍪 Sistema de cookies carregado com sucesso');

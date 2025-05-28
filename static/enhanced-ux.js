@@ -6,6 +6,97 @@ class UXEnhancer {
     }
 
     init() {
+        console.log('✨ Inicializando melhorias de UX...');
+        this.setupSearchEnhancements();
+        this.setupKeyboardShortcuts();
+        this.setupSmoothScrolling();
+        this.setupLoadingStates();
+        console.log('✨ Melhorias de UX carregadas com sucesso');
+    }
+
+    setupSearchEnhancements() {
+        // Melhorias de busca - adicionar quando necessário
+        console.log('🔍 Configurando melhorias de busca');
+    }
+
+    setupKeyboardShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + K para busca
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                const searchInput = document.querySelector('input[type="search"], input[name="search"]');
+                if (searchInput) {
+                    searchInput.focus();
+                }
+            }
+
+            // ESC para fechar modais
+            if (e.key === 'Escape') {
+                const modals = document.querySelectorAll('.modal.active, .cookie-consent-banner');
+                modals.forEach(modal => {
+                    if (modal.classList.contains('cookie-consent-banner')) {
+                        // Não fechar banner de cookies com ESC
+                        return;
+                    }
+                    modal.remove();
+                });
+            }
+        });
+    }
+
+    setupSmoothScrolling() {
+        // Smooth scroll para links âncora
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('a[href^="#"]');
+            if (link) {
+                e.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+                const element = document.getElementById(targetId);
+                if (element) {
+                    element.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            }
+        });
+    }
+
+    setupLoadingStates() {
+        // Adicionar estados de carregamento aos botões
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[type="submit"], .btn-loading');
+            if (btn && !btn.disabled) {
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Carregando...';
+                btn.disabled = true;
+
+                // Restaurar após 3 segundos se não for removido
+                setTimeout(() => {
+                    if (btn.parentElement) {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }
+                }, 3000);
+            }
+        });
+    }
+}
+
+// Inicializar quando DOM estiver pronto
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        window.uxEnhancer = new UXEnhancer();
+    });
+} else {
+    window.uxEnhancer = new UXEnhancer();
+}
+class UXEnhancer {
+    constructor() {
+        this.init();
+    }
+
+    init() {
         this.setupKeyboardShortcuts();
         this.setupScrollEnhancements();
         this.setupFormEnhancements();
