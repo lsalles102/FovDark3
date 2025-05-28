@@ -340,7 +340,7 @@ async function login(event) {
                 console.log('👤 Redirecionando usuário para /painel');
                 window.location.href = '/painel';
             }
-        }, 1000);
+        }, 500);
 
     } catch (error) {
         console.error('❌ Erro no login:', error);

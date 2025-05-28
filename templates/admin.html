@@ -1691,22 +1691,52 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    checkAdminAuth();
-    setupAdminNavigation();
-    loadOverviewData();
+document.addEventListener('DOMContentLoaded', async function() {
+    const isAuthorized = await checkAdminAuth();
+    if (isAuthorized) {
+        setupAdminNavigation();
+        loadOverviewData();
+    }
 });
 
-function checkAdminAuth() {
+async function checkAdminAuth() {
     const token = localStorage.getItem('access_token');
     const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
 
-    if (!token || !userData.is_admin) {
-        showToast('Acesso negado. Privilégios de administrador necessários.', 'error');
-        setTimeout(() => {
-            window.location.href = '/';
-        }, 2000);
-        return;
+    if (!token) {
+        console.log('❌ Sem token, redirecionando para login');
+        window.location.href = '/login';
+        return false;
+    }
+
+    // Verificar se o token ainda é válido
+    try {
+        const response = await fetch('/api/admin/users', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.status === 401) {
+            console.log('❌ Token expirado, redirecionando para login');
+            localStorage.clear();
+            window.location.href = '/login';
+            return false;
+        }
+
+        if (!userData.is_admin && response.ok) {
+            console.log('❌ Usuário não é admin, redirecionando para painel');
+            showToast('Acesso negado. Privilégios de administrador necessários.', 'error');
+            setTimeout(() => {
+                window.location.href = '/painel';
+            }, 2000);
+            return false;
+        }
+
+        console.log('✅ Usuário admin autenticado com sucesso');
+        return true;
+    } catch (error) {
+        console.error('❌ Erro na verificação de auth:', error);
+        window.location.href = '/login';
+        return false;
     }
 }
 

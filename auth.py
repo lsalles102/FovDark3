@@ -14,7 +14,7 @@ from models import User
 # Configurações JWT
 SECRET_KEY = os.getenv("SECRET_KEY", "darkfov-super-secret-key-2024")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 120  # 2 horas para evitar desconexões frequentes
 
 # Configuração bcrypt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
