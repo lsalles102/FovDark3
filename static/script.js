@@ -85,6 +85,165 @@ function closeMobileMenu() {
 }
 
 // ===== AUTHENTICATION =====
+
+async function login(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const loginBtn = document.getElementById('login-btn');
+    
+    console.log('🔄 Iniciando processo de login...');
+    
+    // Validações básicas
+    if (!email || !password) {
+        showToast('Por favor, preencha todos os campos', 'error');
+        return;
+    }
+    
+    // Validar formato do email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showToast('Por favor, insira um email válido', 'error');
+        return;
+    }
+    
+    // Estado de loading
+    const originalText = loginBtn.innerHTML;
+    loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>ENTRANDO...</span>';
+    loginBtn.disabled = true;
+    
+    try {
+        console.log('📧 Email:', email);
+        
+        // Preparar dados do formulário
+        const formData = new FormData();
+        formData.append('email', email);
+        formData.append('password', password);
+        
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            body: formData
+        });
+        
+        console.log('📡 Status da resposta:', response.status);
+        
+        const data = await response.json();
+        console.log('📊 Dados recebidos:', data);
+        
+        if (response.ok && data.access_token) {
+            console.log('✅ Login bem-sucedido!');
+            
+            // Salvar dados no localStorage
+            localStorage.setItem('access_token', data.access_token);
+            localStorage.setItem('user_data', JSON.stringify(data.user));
+            
+            showToast('Login realizado com sucesso!', 'success');
+            
+            // Aguardar um pouco antes do redirecionamento
+            setTimeout(() => {
+                if (data.user.is_admin) {
+                    console.log('👑 Redirecionando admin para /admin');
+                    window.location.href = '/admin';
+                } else {
+                    console.log('👤 Redirecionando usuário para /painel');
+                    window.location.href = '/painel';
+                }
+            }, 1000);
+            
+        } else {
+            console.log('❌ Erro no login:', data.detail || 'Erro desconhecido');
+            showToast(data.detail || 'Email ou senha incorretos', 'error');
+        }
+        
+    } catch (error) {
+        console.error('💥 Erro na requisição:', error);
+        showToast('Erro de conexão. Tente novamente.', 'error');
+    } finally {
+        // Restaurar botão
+        loginBtn.innerHTML = originalText;
+        loginBtn.disabled = false;
+    }
+}
+
+function showToast(message, type = 'info') {
+    // Remover toast anterior se existir
+    const existingToast = document.querySelector('.toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    // Criar novo toast
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+        <span>${message}</span>
+    `;
+    
+    // Adicionar estilos se não existirem
+    if (!document.querySelector('#toast-styles')) {
+        const style = document.createElement('style');
+        style.id = 'toast-styles';
+        style.textContent = `
+            .toast {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: hsl(var(--bg-secondary));
+                color: hsl(var(--text-primary));
+                padding: 1rem 1.5rem;
+                border-radius: var(--radius-md);
+                border: 1px solid hsl(var(--border-primary));
+                box-shadow: var(--shadow-lg);
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                z-index: 9999;
+                animation: slideIn 0.3s ease-out;
+            }
+            
+            .toast-success {
+                border-color: hsl(var(--success));
+                background: hsl(var(--success) / 0.1);
+            }
+            
+            .toast-error {
+                border-color: hsl(var(--danger));
+                background: hsl(var(--danger) / 0.1);
+            }
+            
+            .toast-success i {
+                color: hsl(var(--success));
+            }
+            
+            .toast-error i {
+                color: hsl(var(--danger));
+            }
+            
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(toast);
+    
+    // Remover após 5 segundos
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.remove();
+        }
+    }, 5000);
+}===
 function checkAuthenticationStatus() {
     const token = localStorage.getItem('access_token');
     const userData = JSON.parse(localStorage.getItem('user_data') || '{}');

@@ -159,6 +159,9 @@ block content %}
         const loginForm = document.getElementById("loginForm");
         if (loginForm) {
             loginForm.addEventListener("submit", login);
+            
+            // Debug para verificar se o form foi encontrado
+            console.log('📋 Formulário de login encontrado:', !!loginForm);
         }
 
         // Listeners para tecla Enter

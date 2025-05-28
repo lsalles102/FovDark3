@@ -113,6 +113,11 @@ async def login_user(
     password: str = Form(...),
     db: Session = Depends(get_db)
 ):
+    print(f"🔄 Tentativa de login recebida:")
+    print(f"  📧 Email: {email}")
+    print(f"  🌐 IP: {request.client.host if request.client else 'unknown'}")
+    print(f"  📋 Headers: {dict(request.headers)}")
+    
     try:
         user_check = db.query(User).filter(User.email.ilike(email.strip())).first()
         if not user_check:
