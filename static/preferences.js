@@ -181,7 +181,9 @@ class PreferencesManager {
             </div>
         `;
         
-        document.body.appendChild(modal);
+        if (document.body) {
+            document.body.appendChild(modal);
+        }
         this.modal = modal;
         this.setupEventListeners();
         this.addStyles();
@@ -482,7 +484,9 @@ class PreferencesManager {
             }
         `;
         
-        document.head.appendChild(style);
+        if (document.head) {
+            document.head.appendChild(style);
+        }
     }
 
     // Configurar event listeners
@@ -586,8 +590,18 @@ class PreferencesManager {
     }
 }
 
-// Inicializar gerenciador de preferências
-window.preferencesManager = new PreferencesManager();
+// Inicializar gerenciador de preferências quando DOM estiver pronto
+function initializePreferencesManager() {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            window.preferencesManager = new PreferencesManager();
+        });
+    } else {
+        window.preferencesManager = new PreferencesManager();
+    }
+}
+
+initializePreferencesManager();
 
 // Função para abrir preferências
 function openPreferences() {

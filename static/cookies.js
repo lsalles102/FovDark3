@@ -308,8 +308,12 @@ class CookieManager {
             }
         `;
         
-        document.head.appendChild(style);
-        document.body.appendChild(banner);
+        if (document.head) {
+            document.head.appendChild(style);
+        }
+        if (document.body) {
+            document.body.appendChild(banner);
+        }
     }
 
     // Aceitar cookies
@@ -347,14 +351,19 @@ class CookieManager {
     }
 }
 
-// Inicializar gerenciador de cookies
-window.cookieManager = new CookieManager();
-
-// Verificar consentimento quando a página carregar
-document.addEventListener('DOMContentLoaded', function() {
-    if (window.cookieManager) {
+// Inicializar gerenciador de cookies quando DOM estiver pronto
+function initializeCookieManager() {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            window.cookieManager = new CookieManager();
+            window.cookieManager.checkCookieConsent();
+        });
+    } else {
+        window.cookieManager = new CookieManager();
         window.cookieManager.checkCookieConsent();
     }
-});
+}
+
+initializeCookieManager();
 
 console.log('🍪 Sistema de cookies carregado com sucesso');

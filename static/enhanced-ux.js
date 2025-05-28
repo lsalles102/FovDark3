@@ -92,7 +92,9 @@ class UXEnhancer {
             });
         });
 
-        document.body.appendChild(button);
+        if (document.body) {
+            document.body.appendChild(button);
+        }
 
         // Mostrar/esconder baseado no scroll
         window.addEventListener('scroll', () => {
@@ -276,7 +278,9 @@ validationStyles.textContent = `
         filter: contrast(150%);
     }
 `;
-document.head.appendChild(validationStyles);
+if (document.head) {
+    document.head.appendChild(validationStyles);
+}
 
 // Utilitário debounce
 function debounce(func, wait) {
@@ -291,7 +295,17 @@ function debounce(func, wait) {
     };
 }
 
-// Inicializar melhorias de UX
-window.uxEnhancer = new UXEnhancer();
+// Inicializar melhorias de UX quando DOM estiver pronto
+function initializeUXEnhancer() {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            window.uxEnhancer = new UXEnhancer();
+        });
+    } else {
+        window.uxEnhancer = new UXEnhancer();
+    }
+}
+
+initializeUXEnhancer();
 
 console.log('✨ Melhorias de UX carregadas com sucesso');
