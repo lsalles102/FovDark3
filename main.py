@@ -527,8 +527,12 @@ async def upload_image(
 ):
     try:
         # Verificar se é uma imagem
-        if not file.content_type.startswith('image/'):
+        if not file.content_type or not file.content_type.startswith('image/'):
             raise HTTPException(status_code=400, detail="Arquivo deve ser uma imagem")
+
+        # Verificar tamanho do arquivo (máximo 10MB)
+        if not file.size or file.size > 10 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="Arquivo muito grande. Máximo 10MB")
 
         # Criar diretório se não existir
         import os
@@ -537,26 +541,53 @@ async def upload_image(
 
         # Gerar nome único para o arquivo
         import time
+        import uuid
         timestamp = int(time.time())
-        file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
-        new_filename = f"{timestamp}_{file.filename.replace(' ', '_')}"
-        file_path = os.path.join(upload_dir, new_filename)
+        unique_id = str(uuid.uuid4())[:8]
+        
+        # Obter extensão do arquivo
+        if file.filename and '.' in file.filename:
+            file_extension = file.filename.split('.')[-1].lower()
+        else:
+            file_extension = 'jpg'
+
+        # Validar extensão
+        allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp']
+        if file_extension not in allowed_extensions:
+            raise HTTPException(status_code=400, detail="Formato de imagem não suportado")
+
+        # Criar nome único do arquivo
+        safe_filename = f"{timestamp}_{unique_id}.{file_extension}"
+        file_path = os.path.join(upload_dir, safe_filename)
 
         # Salvar arquivo
-        with open(file_path, "wb") as buffer:
+        try:
             content = await file.read()
-            buffer.write(content)
+            with open(file_path, "wb") as buffer:
+                buffer.write(content)
+        except Exception as write_error:
+            raise HTTPException(status_code=500, detail=f"Erro ao salvar arquivo: {str(write_error)}")
 
         # Retornar URL da imagem
-        image_url = f"/static/uploads/{new_filename}"
+        image_url = f"/static/uploads/{safe_filename}"
+
+        print(f"✅ Upload realizado com sucesso: {image_url}")
 
         return {
             "message": "Imagem enviada com sucesso",
             "image_url": image_url,
-            "filename": new_filename
+            "filename": safe_filename,
+            "size": file.size,
+            "content_type": file.content_type
         }
+    except HTTPException as he:
+        print(f"❌ Erro HTTP no upload: {he.detail}")
+        raise he
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro ao fazer upload: {str(e)}")
+        print(f"❌ Erro geral no upload: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erro interno do servidor: {str(e)}")
 
 # Rotas HTML
 @app.get("/", response_class=HTMLResponse)

@@ -2355,58 +2355,97 @@ function closeModal(button) {
 
 async function uploadProductImage(input) {
     const file = input.files[0];
-    if (!file) return;
+    if (!file) {
+        console.log('❌ Nenhum arquivo selecionado');
+        return;
+    }
+
+    console.log('📁 Arquivo selecionado:', file.name, 'Tipo:', file.type, 'Tamanho:', file.size);
 
     // Validar tipo de arquivo
     if (!file.type.startsWith('image/')) {
         showToast('Por favor, selecione apenas arquivos de imagem', 'error');
+        input.value = '';
         return;
     }
 
-    // Validar tamanho (máximo 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-        showToast('Imagem muito grande. Máximo 5MB', 'error');
+    // Validar tamanho (máximo 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+        showToast('Imagem muito grande. Máximo 10MB', 'error');
+        input.value = '';
         return;
     }
 
     const token = localStorage.getItem('access_token');
+    if (!token) {
+        showToast('Token de autenticação não encontrado', 'error');
+        input.value = '';
+        return;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
 
+    // Log do FormData para debug
+    console.log('📦 FormData criado:');
+    for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+    }
+
     try {
         showToast('Fazendo upload da imagem...', 'info');
+
+        console.log('🌐 Iniciando upload para /api/admin/upload-image');
 
         const response = await fetch('/api/admin/upload-image', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`
+                // Não adicionar Content-Type para FormData
             },
             body: formData
         });
 
-        const data = await response.json();
+        console.log('📡 Resposta do servidor:', response.status, response.statusText);
 
-        if (response.ok) {
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Erro na resposta:', errorText);
+            throw new Error(`Erro ${response.status}: ${errorText}`);
+        }
+
+        const data = await response.json();
+        console.log('✅ Dados retornados:', data);
+
+        if (data.image_url) {
             // Atualizar campo URL da imagem
             const imageUrlInput = document.querySelector('input[name="image_url"]');
-            imageUrlInput.value = data.image_url;
+            if (imageUrlInput) {
+                imageUrlInput.value = data.image_url;
+                console.log('🔗 URL da imagem atualizada:', data.image_url);
+            }
 
             // Mostrar preview
             const preview = document.getElementById('imagePreview');
             const previewImg = document.getElementById('previewImg');
-            previewImg.src = data.image_url;
-            preview.style.display = 'block';
+            if (preview && previewImg) {
+                previewImg.src = data.image_url;
+                preview.style.display = 'block';
+                console.log('🖼️ Preview da imagem exibido');
+            }
 
-            showToast('Imagem enviada com sucesso!', 'success');
+            showToast(`Imagem enviada com sucesso! (${(file.size / 1024).toFixed(1)}KB)`, 'success');
         } else {
-            showToast(data.detail || 'Erro ao enviar imagem', 'error');
+            throw new Error('URL da imagem não retornada pelo servidor');
         }
+
     } catch (error) {
-        console.error('Erro:', error);
-        showToast('Erro ao enviar imagem', 'error');
+        console.error('❌ Erro no upload:', error);
+        showToast(`Erro ao enviar imagem: ${error.message}`, 'error');
     } finally {
         // Limpar input para permitir reenvio do mesmo arquivo
         input.value = '';
+        console.log('🧹 Input limpo');
     }
 }
 

@@ -1,2 +1,6 @@
 
+# Este arquivo garante que o diretório uploads seja mantido no git
+# Os uploads de imagens serão salvos neste diretório
+
+
 # Diretório para uploads de imagens
