@@ -1,0 +1,66 @@
+Política de Privacidade — FovDark
+Última atualização: 28/05/2025
+
+A sua privacidade é prioridade para nós. Esta Política de Privacidade explica como o site FovDark coleta, utiliza e protege os dados dos usuários ao fornecer ferramentas voltadas para o universo gamer, como scripts, mods e ajustes personalizados.
+
+1. Dados que Coletamos
+Ao utilizar o FovDark, podemos coletar as seguintes informações:
+
+E-mail: fornecido em formulários de contato, cadastro ou download.
+
+Endereço IP: coletado automaticamente para controle de acesso e segurança.
+
+ID de máquina (hardware ID): utilizado para fins de autenticação e prevenção de abuso.
+
+2. Finalidade da Coleta
+Utilizamos seus dados para:
+
+Garantir segurança e integridade das ferramentas oferecidas.
+
+Personalizar a experiência do usuário.
+
+Realizar verificações antifraude.
+
+Entrar em contato para suporte, avisos ou atualizações (se autorizado).
+
+3. Armazenamento e Segurança
+Seus dados são armazenados em servidores seguros com proteção contra acesso não autorizado. Empregamos boas práticas de segurança digital, como criptografia, autenticação e controle de acesso.
+
+4. Compartilhamento de Dados
+Seus dados não serão vendidos. Podemos compartilhá-los com terceiros apenas em casos como:
+
+Cumprimento de obrigações legais
+
+Processamento de pagamentos ou serviços de autenticação
+
+Parceiros responsáveis por monitoramento e segurança da plataforma
+
+5. Uso de Cookies
+O FovDark pode utilizar cookies para:
+
+Armazenar preferências do usuário
+
+Melhorar a experiência de navegação
+
+Coletar estatísticas anônimas sobre o uso do site
+
+Você pode desativar os cookies nas configurações do seu navegador, embora isso possa afetar o funcionamento de algumas funcionalidades.
+
+6. Direitos do Usuário
+Você tem o direito de:
+
+Solicitar acesso aos seus dados
+
+Corrigir ou atualizar suas informações
+
+Solicitar exclusão dos dados armazenados
+
+Revogar consentimento para uso de dados
+
+Para exercer seus direitos, entre em contato através do e-mail: [seu@email.com]
+
+7. Menores de Idade
+Nosso site não é direcionado a menores de 18 anos. Caso dados de menores sejam identificados, eles serão removidos imediatamente após verificação.
+
+8. Alterações na Política
+Podemos atualizar esta Política de Privacidade a qualquer momento. Recomendamos revisá-la periodicamente. A data da última modificação estará sempre indicada no topo da página.
