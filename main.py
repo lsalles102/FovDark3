@@ -344,6 +344,8 @@ async def check_license(
     """Verificar status da licença do usuário"""
     try:
         print(f"🔍 Verificando licença para usuário: {current_user.email}")
+        print(f"📅 Data de expiração no banco: {current_user.data_expiracao}")
+        print(f"📊 Status licença no banco: {current_user.status_licenca}")
         
         # Verificar se tem data de expiração
         now = datetime.utcnow()
@@ -377,8 +379,14 @@ async def check_license(
             print(f"📤 Resposta (sem licença): {response}")
             return response
         
-        # Verificar se a licença está ativa
+        # Verificar se a licença está ativa baseada na data de expiração
         if current_user.data_expiracao > now:
+            # Atualizar status no banco se necessário
+            if current_user.status_licenca != "ativa":
+                print(f"🔄 Atualizando status da licença de '{current_user.status_licenca}' para 'ativa'")
+                current_user.status_licenca = "ativa"
+                db.commit()
+            
             # Licença ativa - calcular tempo restante
             time_remaining = current_user.data_expiracao - now
             days_remaining = time_remaining.days
@@ -418,6 +426,12 @@ async def check_license(
             print(f"📤 Resposta (licença ativa): {response}")
             return response
         else:
+            # Atualizar status no banco para expirada se necessário
+            if current_user.status_licenca != "expirada":
+                print(f"🔄 Atualizando status da licença de '{current_user.status_licenca}' para 'expirada'")
+                current_user.status_licenca = "expirada"
+                db.commit()
+            
             # Licença expirada
             expired_days = (now - current_user.data_expiracao).days
             
