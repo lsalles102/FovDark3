@@ -167,10 +167,214 @@ async def get_all_users(
             "tentativas_login": user.tentativas_login,
             "ultimo_login": user.ultimo_login.isoformat() if user.ultimo_login else None,
             "ip_registro": user.ip_registro,
-            "ip_ultimo_login": user.ip_ultimo_login
+            "ip_ultimo_login": user.ip_ultimo_login,
+            "created_at": user.created_at.isoformat() if user.created_at else None
         }
         for user in users
     ]
+
+@app.get("/api/products")
+async def get_products(db: Session = Depends(get_db)):
+    products = db.query(Product).filter(Product.is_active == True).all()
+    return [
+        {
+            "id": product.id,
+            "name": product.name,
+            "description": product.description,
+            "price": product.price,
+            "duration_days": product.duration_days,
+            "image_url": product.image_url,
+            "is_active": product.is_active,
+            "is_featured": product.is_featured,
+            "features": product.features.split(',') if product.features else []
+        }
+        for product in products
+    ]
+
+@app.get("/api/admin/products")
+async def get_admin_products(
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    products = db.query(Product).all()
+    return [
+        {
+            "id": product.id,
+            "name": product.name,
+            "description": product.description,
+            "price": product.price,
+            "duration_days": product.duration_days,
+            "image_url": product.image_url,
+            "is_active": product.is_active,
+            "is_featured": product.is_featured,
+            "features": product.features,
+            "created_at": product.created_at.isoformat() if product.created_at else None
+        }
+        for product in products
+    ]
+
+@app.post("/api/admin/products")
+async def create_product(
+    name: str = Form(...),
+    description: str = Form(""),
+    price: float = Form(...),
+    duration_days: int = Form(...),
+    image_url: str = Form(""),
+    features: str = Form(""),
+    is_active: bool = Form(True),
+    is_featured: bool = Form(False),
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        new_product = Product(
+            name=name,
+            description=description,
+            price=price,
+            duration_days=duration_days,
+            image_url=image_url if image_url else None,
+            features=features if features else None,
+            is_active=is_active,
+            is_featured=is_featured
+        )
+        
+        db.add(new_product)
+        db.commit()
+        db.refresh(new_product)
+        
+        return {
+            "message": "Produto criado com sucesso",
+            "product": {
+                "id": new_product.id,
+                "name": new_product.name,
+                "price": new_product.price,
+                "duration_days": new_product.duration_days,
+                "is_active": new_product.is_active
+            }
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erro ao criar produto: {str(e)}")
+
+@app.put("/api/admin/products/{product_id}")
+async def update_product(
+    product_id: int,
+    name: str = Form(...),
+    description: str = Form(""),
+    price: float = Form(...),
+    duration_days: int = Form(...),
+    image_url: str = Form(""),
+    features: str = Form(""),
+    is_active: bool = Form(True),
+    is_featured: bool = Form(False),
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Produto não encontrado")
+    
+    try:
+        product.name = name
+        product.description = description
+        product.price = price
+        product.duration_days = duration_days
+        product.image_url = image_url if image_url else None
+        product.features = features if features else None
+        product.is_active = is_active
+        product.is_featured = is_featured
+        
+        db.commit()
+        
+        return {
+            "message": "Produto atualizado com sucesso",
+            "product": {
+                "id": product.id,
+                "name": product.name,
+                "price": product.price,
+                "duration_days": product.duration_days,
+                "is_active": product.is_active
+            }
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erro ao atualizar produto: {str(e)}")
+
+@app.delete("/api/admin/products/{product_id}")
+async def delete_product(
+    product_id: int,
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Produto não encontrado")
+    
+    try:
+        db.delete(product)
+        db.commit()
+        return {"message": "Produto deletado com sucesso"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erro ao deletar produto: {str(e)}")
+
+@app.get("/api/admin/payments")
+async def get_admin_payments(
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    payments = db.query(Payment).all()
+    return [
+        {
+            "id": payment.id,
+            "user_id": payment.user_id,
+            "product_id": payment.product_id,
+            "valor": payment.valor,
+            "data_pagamento": payment.data_pagamento.isoformat() if payment.data_pagamento else None,
+            "status": payment.status,
+            "plano": payment.plano,
+            "gateway_id": payment.gateway_id
+        }
+        for payment in payments
+    ]
+
+@app.post("/api/admin/upload-image")
+async def upload_image(
+    file: UploadFile = File(...),
+    admin_user: User = Depends(get_admin_user)
+):
+    try:
+        # Verificar se é uma imagem
+        if not file.content_type.startswith('image/'):
+            raise HTTPException(status_code=400, detail="Arquivo deve ser uma imagem")
+        
+        # Criar diretório se não existir
+        import os
+        upload_dir = "static/uploads"
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Gerar nome único para o arquivo
+        import time
+        timestamp = int(time.time())
+        file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+        new_filename = f"{timestamp}_{file.filename.replace(' ', '_')}"
+        file_path = os.path.join(upload_dir, new_filename)
+        
+        # Salvar arquivo
+        with open(file_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+        
+        # Retornar URL da imagem
+        image_url = f"/static/uploads/{new_filename}"
+        
+        return {
+            "message": "Imagem enviada com sucesso",
+            "image_url": image_url,
+            "filename": new_filename
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao fazer upload: {str(e)}")
 
 # Rotas HTML
 @app.get("/", response_class=HTMLResponse)
