@@ -192,7 +192,7 @@ async def get_products(db: Session = Depends(get_db)):
         print("🔍 Carregando produtos do banco de dados...")
         products = db.query(Product).filter(Product.is_active == True).all()
         print(f"📊 Encontrados {len(products)} produtos ativos")
-        
+
         products_data = []
         for product in products:
             try:
@@ -212,10 +212,10 @@ async def get_products(db: Session = Depends(get_db)):
             except Exception as product_error:
                 print(f"❌ Erro ao processar produto {product.id}: {product_error}")
                 continue
-        
+
         print(f"🎯 Retornando {len(products_data)} produtos")
         return products_data
-        
+
     except Exception as e:
         print(f"❌ Erro no endpoint /api/products: {e}")
         import traceback
@@ -359,17 +359,17 @@ async def check_license(
         print(f"🔍 Verificando licença para usuário: {current_user.email}")
         print(f"📅 Data de expiração no banco: {current_user.data_expiracao}")
         print(f"📊 Status licença no banco: {current_user.status_licenca}")
-        
+
         # Verificar se tem data de expiração
         now = datetime.utcnow()
-        
+
         if not current_user.data_expiracao:
             # Verificar se há pagamentos pendentes
             pending_payment = db.query(Payment).filter(
                 Payment.user_id == current_user.id,
                 Payment.status.in_(["pending", "processing"])
             ).first()
-            
+
             if pending_payment:
                 status = "pendente"
                 message = "Aguardando confirmação do pagamento"
@@ -377,7 +377,7 @@ async def check_license(
             else:
                 status = "sem_licenca"
                 message = "Você não possui uma licença ativa"
-            
+
             response = {
                 "valid": False,
                 "can_download": False,
@@ -391,7 +391,7 @@ async def check_license(
             }
             print(f"📤 Resposta (sem licença): {response}")
             return response
-        
+
         # Verificar se a licença está ativa baseada na data de expiração
         if current_user.data_expiracao > now:
             # Atualizar status no banco se necessário
@@ -399,15 +399,15 @@ async def check_license(
                 print(f"🔄 Atualizando status da licença de '{current_user.status_licenca}' para 'ativa'")
                 current_user.status_licenca = "ativa"
                 db.commit()
-            
+
             # Licença ativa - calcular tempo restante
             time_remaining = current_user.data_expiracao - now
             days_remaining = time_remaining.days
             hours_remaining = time_remaining.seconds // 3600
-            
+
             print(f"📅 Data de expiração: {current_user.data_expiracao}")
             print(f"⏰ Tempo restante: {days_remaining} dias, {hours_remaining} horas")
-            
+
             # Determinar status baseado no tempo restante
             if days_remaining == 0 and hours_remaining <= 24:
                 status = "critico"
@@ -424,7 +424,7 @@ async def check_license(
             else:
                 status = "ativa"
                 message = f"Licença ativa por mais {days_remaining} dias"
-            
+
             response = {
                 "valid": True,
                 "can_download": True,
@@ -444,10 +444,10 @@ async def check_license(
                 print(f"🔄 Atualizando status da licença de '{current_user.status_licenca}' para 'expirada'")
                 current_user.status_licenca = "expirada"
                 db.commit()
-            
+
             # Licença expirada
             expired_days = (now - current_user.data_expiracao).days
-            
+
             response = {
                 "valid": False,
                 "can_download": False,
@@ -462,7 +462,7 @@ async def check_license(
             }
             print(f"📤 Resposta (licença expirada): {response}")
             return response
-            
+
     except Exception as e:
         print(f"❌ Erro ao verificar licença: {e}")
         import traceback
@@ -498,22 +498,22 @@ async def download_executable(
     try:
         # Verificar se tem licença ativa
         has_active_license = current_user.data_expiracao and current_user.data_expiracao > datetime.utcnow()
-        
+
         if not has_active_license:
             raise HTTPException(status_code=403, detail="Licença inválida ou expirada")
-        
+
         # Caminho para o arquivo executável
         executable_path = "attached_assets/Script_Dark.exe"
-        
+
         if not os.path.exists(executable_path):
             raise HTTPException(status_code=404, detail="Arquivo não encontrado")
-        
+
         return FileResponse(
             executable_path,
             media_type='application/octet-stream',
             filename="Script_Dark.exe"
         )
-        
+
     except HTTPException as he:
         raise he
     except Exception as e:
@@ -579,13 +579,15 @@ async def comprar_page(request: Request):
 async def painel_page(request: Request):
     return templates.TemplateResponse("painel.html", {"request": request})
 
-@app.get("/terms", response_class=HTMLResponse)
-async def terms_page(request: Request):
-    return templates.TemplateResponse("terms.html", {"request": request})
-
 @app.get("/privacy", response_class=HTMLResponse)
 async def privacy_page(request: Request):
+    """Página de política de privacidade"""
     return templates.TemplateResponse("privacy.html", {"request": request})
+
+@app.get("/terms", response_class=HTMLResponse)
+async def terms_page(request: Request):
+    """Página de termos de uso"""
+    return templates.TemplateResponse("terms.html", {"request": request})
 
 @app.get("/recover", response_class=HTMLResponse)
 async def recover_page(request: Request):
