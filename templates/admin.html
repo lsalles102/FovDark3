@@ -2240,28 +2240,98 @@ function createProductModal(product = null) {
 
                 <div style="margin-bottom: 1rem;">
                     <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Imagem do Produto:</label>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <input type="url" name="image_url" value="${isEditing ? (product.image_url || '') : ''}" placeholder="URL da imagem ou faça upload" style="
+                    
+                    <!-- Tabs para escolher método -->
+                    <div style="display: flex; margin-bottom: 0.5rem; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+                        <button type="button" id="urlTab" onclick="switchImageMethod('url')" style="
                             flex: 1;
-                            padding: 0.75rem;
-                            background: var(--bg-tertiary);
-                            border: 1px solid var(--border);
-                            border-radius: 8px;
-                            color: var(--text-primary);
-                        ">
-                        <button type="button" onclick="document.getElementById('imageUpload').click()" style="
-                            padding: 0.75rem 1rem;
-                            background: linear-gradient(135deg, var(--primary), var(--secondary));
-                            border: none;
-                            border-radius: 8px;
+                            padding: 0.5rem;
+                            background: var(--primary);
                             color: white;
-                            cursor: pointer;
+                            border: none;
                             font-weight: 600;
+                            cursor: pointer;
+                        ">
+                            <i class="fas fa-link"></i> URL
+                        </button>
+                        <button type="button" id="uploadTab" onclick="switchImageMethod('upload')" style="
+                            flex: 1;
+                            padding: 0.5rem;
+                            background: var(--bg-tertiary);
+                            color: var(--text-secondary);
+                            border: none;
+                            font-weight: 600;
+                            cursor: pointer;
                         ">
                             <i class="fas fa-upload"></i> Upload
                         </button>
                     </div>
-                    <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="uploadProductImage(this)">
+
+                    <!-- Método URL -->
+                    <div id="urlMethod" style="display: block;">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="url" name="image_url" id="imageUrlInput" value="${isEditing ? (product.image_url || '') : ''}" placeholder="Cole a URL da imagem aqui" style="
+                                flex: 1;
+                                padding: 0.75rem;
+                                background: var(--bg-tertiary);
+                                border: 1px solid var(--border);
+                                border-radius: 8px;
+                                color: var(--text-primary);
+                            " onchange="previewImageFromUrl(this.value)">
+                            <button type="button" onclick="testImageUrl()" style="
+                                padding: 0.75rem 1rem;
+                                background: linear-gradient(135deg, var(--success), #00cc66);
+                                border: none;
+                                border-radius: 8px;
+                                color: white;
+                                cursor: pointer;
+                                font-weight: 600;
+                            ">
+                                <i class="fas fa-eye"></i> Testar
+                            </button>
+                        </div>
+                        <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">
+                            💡 Use serviços como Imgur, Cloudinary ou hospede em seu próprio servidor
+                        </div>
+                    </div>
+
+                    <!-- Método Upload -->
+                    <div id="uploadMethod" style="display: none;">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <div style="
+                                flex: 1;
+                                padding: 0.75rem;
+                                background: var(--bg-tertiary);
+                                border: 2px dashed var(--border);
+                                border-radius: 8px;
+                                text-align: center;
+                                cursor: pointer;
+                                transition: all 0.3s ease;
+                            " onclick="document.getElementById('imageUpload').click()" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+                                <div style="color: var(--text-secondary);">
+                                    <i class="fas fa-cloud-upload-alt" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
+                                    <span>Clique para selecionar ou arraste uma imagem</span>
+                                    <div style="font-size: 0.7rem; margin-top: 0.25rem;">
+                                        Máximo 10MB • JPG, PNG, GIF, WEBP
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="uploadProductImage(this)">
+                        <div id="uploadProgress" style="display: none; margin-top: 0.5rem;">
+                            <div style="background: var(--bg-tertiary); border-radius: 4px; overflow: hidden;">
+                                <div id="progressBar" style="
+                                    width: 0%;
+                                    height: 4px;
+                                    background: linear-gradient(90deg, var(--primary), var(--secondary));
+                                    transition: width 0.3s ease;
+                                "></div>
+                            </div>
+                            <div id="progressText" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Preview da imagem -->
                     <div id="imagePreview" style="margin-top: 1rem; ${isEditing && product.image_url ? 'display: block;' : 'display: none;'}">
                         <div style="position: relative; display: inline-block;">
                             <img id="previewImg" src="${isEditing ? (product.image_url || '') : ''}" style="
@@ -2270,7 +2340,22 @@ function createProductModal(product = null) {
                                 border-radius: 8px; 
                                 border: 2px solid var(--border);
                                 object-fit: cover;
+                            " onerror="this.style.display='none'; document.getElementById('imageError').style.display='block';">
+                            <div id="imageError" style="
+                                display: none;
+                                max-width: 200px;
+                                max-height: 120px;
+                                border-radius: 8px;
+                                border: 2px dashed var(--danger);
+                                background: rgba(255, 68, 68, 0.1);
+                                color: var(--danger);
+                                text-align: center;
+                                padding: 2rem;
+                                font-size: 0.8rem;
                             ">
+                                <i class="fas fa-exclamation-triangle" style="display: block; margin-bottom: 0.5rem;"></i>
+                                Erro ao carregar imagem
+                            </div>
                             <button type="button" onclick="removeProductImage()" style="
                                 position: absolute;
                                 top: -8px;
@@ -2353,6 +2438,81 @@ function closeModal(button) {
     }
 }
 
+function switchImageMethod(method) {
+    const urlTab = document.getElementById('urlTab');
+    const uploadTab = document.getElementById('uploadTab');
+    const urlMethod = document.getElementById('urlMethod');
+    const uploadMethod = document.getElementById('uploadMethod');
+
+    if (method === 'url') {
+        urlTab.style.background = 'var(--primary)';
+        urlTab.style.color = 'white';
+        uploadTab.style.background = 'var(--bg-tertiary)';
+        uploadTab.style.color = 'var(--text-secondary)';
+        urlMethod.style.display = 'block';
+        uploadMethod.style.display = 'none';
+    } else {
+        uploadTab.style.background = 'var(--primary)';
+        uploadTab.style.color = 'white';
+        urlTab.style.background = 'var(--bg-tertiary)';
+        urlTab.style.color = 'var(--text-secondary)';
+        urlMethod.style.display = 'none';
+        uploadMethod.style.display = 'block';
+    }
+}
+
+function testImageUrl() {
+    const urlInput = document.getElementById('imageUrlInput');
+    const url = urlInput.value.trim();
+    
+    if (!url) {
+        showToast('Digite uma URL primeiro', 'warning');
+        return;
+    }
+    
+    if (!isValidImageUrl(url)) {
+        showToast('URL deve terminar com .jpg, .jpeg, .png, .gif ou .webp', 'warning');
+        return;
+    }
+    
+    previewImageFromUrl(url);
+}
+
+function isValidImageUrl(url) {
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    const urlLower = url.toLowerCase();
+    return imageExtensions.some(ext => urlLower.includes(ext));
+}
+
+function previewImageFromUrl(url) {
+    if (!url) return;
+    
+    const preview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    const imageError = document.getElementById('imageError');
+    
+    if (preview && previewImg) {
+        // Reset error state
+        previewImg.style.display = 'block';
+        imageError.style.display = 'none';
+        
+        // Test image loading
+        const testImg = new Image();
+        testImg.onload = function() {
+            previewImg.src = url;
+            preview.style.display = 'block';
+            showToast('Imagem carregada com sucesso!', 'success');
+        };
+        testImg.onerror = function() {
+            previewImg.style.display = 'none';
+            imageError.style.display = 'block';
+            preview.style.display = 'block';
+            showToast('Erro ao carregar imagem da URL', 'error');
+        };
+        testImg.src = url;
+    }
+}
+
 async function uploadProductImage(input) {
     const file = input.files[0];
     if (!file) {
@@ -2383,17 +2543,21 @@ async function uploadProductImage(input) {
         return;
     }
 
+    // Mostrar progresso
+    const progressDiv = document.getElementById('uploadProgress');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    
+    progressDiv.style.display = 'block';
+    progressBar.style.width = '10%';
+    progressText.textContent = 'Preparando upload...';
+
     const formData = new FormData();
     formData.append('file', file);
 
-    // Log do FormData para debug
-    console.log('📦 FormData criado:');
-    for (let [key, value] of formData.entries()) {
-        console.log(key, value);
-    }
-
     try {
-        showToast('Fazendo upload da imagem...', 'info');
+        progressBar.style.width = '30%';
+        progressText.textContent = 'Enviando arquivo...';
 
         console.log('🌐 Iniciando upload para /api/admin/upload-image');
 
@@ -2401,10 +2565,12 @@ async function uploadProductImage(input) {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`
-                // Não adicionar Content-Type para FormData
             },
             body: formData
         });
+
+        progressBar.style.width = '70%';
+        progressText.textContent = 'Processando resposta...';
 
         console.log('📡 Resposta do servidor:', response.status, response.statusText);
 
@@ -2417,9 +2583,12 @@ async function uploadProductImage(input) {
         const data = await response.json();
         console.log('✅ Dados retornados:', data);
 
+        progressBar.style.width = '90%';
+        progressText.textContent = 'Finalizando...';
+
         if (data.image_url) {
             // Atualizar campo URL da imagem
-            const imageUrlInput = document.querySelector('input[name="image_url"]');
+            const imageUrlInput = document.getElementById('imageUrlInput');
             if (imageUrlInput) {
                 imageUrlInput.value = data.image_url;
                 console.log('🔗 URL da imagem atualizada:', data.image_url);
@@ -2428,11 +2597,22 @@ async function uploadProductImage(input) {
             // Mostrar preview
             const preview = document.getElementById('imagePreview');
             const previewImg = document.getElementById('previewImg');
+            const imageError = document.getElementById('imageError');
+            
             if (preview && previewImg) {
+                previewImg.style.display = 'block';
+                imageError.style.display = 'none';
                 previewImg.src = data.image_url;
                 preview.style.display = 'block';
                 console.log('🖼️ Preview da imagem exibido');
             }
+
+            progressBar.style.width = '100%';
+            progressText.textContent = 'Concluído!';
+
+            setTimeout(() => {
+                progressDiv.style.display = 'none';
+            }, 1000);
 
             showToast(`Imagem enviada com sucesso! (${(file.size / 1024).toFixed(1)}KB)`, 'success');
         } else {
@@ -2441,6 +2621,7 @@ async function uploadProductImage(input) {
 
     } catch (error) {
         console.error('❌ Erro no upload:', error);
+        progressDiv.style.display = 'none';
         showToast(`Erro ao enviar imagem: ${error.message}`, 'error');
     } finally {
         // Limpar input para permitir reenvio do mesmo arquivo
@@ -2450,11 +2631,11 @@ async function uploadProductImage(input) {
 }
 
 function removeProductImage() {
-    const imageUrlInput = document.querySelector('input[name="image_url"]');
+    const imageUrlInput = document.getElementById('imageUrlInput');
     const preview = document.getElementById('imagePreview');
     
-    imageUrlInput.value = '';
-    preview.style.display = 'none';
+    if (imageUrlInput) imageUrlInput.value = '';
+    if (preview) preview.style.display = 'none';
     
     showToast('Imagem removida', 'info');
 }
