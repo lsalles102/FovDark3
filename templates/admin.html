@@ -717,8 +717,288 @@
         border-color: var(--primary);
     }
 
+    /* Products Admin Grid */
+    .products-admin-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 2rem;
+        padding: 1rem;
+        margin-bottom: 3rem;
+    }
+
+    .product-admin-card {
+        background: var(--bg-secondary);
+        border: 2px solid var(--border);
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all var(--transition-speed);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-height: 480px;
+    }
+
+    .product-admin-card:hover {
+        border-color: var(--primary);
+        transform: translateY(-5px);
+        box-shadow: var(--glow);
+    }
+
+    .product-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: var(--bg-tertiary);
+        border-bottom: 2px solid var(--border);
+    }
+
+    .product-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .product-status.status-active {
+        color: var(--success);
+    }
+
+    .product-status.status-inactive {
+        color: var(--danger);
+    }
+
+    .product-id {
+        font-family: monospace;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        background: var(--bg-primary);
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+    }
+
+    .product-card-image {
+        height: 160px;
+        background: var(--bg-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .product-card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform var(--transition-speed);
+    }
+
+    .product-admin-card:hover .product-card-image img {
+        transform: scale(1.05);
+    }
+
+    .no-image {
+        color: var(--text-muted);
+        font-size: 2rem;
+        opacity: 0.5;
+    }
+
+    .product-card-content {
+        flex: 1;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .product-card-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .product-card-description {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        line-height: 1.4;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .product-features {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin: 0.5rem 0;
+    }
+
+    .feature-tag {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 500;
+        border: 1px solid var(--border);
+    }
+
+    .feature-more {
+        background: var(--primary);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .product-card-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: auto;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .info-item .label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .info-item .value {
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .info-item .value.price {
+        color: var(--success);
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .product-card-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border-top: 2px solid var(--border);
+    }
+
+    .btn-action {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        background: transparent;
+        border: none;
+        color: var(--text-primary);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: all var(--transition-speed);
+        font-size: 0.8rem;
+    }
+
+    .btn-action:first-child {
+        border-right: 1px solid var(--border);
+    }
+
+    .btn-action.btn-edit:hover {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-action.btn-delete:hover {
+        background: var(--danger);
+        color: white;
+    }
+
+    .btn-action i {
+        font-size: 0.9rem;
+    }
+
+    /* Empty State */
+    .empty-state {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 4rem 2rem;
+        background: var(--bg-secondary);
+        border: 2px dashed var(--border);
+        border-radius: 15px;
+        color: var(--text-secondary);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        margin-bottom: 2rem;
+        font-size: 0.9rem;
+    }
+
+    /* Loading Card */
+    .loading-card {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 4rem 2rem;
+        background: var(--bg-secondary);
+        border: 2px solid var(--border);
+        border-radius: 15px;
+        color: var(--text-secondary);
+    }
+
+    .loading-card i {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: var(--primary);
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
+        .products-admin-grid {
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            padding: 0.5rem;
+        }
+
+        .product-admin-card {
+            min-height: 420px;
+        }
+
+        .product-card-content {
+            padding: 1rem;
+        }
+
+        .product-card-info {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+
         .admin-cards-grid,
         .stats-grid {
             grid-template-columns: 1fr;
@@ -779,6 +1059,20 @@
     }
 
     @media (max-width: 480px) {
+        .products-admin-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .product-card-actions {
+            grid-template-columns: 1fr;
+        }
+
+        .btn-action:first-child {
+            border-right: none;
+            border-bottom: 1px solid var(--border);
+        }
+
         .admin-nav {
             grid-template-columns: 1fr;
         }
@@ -966,7 +1260,16 @@
             </div>
         </div>
 
-        <div class="admin-table-container">
+        <!-- Products Grid -->
+        <div class="products-admin-grid" id="productsAdminGrid">
+            <div class="loading-card">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Carregando produtos...</p>
+            </div>
+        </div>
+
+        <!-- Products Table (alternativa) -->
+        <div class="admin-table-container" style="display: none;" id="productsTableContainer">
             <table class="admin-table">
                 <thead>
                     <tr>
@@ -1596,6 +1899,16 @@ async function loadProducts() {
         return;
     }
 
+    // Mostrar loading
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="6" class="loading-row">
+                <i class="fas fa-spinner fa-spin"></i>
+                Carregando produtos...
+            </td>
+        </tr>
+    `;
+
     try {
         const response = await fetch('/api/admin/products', {
             headers: { 
@@ -1605,8 +1918,9 @@ async function loadProducts() {
         });
 
         if (response.ok) {
-            const products = await response.json();
-            displayProducts(products);
+            const data = await response.json();
+            console.log('Produtos carregados:', data);
+            displayProducts(data);
         } else if (response.status === 401) {
             tbody.innerHTML = `
                 <tr>
@@ -1621,10 +1935,11 @@ async function loadProducts() {
                 window.location.href = '/login';
             }, 2000);
         } else {
-            throw new Error('Erro ao carregar produtos');
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Erro ao carregar produtos');
         }
     } catch (error) {
-        console.error('Erro:', error);
+        console.error('Erro ao carregar produtos:', error);
         tbody.innerHTML = `
             <tr>
                 <td colspan="6" class="error-row">
@@ -1637,46 +1952,92 @@ async function loadProducts() {
 }
 
 function displayProducts(products) {
-    const tbody = document.getElementById('productsTableBody');
+    const grid = document.getElementById('productsAdminGrid');
+    
+    if (!grid) {
+        console.error('Grid de produtos não encontrado');
+        return;
+    }
 
     if (products.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="empty-row">
-                    <i class="fas fa-box"></i>
-                    Nenhum produto encontrado
-                </td>
-            </tr>
+        grid.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-box-open"></i>
+                <h3>Nenhum produto encontrado</h3>
+                <p>Clique em "Novo Produto" para criar seu primeiro produto</p>
+                <button class="btn btn-primary" onclick="openProductModal()">
+                    <i class="fas fa-plus"></i>
+                    CRIAR PRIMEIRO PRODUTO
+                </button>
+            </div>
         `;
         return;
     }
 
-    tbody.innerHTML = products.map(product => {
-        const statusBadge = product.is_active ? 
-            '<span class="badge badge-success">Ativo</span>' : 
-            '<span class="badge badge-danger">Inativo</span>';
+    grid.innerHTML = products.map(product => {
+        const statusClass = product.is_active ? 'status-active' : 'status-inactive';
+        const statusText = product.is_active ? 'Ativo' : 'Inativo';
+        const statusIcon = product.is_active ? 'fas fa-check-circle' : 'fas fa-times-circle';
+        
+        const priceFormatted = new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }).format(product.price);
 
-        const priceFormatted = `R$ ${product.price.toFixed(2)}`;
-        const durationText = `${product.duration_days} dias`;
+        const featuresArray = product.features ? product.features.split(',') : [];
+        const featuresHTML = featuresArray.slice(0, 3).map(feature => 
+            `<span class="feature-tag">${feature.trim()}</span>`
+        ).join('');
 
         return `
-            <tr>
-                <td>${product.id}</td>
-                <td>${product.name}</td>
-                <td>${priceFormatted}</td>
-                <td>${durationText}</td>
-                <td>${statusBadge}</td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="btn-icon btn-edit" onclick="editProduct(${product.id})" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-icon btn-delete" onclick="confirmDeleteProduct(${product.id})" title="Deletar">
-                            <i class="fas fa-trash"></i>
-                        </button>
+            <div class="product-admin-card">
+                <div class="product-card-header">
+                    <div class="product-status ${statusClass}">
+                        <i class="${statusIcon}"></i>
+                        <span>${statusText}</span>
                     </div>
-                </td>
-            </tr>
+                    <div class="product-id">#${product.id}</div>
+                </div>
+                
+                <div class="product-card-image">
+                    ${product.image_url ? 
+                        `<img src="${product.image_url}" alt="${product.name}" onerror="this.src='/static/hero-bg.jpg'">` :
+                        `<div class="no-image"><i class="fas fa-image"></i></div>`
+                    }
+                </div>
+                
+                <div class="product-card-content">
+                    <h3 class="product-card-title">${product.name}</h3>
+                    <p class="product-card-description">${product.description || 'Sem descrição'}</p>
+                    
+                    <div class="product-features">
+                        ${featuresHTML}
+                        ${featuresArray.length > 3 ? `<span class="feature-more">+${featuresArray.length - 3}</span>` : ''}
+                    </div>
+                    
+                    <div class="product-card-info">
+                        <div class="info-item">
+                            <span class="label">Preço:</span>
+                            <span class="value price">${priceFormatted}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Duração:</span>
+                            <span class="value">${product.duration_days} dias</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="product-card-actions">
+                    <button class="btn-action btn-edit" onclick="editProduct(${product.id})" title="Editar Produto">
+                        <i class="fas fa-edit"></i>
+                        <span>Editar</span>
+                    </button>
+                    <button class="btn-action btn-delete" onclick="confirmDeleteProduct(${product.id})" title="Deletar Produto">
+                        <i class="fas fa-trash"></i>
+                        <span>Deletar</span>
+                    </button>
+                </div>
+            </div>
         `;
     }).join('');
 }
