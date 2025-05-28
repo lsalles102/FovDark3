@@ -1,7 +1,6 @@
 import os
 from datetime import datetime, timedelta
 from typing import Optional
-from fastapi import Body
 
 from fastapi import FastAPI, Depends, HTTPException, status, Request, Form, File, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
@@ -534,6 +533,47 @@ def main():
     # Aqui seria implementada a lógica do aim assist
     # IMPORTANTE: Este é apenas um exemplo educacional
     
+# ========================
+# HWID LOCK ENDPOINTS
+# ========================
+from fastapi import Form
+
+@app.post("/api/hwid/save")
+async def save_hwid(
+    hwid: str = Form(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not hwid:
+        raise HTTPException(status_code=400, detail="HWID ausente.")
+
+    if current_user.hwid and current_user.hwid != hwid:
+        raise HTTPException(status_code=403, detail="Este login já está vinculado a outro dispositivo.")
+
+    if not current_user.hwid:
+        current_user.hwid = hwid
+        db.commit()
+
+    return {"message": "HWID salvo", "hwid": current_user.hwid}
+
+@app.post("/api/license/check")
+async def check_license_with_hwid(
+    hwid: str = Form(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user.data_expiracao or current_user.data_expiracao < datetime.utcnow():
+        raise HTTPException(status_code=403, detail="Licença expirada.")
+
+    if current_user.hwid and current_user.hwid != hwid:
+        raise HTTPException(status_code=403, detail="HWID não autorizado para este usuário.")
+
+    dias_restantes = (current_user.data_expiracao - datetime.utcnow()).days
+    return {
+        "valid": True,
+        "days_remaining": dias_restantes
+    }
+
 if __name__ == "__main__":
     main()
 """
@@ -1083,33 +1123,48 @@ async def get_public_settings(db: Session = Depends(get_db)):
         settings_dict[setting.category][setting.key] = setting.value
     
     return settings_dict
+
+
+# ========================
+# HWID LOCK ENDPOINTS
+# ========================
+from fastapi import Form
+
 @app.post("/api/hwid/save")
 async def save_hwid(
-    hwid: str = Body(..., embed=True),
+    hwid: str = Form(...),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    if current_user.hwid and current_user.hwid != hwid:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="HWID diferente do registrado"
-        )
-    
-    current_user.hwid = hwid
-    db.commit()
-    return {"message": "HWID salvo com sucesso", "hwid": hwid}
+    if not hwid:
+        raise HTTPException(status_code=400, detail="HWID ausente.")
 
-@app.post("/api/hwid/check")
-async def check_hwid(
-    hwid: str = Body(..., embed=True),
-    current_user: User = Depends(get_current_user)
+    if current_user.hwid and current_user.hwid != hwid:
+        raise HTTPException(status_code=403, detail="Este login já está vinculado a outro dispositivo.")
+
+    if not current_user.hwid:
+        current_user.hwid = hwid
+        db.commit()
+
+    return {"message": "HWID salvo", "hwid": current_user.hwid}
+
+@app.post("/api/license/check")
+async def check_license_with_hwid(
+    hwid: str = Form(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    if current_user.hwid != hwid:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="HWID não autorizado"
-        )
-    return {"message": "HWID válido"}
+    if not current_user.data_expiracao or current_user.data_expiracao < datetime.utcnow():
+        raise HTTPException(status_code=403, detail="Licença expirada.")
+
+    if current_user.hwid and current_user.hwid != hwid:
+        raise HTTPException(status_code=403, detail="HWID não autorizado para este usuário.")
+
+    dias_restantes = (current_user.data_expiracao - datetime.utcnow()).days
+    return {
+        "valid": True,
+        "days_remaining": dias_restantes
+    }
 
 if __name__ == "__main__":
     import os
