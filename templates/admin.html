@@ -1671,7 +1671,7 @@ function displayProducts(products) {
                         <button class="btn-icon btn-edit" onclick="editProduct(${product.id})" title="Editar">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn-icon btn-delete" onclick="deleteProduct(${product.id})" title="Deletar">
+                        <button class="btn-icon btn-delete" onclick="confirmDeleteProduct(${product.id})" title="Deletar">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -1745,13 +1745,14 @@ function displayPayments(payments) {
 }
 
 // Funções para gerenciamento de produtos
-function openProductModal() {
-    const modal = createProductModal();
+function openProductModal(product = null) {
+    const modal = createProductModal(product);
     document.body.appendChild(modal);
     modal.style.display = 'flex';
 }
 
-function createProductModal() {
+function createProductModal(product = null) {
+    const isEditing = product !== null;
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
     modal.style.cssText = `
@@ -1779,7 +1780,7 @@ function createProductModal() {
             overflow-y: auto;
         ">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                <h3 style="color: var(--primary); margin: 0;">NOVO PRODUTO</h3>
+                <h3 style="color: var(--primary); margin: 0;">${isEditing ? 'EDITAR PRODUTO' : 'NOVO PRODUTO'}</h3>
                 <button onclick="closeModal(this)" style="
                     background: none;
                     border: none;
@@ -1792,9 +1793,10 @@ function createProductModal() {
             </div>
 
             <form id="productForm" onsubmit="submitProduct(event)">
+                <input type="hidden" id="editingProductId" value="${isEditing ? product.id : ''}">
                 <div style="margin-bottom: 1rem;">
                     <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Nome do Produto:</label>
-                    <input type="text" name="name" required style="
+                    <input type="text" name="name" value="${isEditing ? product.name : ''}" required style="
                         width: 100%;
                         padding: 0.75rem;
                         background: var(--bg-tertiary);
@@ -1814,13 +1816,13 @@ function createProductModal() {
                         border-radius: 8px;
                         color: var(--text-primary);
                         resize: vertical;
-                    "></textarea>
+                    ">${isEditing ? (product.description || '') : ''}</textarea>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                     <div>
                         <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Preço (R$):</label>
-                        <input type="number" name="price" step="0.01" required style="
+                        <input type="number" name="price" step="0.01" value="${isEditing ? product.price : ''}" required style="
                             width: 100%;
                             padding: 0.75rem;
                             background: var(--bg-tertiary);
@@ -1831,7 +1833,7 @@ function createProductModal() {
                     </div>
                     <div>
                         <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Duração (dias):</label>
-                        <input type="number" name="duration_days" required style="
+                        <input type="number" name="duration_days" value="${isEditing ? product.duration_days : ''}" required style="
                             width: 100%;
                             padding: 0.75rem;
                             background: var(--bg-tertiary);
@@ -1845,7 +1847,7 @@ function createProductModal() {
                 <div style="margin-bottom: 1rem;">
                     <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Imagem do Produto:</label>
                     <div style="display: flex; gap: 0.5rem;">
-                        <input type="url" name="image_url" placeholder="URL da imagem ou upload abaixo" style="
+                        <input type="url" name="image_url" value="${isEditing ? (product.image_url || '') : ''}" placeholder="URL da imagem ou upload abaixo" style="
                             flex: 1;
                             padding: 0.75rem;
                             background: var(--bg-tertiary);
@@ -1865,8 +1867,8 @@ function createProductModal() {
                         </button>
                     </div>
                     <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="uploadProductImage(this)">
-                    <div id="imagePreview" style="margin-top: 0.5rem; display: none;">
-                        <img id="previewImg" style="max-width: 100%; max-height: 120px; border-radius: 8px; border: 1px solid var(--border);">
+                    <div id="imagePreview" style="margin-top: 0.5rem; ${isEditing && product.image_url ? 'display: block;' : 'display: none;'}">
+                        <img id="previewImg" src="${isEditing ? (product.image_url || '') : ''}" style="max-width: 100%; max-height: 120px; border-radius: 8px; border: 1px solid var(--border);">
                     </div>
                 </div>
 
@@ -1880,19 +1882,19 @@ function createProductModal() {
                         border-radius: 8px;
                         color: var(--text-primary);
                         resize: vertical;
-                    "></textarea>
+                    ">${isEditing ? (product.features || '') : ''}</textarea>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
                     <label style="color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
-                        <input type="checkbox" name="is_active" checked id="is_active" style="
+                        <input type="checkbox" name="is_active" ${isEditing ? (product.is_active ? 'checked' : '') : 'checked'} id="is_active" style="
                             width: 18px;
                             height: 18px;
                         ">
                         Produto Ativo
                     </label>
                     <label style="color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
-                        <input type="checkbox" name="is_featured" id="is_featured" style="
+                        <input type="checkbox" name="is_featured" ${isEditing ? (product.is_featured ? 'checked' : '') : ''} id="is_featured" style="
                             width: 18px;
                             height: 18px;
                         ">
@@ -1906,7 +1908,7 @@ function createProductModal() {
                     </button>
                     <button type="submit" class="btn btn-primary" style="flex: 1;">
                         <i class="fas fa-save"></i>
-                        CRIAR PRODUTO
+                        ${isEditing ? 'ATUALIZAR PRODUTO' : 'CRIAR PRODUTO'}
                     </button>
                 </div>
             </form>
@@ -1978,15 +1980,21 @@ async function submitProduct(event) {
     const form = event.target;
     const formData = new FormData(form);
     const token = localStorage.getItem('access_token');
+    
+    const editingId = document.getElementById('editingProductId').value;
+    const isEditing = editingId !== '';
 
     const submitButton = form.querySelector('button[type="submit"]');
     const originalText = submitButton.innerHTML;
-    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CRIANDO...';
+    submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${isEditing ? 'ATUALIZANDO...' : 'CRIANDO...'}`;
     submitButton.disabled = true;
 
     try {
-        const response = await fetch('/api/admin/products', {
-            method: 'POST',
+        const url = isEditing ? `/api/admin/products/${editingId}` : '/api/admin/products';
+        const method = isEditing ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
             headers: {
                 'Authorization': `Bearer ${token}`
             },
@@ -1996,11 +2004,11 @@ async function submitProduct(event) {
         const data = await response.json();
 
         if (response.ok) {
-            showToast('Produto criado com sucesso!', 'success');
+            showToast(`Produto ${isEditing ? 'atualizado' : 'criado'} com sucesso!`, 'success');
             closeModal(submitButton);
             loadProducts(); // Recarregar lista de produtos
         } else {
-            showToast(data.detail || 'Erro ao criar produto', 'error');
+            showToast(data.detail || `Erro ao ${isEditing ? 'atualizar' : 'criar'} produto`, 'error');
         }
     } catch (error) {
         console.error('Erro:', error);
@@ -2059,8 +2067,54 @@ async function saveProduct() {
 function editUser(id, email) { showToast('Funcionalidade em desenvolvimento', 'info'); }
 function viewUserDetails(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
 function deleteUser(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
-function editProduct(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
-function deleteProduct(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
+
+async function editProduct(id) {
+    const token = localStorage.getItem('access_token');
+    
+    try {
+        const response = await fetch(`/api/admin/products`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const products = await response.json();
+            const product = products.find(p => p.id === id);
+            
+            if (product) {
+                openProductModal(product);
+            }
+        }
+    } catch (error) {
+        showToast('Erro ao carregar produto', 'error');
+    }
+}
+
+async function confirmDeleteProduct(id) {
+    if (confirm('Tem certeza que deseja deletar este produto? Esta ação não pode ser desfeita.')) {
+        await deleteProduct(id);
+    }
+}
+
+async function deleteProduct(id) {
+    const token = localStorage.getItem('access_token');
+    
+    try {
+        const response = await fetch(`/api/admin/products/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            showToast('Produto deletado com sucesso', 'success');
+            loadProducts();
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'Erro ao deletar produto', 'error');
+        }
+    } catch (error) {
+        showToast('Erro ao deletar produto', 'error');
+    }
+}
 function refreshUsers() { loadUsers(); }
 function refreshProducts() { loadProducts(); }
 function refreshPayments() { loadPayments(); }
