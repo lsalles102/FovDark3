@@ -2657,6 +2657,11 @@ async function submitProduct(event) {
     const editingId = document.getElementById('editingProductId').value;
     const isEditing = editingId !== '';
 
+    console.log(`🔄 Modo: ${isEditing ? 'Editando' : 'Criando'}`);
+    if (isEditing) {
+        console.log(`📝 ID do produto sendo editado: ${editingId}`);
+    }
+
     // Adicionar valores booleanos corretamente
     const isActive = document.getElementById('is_active').checked;
     const isFeatured = document.getElementById('is_featured').checked;
@@ -2718,25 +2723,30 @@ async function editProduct(id) {
     const token = localStorage.getItem('access_token');
     
     try {
+        console.log(`🔍 Carregando produto ${id} para edição...`);
         const response = await fetch(`/api/admin/products`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (response.ok) {
             const products = await response.json();
+            console.log('📦 Produtos carregados:', products.length);
+            
             const product = products.find(p => p.id === id);
             
             if (product) {
-                console.log('Editando produto:', product);
+                console.log('✅ Produto encontrado para edição:', product);
                 openProductModal(product);
             } else {
+                console.error(`❌ Produto ${id} não encontrado na lista`);
                 showToast('Produto não encontrado', 'error');
             }
         } else {
+            console.error('❌ Erro na resposta:', response.status);
             showToast('Erro ao carregar produtos', 'error');
         }
     } catch (error) {
-        console.error('Erro ao editar produto:', error);
+        console.error('❌ Erro ao editar produto:', error);
         showToast('Erro ao carregar produto', 'error');
     }
 }

@@ -325,12 +325,23 @@ async def update_product(
     admin_user: User = Depends(get_admin_user),
     db: Session = Depends(get_db)
 ):
-    print(f"🔄 Atualizando produto ID: {product_id}")
+    print(f"🔄 Recebendo atualização para produto ID: {product_id}")
+    print(f"📝 Dados recebidos para atualização:")
+    print(f"  Nome: {name}")
+    print(f"  Descrição: {description}")
+    print(f"  Preço: {price}")
+    print(f"  Duração: {duration_days} dias")
+    print(f"  URL da imagem: {image_url}")
+    print(f"  Recursos: {features}")
+    print(f"  Ativo: {is_active}")
+    print(f"  Destaque: {is_featured}")
     
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
-        print(f"❌ Produto {product_id} não encontrado")
+        print(f"❌ Produto {product_id} não encontrado no banco de dados")
         raise HTTPException(status_code=404, detail="Produto não encontrado")
+    
+    print(f"✅ Produto encontrado: {product.name} (ID: {product.id})")
 
     try:
         print(f"📝 Dados recebidos:")
