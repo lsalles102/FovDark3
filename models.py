@@ -3,19 +3,23 @@ from sqlalchemy import Column, Integer, String, DateTime, Boolean, Float, Foreig
 from sqlalchemy.orm import relationship
 from database import Base
 
-
 class User(Base):
     __tablename__ = "users"
-
+    
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
     senha_hash = Column(String, nullable=False)
     data_expiracao = Column(DateTime, nullable=True)
     is_admin = Column(Boolean, default=False)
-    hwid = Column(String, nullable=True)  # HWID Lock
+    hwid = Column(String, nullable=True)
+    status_licenca = Column(String, default="pendente")
+    tentativas_login = Column(Integer, default=0)
+    ultimo_login = Column(DateTime, nullable=True)
+    ip_registro = Column(String, nullable=True)
+    ip_ultimo_login = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
+    
     payments = relationship("Payment", back_populates="user")
 
 
