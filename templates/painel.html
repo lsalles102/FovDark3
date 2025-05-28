@@ -472,9 +472,12 @@ document.addEventListener('DOMContentLoaded', function() {
 async function checkAuth() {
     const token = localStorage.getItem('access_token');
     if (!token) {
+        console.log('❌ Token não encontrado, redirecionando para login');
         window.location.href = '/login';
         return;
     }
+
+    console.log('🔍 Verificando autenticação...');
 
     try {
         const response = await fetch('/api/license/check', {
@@ -483,17 +486,33 @@ async function checkAuth() {
             }
         });
 
-        if (!response.ok) {
+        console.log('📡 Resposta da verificação:', response.status);
+
+        if (response.status === 401) {
+            console.log('❌ Token expirado, limpando dados e redirecionando');
             localStorage.removeItem('access_token');
+            localStorage.removeItem('user_data');
             window.location.href = '/login';
             return;
         }
 
+        if (!response.ok) {
+            console.log('⚠️ Erro na resposta, mas não é 401:', response.status);
+            // Não redirecionar para login se não for erro 401
+            const data = { valid: false, can_download: false, message: 'Erro ao verificar licença' };
+            updateLicenseStatus(data);
+            return;
+        }
+
         const data = await response.json();
+        console.log('✅ Dados da licença recebidos:', data);
         updateLicenseStatus(data);
 
     } catch (error) {
-        console.error('Erro ao verificar licença:', error);
+        console.error('❌ Erro na verificação de autenticação:', error);
+        // Em caso de erro de rede, não desconectar o usuário
+        const data = { valid: false, can_download: false, message: 'Erro de conexão' };
+        updateLicenseStatus(data);
     }
 }
 

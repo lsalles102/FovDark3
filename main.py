@@ -318,6 +318,63 @@ async def delete_product(
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Erro ao deletar produto: {str(e)}")
 
+@app.get("/api/license/check")
+async def check_license(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Verificar status da licença do usuário"""
+    try:
+        # Verificar se tem licença ativa
+        has_active_license = current_user.data_expiracao and current_user.data_expiracao > datetime.utcnow()
+        
+        if has_active_license:
+            # Calcular tempo restante
+            time_remaining = current_user.data_expiracao - datetime.utcnow()
+            days_remaining = time_remaining.days
+            
+            # Determinar status baseado no tempo restante
+            if days_remaining <= 1:
+                status = "critico"
+                message = f"Sua licença expira em {days_remaining} dia(s)"
+            elif days_remaining <= 3:
+                status = "expirando"
+                message = f"Sua licença expira em {days_remaining} dias"
+            elif days_remaining <= 7:
+                status = "aviso"
+                message = f"Sua licença expira em {days_remaining} dias"
+            else:
+                status = "ativa"
+                message = f"Licença ativa por mais {days_remaining} dias"
+            
+            return {
+                "valid": True,
+                "can_download": True,
+                "license_status": status,
+                "message": message,
+                "expires_at": current_user.data_expiracao.isoformat(),
+                "email": current_user.email,
+                "is_admin": current_user.is_admin
+            }
+        else:
+            # Licença expirada ou inexistente
+            status = "expirada" if current_user.data_expiracao else "sem_licenca"
+            message = "Sua licença expirou" if current_user.data_expiracao else "Você não possui uma licença ativa"
+            
+            return {
+                "valid": False,
+                "can_download": False,
+                "license_status": status,
+                "message": message,
+                "expires_at": current_user.data_expiracao.isoformat() if current_user.data_expiracao else None,
+                "email": current_user.email,
+                "is_admin": current_user.is_admin
+            }
+            
+    except Exception as e:
+        print(f"Erro ao verificar licença: {e}")
+        raise HTTPException(status_code=500, detail="Erro interno do servidor")
+
 @app.get("/api/admin/payments")
 async def get_admin_payments(
     admin_user: User = Depends(get_admin_user),
@@ -337,6 +394,37 @@ async def get_admin_payments(
         }
         for payment in payments
     ]
+
+@app.get("/api/download/executable")
+async def download_executable(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Download do executável para usuários com licença ativa"""
+    try:
+        # Verificar se tem licença ativa
+        has_active_license = current_user.data_expiracao and current_user.data_expiracao > datetime.utcnow()
+        
+        if not has_active_license:
+            raise HTTPException(status_code=403, detail="Licença inválida ou expirada")
+        
+        # Caminho para o arquivo executável
+        executable_path = "attached_assets/Script_Dark.exe"
+        
+        if not os.path.exists(executable_path):
+            raise HTTPException(status_code=404, detail="Arquivo não encontrado")
+        
+        return FileResponse(
+            executable_path,
+            media_type='application/octet-stream',
+            filename="Script_Dark.exe"
+        )
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Erro no download: {e}")
+        raise HTTPException(status_code=500, detail="Erro interno do servidor")
 
 @app.post("/api/admin/upload-image")
 async def upload_image(
