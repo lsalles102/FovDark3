@@ -40,6 +40,11 @@ def authenticate_user(db: Session, email: str, password: str) -> Optional[User]:
             print(f"❌ Usuário não encontrado no banco: {email}")
             return None
         
+        # Verificar se há muitas tentativas de login
+        if user.tentativas_login >= 5:
+            print(f"🚫 Muitas tentativas de login para: {email}")
+            return None
+        
         print(f"✅ Usuário encontrado no banco: {user.email}")
         print(f"🔐 Verificando senha...")
         

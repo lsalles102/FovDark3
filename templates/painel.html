@@ -149,6 +149,15 @@ block extra_head %}
         margin-bottom: 1rem;
     }
 
+    .status-verificando {
+        color: var(--primary);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
     /* Buttons */
     .btn {
         display: inline-flex;
@@ -563,11 +572,21 @@ block extra_head %}
             updateLicenseStatus(data);
         } catch (error) {
             console.error("❌ Erro na verificação de autenticação:", error);
-            // Em caso de erro de rede, não desconectar o usuário
+            
+            // Se for erro de rede, tentar novamente em 5 segundos
+            if (error.name === 'TypeError' || error.message.includes('fetch')) {
+                console.log("🔄 Erro de rede detectado, tentando novamente em 5 segundos...");
+                setTimeout(() => {
+                    checkAuth();
+                }, 5000);
+            }
+            
+            // Mostrar dados de erro temporários
             const data = {
                 valid: false,
                 can_download: false,
-                message: "Erro de conexão",
+                message: "Verificando conexão...",
+                license_status: "verificando"
             };
             updateLicenseStatus(data);
         }
@@ -616,7 +635,19 @@ block extra_head %}
         console.log("Dados da licença:", data);
 
         // Verificar status da licença
-        if (data.license_status === "pendente") {
+        if (data.license_status === "verificando") {
+            // Status de verificação
+            statusElement.className = "status-verificando";
+            statusElement.innerHTML =
+                '<i class="fas fa-spinner fa-spin"></i> Verificando Conexão';
+            infoElement.textContent =
+                "Verificando status da sua licença. Aguarde...";
+
+            downloadBtn.innerHTML =
+                '<i class="fas fa-spinner fa-spin"></i> VERIFICANDO';
+            downloadBtn.disabled = true;
+            downloadBtn.className = "btn btn-primary";
+        } else if (data.license_status === "pendente") {
             // Pagamento pendente
             statusElement.className = "status-pending";
             statusElement.innerHTML =

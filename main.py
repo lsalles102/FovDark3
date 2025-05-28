@@ -7,6 +7,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from starlette.middleware.base import BaseHTTPMiddleware
 import uvicorn
@@ -18,13 +19,23 @@ from auth import (
     get_password_hash, verify_password, decode_access_token
 )
 from mercadopago_routes import router as mercadopago_router
-from license import verify_license, create_payment_record, get_license_status
+from license import create_payment_record, get_license_status
 from admin import get_admin_user
 from email_utils import send_confirmation_email, send_recovery_email
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="FovDark - Sistema de Vendas", version="1.0.0")
+
+# Configurar CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(mercadopago_router, prefix="/api")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -145,8 +156,10 @@ async def login_user(
         }
 
     except HTTPException as he:
+        print(f"❌ HTTP Exception no login: {he.detail}")
         raise he
     except Exception as e:
+        print(f"💥 Erro crítico no login: {str(e)}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Erro interno do servidor durante o login")
@@ -577,6 +590,11 @@ async def privacy_page(request: Request):
 @app.get("/recover", response_class=HTMLResponse)
 async def recover_page(request: Request):
     return templates.TemplateResponse("recover.html", {"request": request})
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_page(request: Request):
