@@ -1082,7 +1082,33 @@ async def get_public_settings(db: Session = Depends(get_db)):
         settings_dict[setting.category][setting.key] = setting.value
     
     return settings_dict
+@app.post("/api/hwid/save")
+async def save_hwid(
+    hwid: str = Body(..., embed=True),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.hwid and current_user.hwid != hwid:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="HWID diferente do registrado"
+        )
+    
+    current_user.hwid = hwid
+    db.commit()
+    return {"message": "HWID salvo com sucesso", "hwid": hwid}
 
+@app.post("/api/hwid/check")
+async def check_hwid(
+    hwid: str = Body(..., embed=True),
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.hwid != hwid:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="HWID não autorizado"
+        )
+    return {"message": "HWID válido"}
 
 if __name__ == "__main__":
     import os
