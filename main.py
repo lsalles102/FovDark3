@@ -43,6 +43,36 @@ templates = Jinja2Templates(directory="templates")
 
 security = HTTPBearer()
 
+from pydantic import BaseModel
+
+# Modelo Pydantic para HWID
+class HWIDRequest(BaseModel):
+    hwid: str
+
+# Endpoint para salvar HWID
+@app.post("/api/hwid/save")
+async def save_hwid(
+    hwid_data: HWIDRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        if not current_user.hwid:
+            current_user.hwid = hwid_data.hwid
+            db.commit()
+            return {"message": "HWID salvo com sucesso"}
+
+        if current_user.hwid != hwid_data.hwid:
+            raise HTTPException(status_code=403, detail="Este usuário já está vinculado a outro dispositivo.")
+
+        return {"message": "HWID já registrado"}
+
+    except Exception as e:
+        print(f"Erro ao salvar HWID: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Erro interno ao salvar HWID")
+
+
 class MaintenanceMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         if request.url.path.startswith("/static") or request.url.path.startswith("/admin") or request.url.path.startswith("/api/admin"):
