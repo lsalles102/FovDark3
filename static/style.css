@@ -2899,31 +2899,11 @@ h6 { font-size: 1rem; }
     text-align: center;
 }
 
-.comparison-table {
-    background: hsl(var(--bg-tertiary));
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    margin-top: 2rem;
-}
-
-.comparison-table table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.comparison-table th,
-.comparison-table td {
-    padding: 1rem;
-    text-align: center;
-    border-bottom: 1px solid hsl(var(--border-primary));
-}
-
-.comparison-table th {
-    background: hsl(var(--bg-secondary));
-    color: hsl(var(--primary));
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.period-text {
+    color: hsl(var(--text-secondary));
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}ing: 0.5px;
 }
 
 .comparison-table td {

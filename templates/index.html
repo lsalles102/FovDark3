@@ -259,61 +259,10 @@
         <h2 class="section-title">PLANOS DE ACESSO</h2>
         <p class="section-subtitle">Escolha o plano ideal para dominar</p>
         
-        <div class="pricing-grid">
-            <div class="pricing-card">
-                <div class="pricing-header">
-                    <h3>MENSAL</h3>
-                    <div class="price">
-                        <span class="currency">R$</span>
-                        <span class="amount">29</span>
-                        <span class="period">/mês</span>
-                    </div>
-                </div>
-                <ul class="pricing-features">
-                    <li><i class="fas fa-check"></i> Aim Assist completo</li>
-                    <li><i class="fas fa-check"></i> Suporte via Discord</li>
-                    <li><i class="fas fa-check"></i> Atualizações gratuitas</li>
-                </ul>
-                <a href="/comprar" class="btn btn-outline">COMEÇAR</a>
-            </div>
-            
-            <div class="pricing-card pricing-popular">
-                <div class="popular-badge">MAIS POPULAR</div>
-                <div class="pricing-header">
-                    <h3>TRIMESTRAL</h3>
-                    <div class="price">
-                        <span class="currency">R$</span>
-                        <span class="amount">79</span>
-                        <span class="period">/3 meses</span>
-                    </div>
-                    <div class="savings">Economize 28%</div>
-                </div>
-                <ul class="pricing-features">
-                    <li><i class="fas fa-check"></i> Tudo do plano mensal</li>
-                    <li><i class="fas fa-check"></i> Configurações premium</li>
-                    <li><i class="fas fa-check"></i> Suporte prioritário</li>
-                    <li><i class="fas fa-check"></i> Acesso antecipado</li>
-                </ul>
-                <a href="/comprar" class="btn btn-primary">ESCOLHER</a>
-            </div>
-            
-            <div class="pricing-card">
-                <div class="pricing-header">
-                    <h3>ANUAL</h3>
-                    <div class="price">
-                        <span class="currency">R$</span>
-                        <span class="amount">199</span>
-                        <span class="period">,90/ano</span>
-                    </div>
-                    <div class="savings">Economize 43%</div>
-                </div>
-                <ul class="pricing-features">
-                    <li><i class="fas fa-check"></i> Tudo dos planos anteriores</li>
-                    <li><i class="fas fa-check"></i> Recursos exclusivos</li>
-                    <li><i class="fas fa-check"></i> Suporte VIP 24/7</li>
-                    <li><i class="fas fa-check"></i> Acesso vitalício a updates</li>
-                </ul>
-                <a href="/comprar" class="btn btn-outline">MELHOR VALOR</a>
+        <div class="pricing-grid" id="homePricingGrid">
+            <div class="loading-container" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                <p style="color: var(--text-secondary);">Carregando planos...</p>
             </div>
         </div>
     </div>
@@ -498,6 +447,9 @@ document.addEventListener('DOMContentLoaded', function() {
         title.style.opacity = '1';
     }
     
+    // Carregar produtos para a seção de preços
+    loadHomeProducts();
+    
     // Cálculos dinâmicos do banner cyberpunk
     initCyberBanner();
     
@@ -518,6 +470,139 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Função para carregar produtos na página inicial
+async function loadHomeProducts() {
+    const container = document.getElementById('homePricingGrid');
+    if (!container) return;
+
+    try {
+        const response = await fetch('/api/products');
+        const products = await response.json();
+
+        if (response.ok && Array.isArray(products) && products.length > 0) {
+            displayHomeProducts(products);
+        } else {
+            // Se não houver produtos, mostrar cards padrão
+            showDefaultPricingCards();
+        }
+    } catch (error) {
+        console.error('Erro ao carregar produtos:', error);
+        showDefaultPricingCards();
+    }
+}
+
+// Função para exibir produtos na página inicial
+function displayHomeProducts(products) {
+    const container = document.getElementById('homePricingGrid');
+    if (!container) return;
+
+    // Pegar até 3 produtos para exibir
+    const displayProducts = products.slice(0, 3);
+    
+    container.innerHTML = displayProducts.map((product, index) => {
+        const features = product.features && product.features.length > 0 ? 
+            product.features : [
+                'Aim Assist completo',
+                'Suporte via Discord', 
+                'Atualizações gratuitas'
+            ];
+
+        const featuresHtml = features.slice(0, 4).map(feature => 
+            `<li><i class="fas fa-check"></i> ${feature}</li>`
+        ).join('');
+
+        const isPopular = product.is_featured || index === 1; // Marcar o segundo como popular se não houver featured
+        const price = parseFloat(product.price) || 0;
+        const priceInteger = Math.floor(price);
+        const priceDecimal = ((price % 1) * 100).toFixed(0).padStart(2, '0');
+
+        return `
+            <div class="pricing-card ${isPopular ? 'pricing-popular' : ''}">
+                ${isPopular ? '<div class="popular-badge">MAIS POPULAR</div>' : ''}
+                <div class="pricing-header">
+                    <h3>${product.name.toUpperCase()}</h3>
+                    <div class="price">
+                        <span class="currency">R$</span>
+                        <span class="amount">${priceInteger}</span>
+                        ${priceDecimal !== '00' ? `<span class="period">,${priceDecimal}</span>` : ''}
+                    </div>
+                    <div class="period-text">/${product.duration_days} dias</div>
+                </div>
+                <ul class="pricing-features">
+                    ${featuresHtml}
+                </ul>
+                <a href="/comprar" class="btn ${isPopular ? 'btn-primary' : 'btn-outline'}">
+                    ${isPopular ? 'ESCOLHER' : 'COMEÇAR'}
+                </a>
+            </div>
+        `;
+    }).join('');
+}
+
+// Função para mostrar cards padrão se não houver produtos
+function showDefaultPricingCards() {
+    const container = document.getElementById('homePricingGrid');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="pricing-card">
+            <div class="pricing-header">
+                <h3>STARTER</h3>
+                <div class="price">
+                    <span class="currency">R$</span>
+                    <span class="amount">29</span>
+                    <span class="period">/mês</span>
+                </div>
+            </div>
+            <ul class="pricing-features">
+                <li><i class="fas fa-check"></i> Aim Assist completo</li>
+                <li><i class="fas fa-check"></i> Suporte via Discord</li>
+                <li><i class="fas fa-check"></i> Atualizações gratuitas</li>
+            </ul>
+            <a href="/comprar" class="btn btn-outline">COMEÇAR</a>
+        </div>
+        
+        <div class="pricing-card pricing-popular">
+            <div class="popular-badge">MAIS POPULAR</div>
+            <div class="pricing-header">
+                <h3>PRO</h3>
+                <div class="price">
+                    <span class="currency">R$</span>
+                    <span class="amount">79</span>
+                    <span class="period">/3 meses</span>
+                </div>
+                <div class="savings">Economize 28%</div>
+            </div>
+            <ul class="pricing-features">
+                <li><i class="fas fa-check"></i> Tudo do plano starter</li>
+                <li><i class="fas fa-check"></i> Configurações premium</li>
+                <li><i class="fas fa-check"></i> Suporte prioritário</li>
+                <li><i class="fas fa-check"></i> Acesso antecipado</li>
+            </ul>
+            <a href="/comprar" class="btn btn-primary">ESCOLHER</a>
+        </div>
+        
+        <div class="pricing-card">
+            <div class="pricing-header">
+                <h3>PREMIUM</h3>
+                <div class="price">
+                    <span class="currency">R$</span>
+                    <span class="amount">199</span>
+                    <span class="period">,90/ano</span>
+                </div>
+                <div class="savings">Economize 43%</div>
+            </div>
+            <ul class="pricing-features">
+                <li><i class="fas fa-check"></i> Tudo dos planos anteriores</li>
+                <li><i class="fas fa-check"></i> Recursos exclusivos</li>
+                <li><i class="fas fa-check"></i> Suporte VIP 24/7</li>
+                <li><i class="fas fa-check"></i> Acesso vitalício a updates</li>
+            </ul>
+            <a href="/comprar" class="btn btn-outline">MELHOR VALOR</a>
+        </div>
+    `;
+}
 
 function initCyberBanner() {
     // Preços dos planos
