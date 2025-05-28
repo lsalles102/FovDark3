@@ -487,6 +487,78 @@ block extra_head %}
             </div>
         </div>
 
+        <!-- Alterar Senha -->
+        <div class="painel-card">
+            <div class="card-header">
+                <i class="fas fa-key card-icon"></i>
+                <h2 class="card-title">ALTERAR SENHA</h2>
+            </div>
+            <div class="card-content">
+                <form id="changePasswordForm" style="margin-bottom: 1rem;">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <i class="fas fa-lock"></i> SENHA ATUAL
+                        </label>
+                        <div style="position: relative;">
+                            <input type="password" id="currentPassword" required 
+                                   style="width: 100%; padding: 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 0.9rem;"
+                                   placeholder="Digite sua senha atual">
+                            <button type="button" class="password-toggle" onclick="togglePasswordField('currentPassword')" 
+                                    style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <i class="fas fa-key"></i> NOVA SENHA
+                        </label>
+                        <div style="position: relative;">
+                            <input type="password" id="newPassword" required 
+                                   style="width: 100%; padding: 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 0.9rem;"
+                                   placeholder="Digite sua nova senha">
+                            <button type="button" class="password-toggle" onclick="togglePasswordField('newPassword')" 
+                                    style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <i class="fas fa-check"></i> CONFIRMAR NOVA SENHA
+                        </label>
+                        <div style="position: relative;">
+                            <input type="password" id="confirmPassword" required 
+                                   style="width: 100%; padding: 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 0.9rem;"
+                                   placeholder="Confirme sua nova senha">
+                            <button type="button" class="password-toggle" onclick="togglePasswordField('confirmPassword')" 
+                                    style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-warning" style="width: 100%;">
+                        <i class="fas fa-save"></i>
+                        ALTERAR SENHA
+                    </button>
+                </form>
+                
+                <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; border-left: 4px solid var(--warning);">
+                    <h4 style="color: var(--warning); margin: 0 0 0.5rem 0; font-size: 0.8rem; text-transform: uppercase;">
+                        <i class="fas fa-info-circle"></i> REQUISITOS DA SENHA
+                    </h4>
+                    <ul style="color: var(--text-secondary); font-size: 0.8rem; margin: 0; padding-left: 1rem; line-height: 1.4;">
+                        <li>Mínimo de 8 caracteres</li>
+                        <li>Use uma senha forte e única</li>
+                        <li>Não compartilhe sua senha</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
         <!-- Suporte -->
         <div class="painel-card">
             <div class="card-header">
@@ -877,6 +949,93 @@ block extra_head %}
     `;
         document.body.appendChild(container);
         return container;
+    }
+
+    function togglePasswordField(fieldId) {
+        const field = document.getElementById(fieldId);
+        const toggle = field.parentElement.querySelector('.password-toggle i');
+        
+        if (field && toggle) {
+            if (field.type === 'password') {
+                field.type = 'text';
+                toggle.className = 'fas fa-eye-slash';
+            } else {
+                field.type = 'password';
+                toggle.className = 'fas fa-eye';
+            }
+        }
+    }
+
+    // Adicionar listener para o formulário de alteração de senha
+    document.addEventListener('DOMContentLoaded', function() {
+        const changePasswordForm = document.getElementById('changePasswordForm');
+        if (changePasswordForm) {
+            changePasswordForm.addEventListener('submit', changePassword);
+        }
+    });
+
+    async function changePassword(e) {
+        e.preventDefault();
+        
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        // Validações
+        if (newPassword !== confirmPassword) {
+            showToast('As senhas não coincidem', 'error');
+            return;
+        }
+        
+        if (newPassword.length < 8) {
+            showToast('A nova senha deve ter pelo menos 8 caracteres', 'error');
+            return;
+        }
+        
+        if (currentPassword === newPassword) {
+            showToast('A nova senha deve ser diferente da atual', 'error');
+            return;
+        }
+        
+        // Mostrar loading
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ALTERANDO...';
+        submitBtn.disabled = true;
+        
+        try {
+            const token = localStorage.getItem('access_token');
+            const response = await fetch('/api/change-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: new URLSearchParams({
+                    'current_password': currentPassword,
+                    'new_password': newPassword
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                showToast('Senha alterada com sucesso!', 'success');
+                // Limpar campos
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+            } else {
+                showToast(data.detail || 'Erro ao alterar senha', 'error');
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            showToast('Erro ao conectar ao servidor', 'error');
+        } finally {
+            // Restaurar botão
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
     }
 </script>
 

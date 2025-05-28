@@ -593,6 +593,41 @@ async def terms_page(request: Request):
 async def recover_page(request: Request):
     return templates.TemplateResponse("recover.html", {"request": request})
 
+@app.post("/api/change-password")
+async def change_password(
+    current_password: str = Form(...),
+    new_password: str = Form(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Alterar senha do usuário"""
+    try:
+        # Verificar senha atual
+        if not verify_password(current_password, current_user.senha_hash):
+            raise HTTPException(status_code=400, detail="Senha atual incorreta")
+        
+        # Validar nova senha
+        if len(new_password) < 8:
+            raise HTTPException(status_code=400, detail="A nova senha deve ter pelo menos 8 caracteres")
+        
+        # Verificar se a nova senha é diferente da atual
+        if verify_password(new_password, current_user.senha_hash):
+            raise HTTPException(status_code=400, detail="A nova senha deve ser diferente da atual")
+        
+        # Atualizar senha
+        current_user.senha_hash = get_password_hash(new_password)
+        current_user.updated_at = datetime.utcnow()
+        db.commit()
+        
+        return {"message": "Senha alterada com sucesso"}
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"❌ Erro ao alterar senha: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Erro interno do servidor")
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
