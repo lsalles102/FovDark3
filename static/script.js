@@ -243,7 +243,8 @@ function showToast(message, type = 'info') {
             toast.remove();
         }
     }, 5000);
-}===
+}
+
 function checkAuthenticationStatus() {
     const token = localStorage.getItem('access_token');
     const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
