@@ -1,8 +1,5 @@
-{% extends "base.html" %}
-
-{% block title %}Painel - FovDark{% endblock %}
-
-{% block extra_head %}
+{% extends "base.html" %} {% block title %}Painel - FovDark{% endblock %} {%
+block extra_head %}
 <style>
     :root {
         --bg-primary: #0a0a0f;
@@ -24,7 +21,7 @@
     body {
         background: var(--bg-primary);
         color: var(--text-primary);
-        font-family: 'Inter', sans-serif;
+        font-family: "Inter", sans-serif;
         margin: 0;
         padding: 0;
         min-height: 100vh;
@@ -142,7 +139,7 @@
         line-height: 1.6;
     }
 
-        /* Status da Licença */
+    /* Status da Licença */
     .status-pending {
         color: var(--warning);
         font-weight: 700;
@@ -193,7 +190,7 @@
         box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
         transform: translateY(-2px);
     }
-    
+
     .btn-warning {
         background: linear-gradient(135deg, var(--warning), #cc7700);
         color: white;
@@ -356,9 +353,7 @@
         }
     }
 </style>
-{% endblock %}
-
-{% block content %}
+{% endblock %} {% block content %}
 <div class="painel-container">
     <!-- Header -->
     <div class="painel-header">
@@ -366,7 +361,18 @@
         <div class="user-badge">
             <i class="fas fa-user"></i>
             <span id="userBadge">carregando...</span>
-            <span id="adminBadge" style="background: var(--success); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; display: none;">ADMIN</span>
+            <span
+                id="adminBadge"
+                style="
+                    background: var(--success);
+                    color: white;
+                    padding: 0.25rem 0.5rem;
+                    border-radius: 4px;
+                    font-size: 0.7rem;
+                    display: none;
+                "
+                >ADMIN</span
+            >
         </div>
     </div>
 
@@ -384,7 +390,7 @@
                     Sem Licença Ativa
                 </div>
                 <p class="license-info" id="licenseInfo">
-                    Adquira uma licença para acessar o FovDark Aimbot
+                    Adquira uma licença para acessar o FovDark
                 </p>
                 <a href="/comprar" class="btn btn-primary">
                     <i class="fas fa-shopping-cart"></i>
@@ -400,13 +406,31 @@
                 <h2 class="card-title">DOWNLOAD</h2>
             </div>
             <div class="card-content">
-                <div style="text-align: center; margin-bottom: 1.5rem;">
-                    <i class="fas fa-lock" style="font-size: 2rem; color: var(--primary); margin-bottom: 1rem;"></i>
-                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
-                        Download disponível apenas para usuários com licença ativa
+                <div style="text-align: center; margin-bottom: 1.5rem">
+                    <i
+                        class="fas fa-lock"
+                        style="
+                            font-size: 2rem;
+                            color: var(--primary);
+                            margin-bottom: 1rem;
+                        "
+                    ></i>
+                    <p
+                        style="
+                            color: var(--text-secondary);
+                            margin-bottom: 1.5rem;
+                        "
+                    >
+                        Download disponível apenas para usuários com licença
+                        ativa
                     </p>
                 </div>
-                <button class="btn btn-success" id="downloadBtn" style="width: 100%;" disabled>
+                <button
+                    class="btn btn-success"
+                    id="downloadBtn"
+                    style="width: 100%"
+                    disabled
+                >
                     <i class="fas fa-download"></i>
                     ADQUIRIR LICENÇA
                 </button>
@@ -448,7 +472,7 @@
                     <div class="step-number">4</div>
                     <div class="step-content">
                         <h4><i class="fas fa-gamepad"></i> JOGO</h4>
-                        <p>Inicie o BloodStrike</p>
+                        <p>Inicie o Jogo</p>
                     </div>
                 </div>
             </div>
@@ -461,7 +485,6 @@
                 <h2 class="card-title">SUPORTE</h2>
             </div>
             <div class="card-content">
-
                 <a href="#" class="support-option" onclick="openDiscord()">
                     <div class="support-icon discord-icon">
                         <i class="fab fa-discord"></i>
@@ -480,379 +503,429 @@
     <!-- Footer -->
     <div class="painel-footer">
         <p>&copy; 2024 FovDark. Todos os direitos reservados.</p>
-        <p>O mais avançado aimbot para BloodStrike.</p>
+        <p>Foco em tornar seu cheat legit.</p>
     </div>
 </div>
 
 <script>
-// Verificar status de autenticação ao carregar
-document.addEventListener('DOMContentLoaded', function() {
-    checkAuth();
-    loadUserInfo();
-});
+    // Verificar status de autenticação ao carregar
+    document.addEventListener("DOMContentLoaded", function () {
+        checkAuth();
+        loadUserInfo();
+    });
 
-async function checkAuth() {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-        console.log('❌ Token não encontrado, redirecionando para login');
-        window.location.href = '/login';
-        return;
-    }
-
-    console.log('🔍 Verificando autenticação...');
-
-    try {
-        const response = await fetch('/api/license/check', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        console.log('📡 Resposta da verificação:', response.status);
-
-        if (response.status === 401) {
-            console.log('❌ Token expirado, limpando dados e redirecionando');
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('user_data');
-            window.location.href = '/login';
+    async function checkAuth() {
+        const token = localStorage.getItem("access_token");
+        if (!token) {
+            console.log("❌ Token não encontrado, redirecionando para login");
+            window.location.href = "/login";
             return;
         }
 
-        if (!response.ok) {
-            console.log('⚠️ Erro na resposta, mas não é 401:', response.status);
-            // Não redirecionar para login se não for erro 401
-            const data = { valid: false, can_download: false, message: 'Erro ao verificar licença' };
-            updateLicenseStatus(data);
-            return;
-        }
+        console.log("🔍 Verificando autenticação...");
 
-        const data = await response.json();
-        console.log('✅ Dados da licença recebidos:', data);
-        updateLicenseStatus(data);
+        try {
+            const response = await fetch("/api/license/check", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
 
-    } catch (error) {
-        console.error('❌ Erro na verificação de autenticação:', error);
-        // Em caso de erro de rede, não desconectar o usuário
-        const data = { valid: false, can_download: false, message: 'Erro de conexão' };
-        updateLicenseStatus(data);
-    }
-}
+            console.log("📡 Resposta da verificação:", response.status);
 
-async function loadUserInfo() {
-    const token = localStorage.getItem('access_token');
-    if (!token) return;
-
-    try {
-        const response = await fetch('/api/license/check', {
-            headers: {
-                'Authorization': `Bearer ${token}`
+            if (response.status === 401) {
+                console.log(
+                    "❌ Token expirado, limpando dados e redirecionando",
+                );
+                localStorage.removeItem("access_token");
+                localStorage.removeItem("user_data");
+                window.location.href = "/login";
+                return;
             }
-        });
 
-        if (response.ok) {
+            if (!response.ok) {
+                console.log(
+                    "⚠️ Erro na resposta, mas não é 401:",
+                    response.status,
+                );
+                // Não redirecionar para login se não for erro 401
+                const data = {
+                    valid: false,
+                    can_download: false,
+                    message: "Erro ao verificar licença",
+                };
+                updateLicenseStatus(data);
+                return;
+            }
+
             const data = await response.json();
-            console.log('Dados do usuário:', data);
-
-            // Atualizar email do usuário
-            document.getElementById('userBadge').textContent = data.email;
-
-            // Verificar se é admin e mostrar/ocultar a tag
-            const adminBadge = document.getElementById('adminBadge');
-            if (data.is_admin === true) {
-                console.log('Usuário é admin - mostrando tag');
-                adminBadge.style.display = 'inline-block';
-            } else {
-                console.log('Usuário não é admin - ocultando tag');
-                adminBadge.style.display = 'none';
-            }
+            console.log("✅ Dados da licença recebidos:", data);
+            updateLicenseStatus(data);
+        } catch (error) {
+            console.error("❌ Erro na verificação de autenticação:", error);
+            // Em caso de erro de rede, não desconectar o usuário
+            const data = {
+                valid: false,
+                can_download: false,
+                message: "Erro de conexão",
+            };
+            updateLicenseStatus(data);
         }
-    } catch (error) {
-        console.error('Erro ao carregar informações do usuário:', error);
-        document.getElementById('userBadge').textContent = 'Erro ao carregar';
     }
-}
 
-function updateLicenseStatus(data) {
-    const statusElement = document.getElementById('licenseStatus');
-    const infoElement = document.getElementById('licenseInfo');
-    const downloadBtn = document.getElementById('downloadBtn');
+    async function loadUserInfo() {
+        const token = localStorage.getItem("access_token");
+        if (!token) return;
 
-    console.log('Dados da licença:', data);
+        try {
+            const response = await fetch("/api/license/check", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
 
-    // Verificar status da licença
-    if (data.license_status === 'pendente') {
-        // Pagamento pendente
-        statusElement.className = 'status-pending';
-        statusElement.innerHTML = '<i class="fas fa-clock"></i> Pagamento Pendente';
-        infoElement.textContent = 'Aguardando confirmação do seu pagamento. Isso pode levar alguns minutos.';
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Dados do usuário:", data);
 
-        downloadBtn.innerHTML = '<i class="fas fa-refresh"></i> VERIFICAR PAGAMENTO';
-        downloadBtn.disabled = false;
-        downloadBtn.className = 'btn btn-warning';
-        downloadBtn.onclick = function() { 
-            showLicenseAlert('🔄 Verificando status do pagamento...', 'info');
-            setTimeout(() => { checkAuth(); loadUserInfo(); }, 2000);
-        };
+                // Atualizar email do usuário
+                document.getElementById("userBadge").textContent = data.email;
 
-        showLicenseAlert('💳 Seu pagamento está sendo processado. Aguarde alguns minutos e recarregue a página.', 'info');
-
-    } else if (data.valid && data.can_download) {
-        // Licença ativa
-        let statusClass = 'status-active';
-        let statusIcon = 'fas fa-check-circle';
-        let statusText = 'Licença Ativa';
-
-        if (data.license_status === 'critico') {
-            statusClass = 'status-critical';
-            statusIcon = 'fas fa-exclamation-triangle';
-            statusText = 'Licença Expirando!';
-        } else if (data.license_status === 'expirando') {
-            statusClass = 'status-warning';
-            statusIcon = 'fas fa-clock';
-            statusText = 'Licença Expirando';
-        } else if (data.license_status === 'aviso') {
-            statusClass = 'status-warning';
-            statusIcon = 'fas fa-info-circle';
-            statusText = 'Renovação Sugerida';
-        }
-
-        statusElement.className = statusClass;
-        statusElement.innerHTML = `<i class="${statusIcon}"></i> ${statusText}`;
-
-        // Mostrar informações detalhadas com tempo restante
-        let infoText = data.message;
-        if (data.expires_at) {
-            const expirationDate = new Date(data.expires_at);
-            infoText += ` (${expirationDate.toLocaleDateString('pt-BR')} às ${expirationDate.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})})`;
-        }
-
-        // Adicionar detalhes de tempo restante
-        if (data.days_remaining !== undefined && data.hours_remaining !== undefined) {
-            if (data.days_remaining > 0) {
-                infoText += `\nTempo restante: ${data.days_remaining} dias e ${data.hours_remaining} horas`;
-            } else {
-                infoText += `\nTempo restante: ${data.hours_remaining} horas`;
+                // Verificar se é admin e mostrar/ocultar a tag
+                const adminBadge = document.getElementById("adminBadge");
+                if (data.is_admin === true) {
+                    console.log("Usuário é admin - mostrando tag");
+                    adminBadge.style.display = "inline-block";
+                } else {
+                    console.log("Usuário não é admin - ocultando tag");
+                    adminBadge.style.display = "none";
+                }
             }
+        } catch (error) {
+            console.error("Erro ao carregar informações do usuário:", error);
+            document.getElementById("userBadge").textContent =
+                "Erro ao carregar";
         }
+    }
 
-        infoElement.textContent = infoText;
+    function updateLicenseStatus(data) {
+        const statusElement = document.getElementById("licenseStatus");
+        const infoElement = document.getElementById("licenseInfo");
+        const downloadBtn = document.getElementById("downloadBtn");
 
-        downloadBtn.innerHTML = '<i class="fas fa-download"></i> BAIXAR FOVDARK';
-        downloadBtn.disabled = false;
-        downloadBtn.className = 'btn btn-success';
-        downloadBtn.onclick = downloadSoftware;
+        console.log("Dados da licença:", data);
 
-        // Adicionar alertas baseados no status
-        if (data.license_status === 'critico') {
-            showLicenseAlert('⚠️ ATENÇÃO! Sua licença expira muito em breve. Renove agora para evitar interrupções.', 'warning');
-        } else if (data.license_status === 'expirando') {
-            showLicenseAlert('⏰ Sua licença expira em breve. Considere renovar para continuar usando o FovDark.', 'warning');
-        }
+        // Verificar status da licença
+        if (data.license_status === "pendente") {
+            // Pagamento pendente
+            statusElement.className = "status-pending";
+            statusElement.innerHTML =
+                '<i class="fas fa-clock"></i> Pagamento Pendente';
+            infoElement.textContent =
+                "Aguardando confirmação do seu pagamento. Isso pode levar alguns minutos.";
 
-    } else {
-        // Licença expirada ou sem licença
-        let statusClass = 'status-expired';
-        let statusIcon = 'fas fa-times-circle';
-        let statusText = 'Sem Licença Ativa';
-        let infoText = 'Adquira uma licença para acessar o FovDark';
+            downloadBtn.innerHTML =
+                '<i class="fas fa-refresh"></i> VERIFICAR PAGAMENTO';
+            downloadBtn.disabled = false;
+            downloadBtn.className = "btn btn-warning";
+            downloadBtn.onclick = function () {
+                showLicenseAlert(
+                    "🔄 Verificando status do pagamento...",
+                    "info",
+                );
+                setTimeout(() => {
+                    checkAuth();
+                    loadUserInfo();
+                }, 2000);
+            };
 
-        if (data.license_status === 'expirada') {
-            statusText = 'Licença Expirada';
+            showLicenseAlert(
+                "💳 Seu pagamento está sendo processado. Aguarde alguns minutos e recarregue a página.",
+                "info",
+            );
+        } else if (data.valid && data.can_download) {
+            // Licença ativa
+            let statusClass = "status-active";
+            let statusIcon = "fas fa-check-circle";
+            let statusText = "Licença Ativa";
 
-            if (data.expired_days) {
-                infoText = `Sua licença expirou há ${data.expired_days} dias. Renove para continuar usando o FovDark`;
-            } else {
-                infoText = 'Sua licença expirou. Renove para continuar usando o FovDark';
+            if (data.license_status === "critico") {
+                statusClass = "status-critical";
+                statusIcon = "fas fa-exclamation-triangle";
+                statusText = "Licença Expirando!";
+            } else if (data.license_status === "expirando") {
+                statusClass = "status-warning";
+                statusIcon = "fas fa-clock";
+                statusText = "Licença Expirando";
+            } else if (data.license_status === "aviso") {
+                statusClass = "status-warning";
+                statusIcon = "fas fa-info-circle";
+                statusText = "Renovação Sugerida";
             }
 
+            statusElement.className = statusClass;
+            statusElement.innerHTML = `<i class="${statusIcon}"></i> ${statusText}`;
+
+            // Mostrar informações detalhadas com tempo restante
+            let infoText = data.message;
             if (data.expires_at) {
                 const expirationDate = new Date(data.expires_at);
-                infoText += `\nExpirou em: ${expirationDate.toLocaleDateString('pt-BR')} às ${expirationDate.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}`;
+                infoText += ` (${expirationDate.toLocaleDateString("pt-BR")} às ${expirationDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })})`;
+            }
+
+            // Adicionar detalhes de tempo restante
+            if (
+                data.days_remaining !== undefined &&
+                data.hours_remaining !== undefined
+            ) {
+                if (data.days_remaining > 0) {
+                    infoText += `\nTempo restante: ${data.days_remaining} dias e ${data.hours_remaining} horas`;
+                } else {
+                    infoText += `\nTempo restante: ${data.hours_remaining} horas`;
+                }
+            }
+
+            infoElement.textContent = infoText;
+
+            downloadBtn.innerHTML =
+                '<i class="fas fa-download"></i> BAIXAR FOVDARK';
+            downloadBtn.disabled = false;
+            downloadBtn.className = "btn btn-success";
+            downloadBtn.onclick = downloadSoftware;
+
+            // Adicionar alertas baseados no status
+            if (data.license_status === "critico") {
+                showLicenseAlert(
+                    "⚠️ ATENÇÃO! Sua licença expira muito em breve. Renove agora para evitar interrupções.",
+                    "warning",
+                );
+            } else if (data.license_status === "expirando") {
+                showLicenseAlert(
+                    "⏰ Sua licença expira em breve. Considere renovar para continuar usando o FovDark.",
+                    "warning",
+                );
+            }
+        } else {
+            // Licença expirada ou sem licença
+            let statusClass = "status-expired";
+            let statusIcon = "fas fa-times-circle";
+            let statusText = "Sem Licença Ativa";
+            let infoText = "Adquira uma licença para acessar o FovDark";
+
+            if (data.license_status === "expirada") {
+                statusText = "Licença Expirada";
+
+                if (data.expired_days) {
+                    infoText = `Sua licença expirou há ${data.expired_days} dias. Renove para continuar usando o FovDark`;
+                } else {
+                    infoText =
+                        "Sua licença expirou. Renove para continuar usando o FovDark";
+                }
+
+                if (data.expires_at) {
+                    const expirationDate = new Date(data.expires_at);
+                    infoText += `\nExpirou em: ${expirationDate.toLocaleDateString("pt-BR")} às ${expirationDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
+                }
+            }
+
+            statusElement.className = statusClass;
+            statusElement.innerHTML = `<i class="${statusIcon}"></i> ${statusText}`;
+            infoElement.textContent = infoText;
+
+            downloadBtn.innerHTML =
+                '<i class="fas fa-shopping-cart"></i> ADQUIRIR LICENÇA';
+            downloadBtn.disabled = false;
+            downloadBtn.className = "btn btn-primary";
+            downloadBtn.onclick = function () {
+                window.location.href = "/comprar";
+            };
+
+            if (data.license_status === "expirada") {
+                showLicenseAlert(
+                    "❌ Sua licença expirou. Renove agora para continuar usando o FovDark.",
+                    "error",
+                );
             }
         }
+    }
 
-        statusElement.className = statusClass;
-        statusElement.innerHTML = `<i class="${statusIcon}"></i> ${statusText}`;
-        infoElement.textContent = infoText;
-
-        downloadBtn.innerHTML = '<i class="fas fa-shopping-cart"></i> ADQUIRIR LICENÇA';
-        downloadBtn.disabled = false;
-        downloadBtn.className = 'btn btn-primary';
-        downloadBtn.onclick = function() { window.location.href = '/comprar'; };
-
-        if (data.license_status === 'expirada') {
-            showLicenseAlert('❌ Sua licença expirou. Renove agora para continuar usando o FovDark.', 'error');
+    function showLicenseAlert(message, type) {
+        // Remover alertas existentes
+        const existingAlert = document.querySelector(".license-alert");
+        if (existingAlert) {
+            existingAlert.remove();
         }
-    }
-}
 
-function showLicenseAlert(message, type) {
-    // Remover alertas existentes
-    const existingAlert = document.querySelector('.license-alert');
-    if (existingAlert) {
-        existingAlert.remove();
-    }
-
-    const alert = document.createElement('div');
-    alert.className = `license-alert alert-${type}`;
-    alert.innerHTML = `
-        <i class="fas fa-${type === 'warning' ? 'exclamation-triangle' : 'times-circle'}"></i>
+        const alert = document.createElement("div");
+        alert.className = `license-alert alert-${type}`;
+        alert.innerHTML = `
+        <i class="fas fa-${type === "warning" ? "exclamation-triangle" : "times-circle"}"></i>
         <span>${message}</span>
         <button onclick="this.parentElement.remove()" class="alert-close">×</button>
     `;
 
-    const cardContent = document.querySelector('.painel-card .card-content');
-    cardContent.insertBefore(alert, cardContent.firstChild);
-}
-
-async function downloadSoftware() {
-    const token = localStorage.getItem('access_token');
-
-    try {
-        const response = await fetch('/api/download/executable', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        if (response.ok) {
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'Script_Dark.exe';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-
-            showToast('Download iniciado com sucesso!', 'success');
-        } else {
-            const error = await response.json();
-            showToast(error.detail || 'Erro no download', 'error');
-        }
-    } catch (error) {
-        console.error('Erro no download:', error);
-        showToast('Erro ao fazer download', 'error');
+        const cardContent = document.querySelector(
+            ".painel-card .card-content",
+        );
+        cardContent.insertBefore(alert, cardContent.firstChild);
     }
-}
 
-function openDiscord() {
-    showToast('Entre em contato via Discord para suporte', 'info');
-}
+    async function downloadSoftware() {
+        const token = localStorage.getItem("access_token");
 
+        try {
+            const response = await fetch("/api/download/executable", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
 
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "Script_Dark.exe";
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
 
-function openEmail() {
-    window.location.href = 'mailto:suporte@darkfov.com';
-}
+                showToast("Download iniciado com sucesso!", "success");
+            } else {
+                const error = await response.json();
+                showToast(error.detail || "Erro no download", "error");
+            }
+        } catch (error) {
+            console.error("Erro no download:", error);
+            showToast("Erro ao fazer download", "error");
+        }
+    }
 
-function showToast(message, type = 'info') {
-    const container = document.getElementById('toast-container') || createToastContainer();
+    function openDiscord() {
+        showToast("Entre em contato via Discord para suporte", "info");
+    }
 
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'}-circle"></i>
+    function openEmail() {
+        window.location.href = "mailto:suporte@darkfov.com";
+    }
+
+    function showToast(message, type = "info") {
+        const container =
+            document.getElementById("toast-container") ||
+            createToastContainer();
+
+        const toast = document.createElement("div");
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `
+        <i class="fas fa-${type === "success" ? "check" : type === "error" ? "times" : "info"}-circle"></i>
         <span>${message}</span>
     `;
 
-    container.appendChild(toast);
+        container.appendChild(toast);
 
-    setTimeout(() => {
-        toast.style.opacity = '0';
         setTimeout(() => {
-            if (container.contains(toast)) {
-                container.removeChild(toast);
-            }
-        }, 300);
-    }, 3000);
-}
+            toast.style.opacity = "0";
+            setTimeout(() => {
+                if (container.contains(toast)) {
+                    container.removeChild(toast);
+                }
+            }, 300);
+        }, 3000);
+    }
 
-function createToastContainer() {
-    const container = document.createElement('div');
-    container.id = 'toast-container';
-    container.className = 'toast-container';
-    container.style.cssText = `
+    function createToastContainer() {
+        const container = document.createElement("div");
+        container.id = "toast-container";
+        container.className = "toast-container";
+        container.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
         z-index: 10000;
     `;
-    document.body.appendChild(container);
-    return container;
-}
+        document.body.appendChild(container);
+        return container;
+    }
 </script>
 
 <style>
-.toast {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem 1.5rem;
-    margin-bottom: 0.5rem;
-    border-radius: 8px;
-    color: white;
-    font-weight: 500;
-    transition: opacity 0.3s ease;
-    min-width: 300px;
-}
+    .toast {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem 1.5rem;
+        margin-bottom: 0.5rem;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        transition: opacity 0.3s ease;
+        min-width: 300px;
+    }
 
-.toast-success {
-    background: linear-gradient(135deg, var(--success), #00cc66);
-}
+    .toast-success {
+        background: linear-gradient(135deg, var(--success), #00cc66);
+    }
 
-.toast-error {
-    background: linear-gradient(135deg, var(--danger), #cc0000);
-}
+    .toast-error {
+        background: linear-gradient(135deg, var(--danger), #cc0000);
+    }
 
-.toast-info {
-    background: linear-gradient(135deg, var(--primary), #0099cc);
-}
+    .toast-info {
+        background: linear-gradient(135deg, var(--primary), #0099cc);
+    }
 
-/* License Alerts */
-.license-alert {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.5rem;
-    margin-bottom: 1.5rem;
-    border-radius: 10px;
-    font-weight: 600;
-    position: relative;
-}
+    /* License Alerts */
+    .license-alert {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        position: relative;
+    }
 
-.license-alert.alert-warning {
-    background: linear-gradient(135deg, rgba(255, 170, 0, 0.2), rgba(255, 170, 0, 0.1));
-    border: 1px solid rgba(255, 170, 0, 0.4);
-    color: #ffaa00;
-}
+    .license-alert.alert-warning {
+        background: linear-gradient(
+            135deg,
+            rgba(255, 170, 0, 0.2),
+            rgba(255, 170, 0, 0.1)
+        );
+        border: 1px solid rgba(255, 170, 0, 0.4);
+        color: #ffaa00;
+    }
 
-.license-alert.alert-danger {
-    background: linear-gradient(135deg, rgba(255, 68, 68, 0.2), rgba(255, 68, 68, 0.1));
-    border: 1px solid rgba(255, 68, 68, 0.4);
-    color: #ff4444;
-}
+    .license-alert.alert-danger {
+        background: linear-gradient(
+            135deg,
+            rgba(255, 68, 68, 0.2),
+            rgba(255, 68, 68, 0.1)
+        );
+        border: 1px solid rgba(255, 68, 68, 0.4);
+        color: #ff4444;
+    }
 
-.license-alert i {
-    font-size: 1.2rem;
-}
+    .license-alert i {
+        font-size: 1.2rem;
+    }
 
-.license-alert .alert-close {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    background: none;
-    border: none;
-    color: inherit;
-    font-size: 1.2rem;
-    cursor: pointer;
-    opacity: 0.7;
-    transition: opacity 0.3s ease;
-}
+    .license-alert .alert-close {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: none;
+        border: none;
+        color: inherit;
+        font-size: 1.2rem;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.3s ease;
+    }
 
-.license-alert .alert-close:hover {
-    opacity: 1;
-}
+    .license-alert .alert-close:hover {
+        opacity: 1;
+    }
 </style>
 {% endblock %}
