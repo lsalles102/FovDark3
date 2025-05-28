@@ -1847,7 +1847,7 @@ function createProductModal(product = null) {
                 <div style="margin-bottom: 1rem;">
                     <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Imagem do Produto:</label>
                     <div style="display: flex; gap: 0.5rem;">
-                        <input type="url" name="image_url" value="${isEditing ? (product.image_url || '') : ''}" placeholder="URL da imagem ou upload abaixo" style="
+                        <input type="url" name="image_url" value="${isEditing ? (product.image_url || '') : ''}" placeholder="URL da imagem ou faça upload" style="
                             flex: 1;
                             padding: 0.75rem;
                             background: var(--bg-tertiary);
@@ -1857,18 +1857,45 @@ function createProductModal(product = null) {
                         ">
                         <button type="button" onclick="document.getElementById('imageUpload').click()" style="
                             padding: 0.75rem 1rem;
-                            background: var(--bg-tertiary);
-                            border: 1px solid var(--border);
+                            background: linear-gradient(135deg, var(--primary), var(--secondary));
+                            border: none;
                             border-radius: 8px;
-                            color: var(--primary);
+                            color: white;
                             cursor: pointer;
+                            font-weight: 600;
                         ">
                             <i class="fas fa-upload"></i> Upload
                         </button>
                     </div>
                     <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="uploadProductImage(this)">
-                    <div id="imagePreview" style="margin-top: 0.5rem; ${isEditing && product.image_url ? 'display: block;' : 'display: none;'}">
-                        <img id="previewImg" src="${isEditing ? (product.image_url || '') : ''}" style="max-width: 100%; max-height: 120px; border-radius: 8px; border: 1px solid var(--border);">
+                    <div id="imagePreview" style="margin-top: 1rem; ${isEditing && product.image_url ? 'display: block;' : 'display: none;'}">
+                        <div style="position: relative; display: inline-block;">
+                            <img id="previewImg" src="${isEditing ? (product.image_url || '') : ''}" style="
+                                max-width: 200px; 
+                                max-height: 120px; 
+                                border-radius: 8px; 
+                                border: 2px solid var(--border);
+                                object-fit: cover;
+                            ">
+                            <button type="button" onclick="removeProductImage()" style="
+                                position: absolute;
+                                top: -8px;
+                                right: -8px;
+                                background: var(--danger);
+                                color: white;
+                                border: none;
+                                border-radius: 50%;
+                                width: 24px;
+                                height: 24px;
+                                cursor: pointer;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-size: 0.7rem;
+                            ">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -1936,6 +1963,18 @@ async function uploadProductImage(input) {
     const file = input.files[0];
     if (!file) return;
 
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+        showToast('Por favor, selecione apenas arquivos de imagem', 'error');
+        return;
+    }
+
+    // Validar tamanho (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        showToast('Imagem muito grande. Máximo 5MB', 'error');
+        return;
+    }
+
     const token = localStorage.getItem('access_token');
     const formData = new FormData();
     formData.append('file', file);
@@ -1971,7 +2010,20 @@ async function uploadProductImage(input) {
     } catch (error) {
         console.error('Erro:', error);
         showToast('Erro ao enviar imagem', 'error');
+    } finally {
+        // Limpar input para permitir reenvio do mesmo arquivo
+        input.value = '';
     }
+}
+
+function removeProductImage() {
+    const imageUrlInput = document.querySelector('input[name="image_url"]');
+    const preview = document.getElementById('imagePreview');
+    
+    imageUrlInput.value = '';
+    preview.style.display = 'none';
+    
+    showToast('Imagem removida', 'info');
 }
 
 async function submitProduct(event) {

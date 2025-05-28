@@ -150,13 +150,24 @@ async def criar_checkout(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    from models import Product
+    
     # Buscar produto no banco de dados
-    if hasattr(request, 'product_id') and request.product_id:
-        # Usar product_id se fornecido
+    if request.product_id:
         produto_db = db.query(Product).filter(
             Product.id == request.product_id,
             Product.is_active == True
         ).first()
+        
+        if not produto_db:
+            raise HTTPException(status_code=404, detail="Produto não encontrado ou inativo")
+
+        produto = {
+            "id": produto_db.id,
+            "preco": produto_db.price,
+            "duracao": produto_db.duration_days,
+            "nome": produto_db.name
+        }
     else:
         # Fallback para compatibilidade com planos antigos
         produtos_legacy = {
@@ -176,62 +187,56 @@ async def criar_checkout(
         else:
             raise HTTPException(status_code=400, detail="Produto não encontrado")
 
-    if hasattr(request, 'product_id') and request.product_id:
-        if not produto_db:
-            raise HTTPException(status_code=404, detail="Produto não encontrado ou inativo")
+    # Criar preferência no Mercado Pago
+    preference_data = {
+        "items": [
+            {
+                "title": produto["nome"],
+                "quantity": 1,
+                "unit_price": float(produto["preco"]),
+                "description": f"Acesso por {produto['duracao']} dias"
+            }
+        ],
+        "payer": {
+            "email": current_user.email
+        },
+        "back_urls": {
+            "success": "/sucesso",
+            "failure": "/falha", 
+            "pending": "/pendente"
+        },
+        "auto_return": "approved",
+        "external_reference": f"user_{current_user.id}_product_{produto.get('id', 'legacy')}",
+        "notification_url": "/webhook/mercadopago"
+    }
 
-        produto = {
-            "id": produto_db.id,
-            "preco": produto_db.price,
-            "duracao": produto_db.duration_days,
-            "nome": produto_db.name
-        }
+    # Simulação de resposta do Mercado Pago - em produção usar SDK real
+    import uuid
+    preference_id = f"fake_pref_{uuid.uuid4().hex[:8]}"
+    preference_response = {
+        "id": preference_id,
+        "init_point": f"https://sandbox.mercadopago.com.br/checkout/v1/redirect?pref_id={preference_id}",
+        "sandbox_init_point": f"https://sandbox.mercadopago.com.br/checkout/v1/redirect?pref_id={preference_id}"
+    }
 
-        # Criar preferência no Mercado Pago
-        preference_data = {
-            "items": [
-                {
-                    "title": produto["nome"],
-                    "quantity": 1,
-                    "unit_price": float(produto["preco"])
-                }
-            ],
-            "payer": {
-                "email": current_user.email
-            },
-            "back_urls": {
-                "success": "/sucesso",
-                "failure": "/falha",
-                "pending": "/pendente"
-            },
-            "auto_return": "approved"
-        }
+    # Registrar pagamento no banco
+    pagamento = Payment(
+        user_id=current_user.id,
+        product_id=produto.get("id"),
+        valor=produto["preco"],
+        plano=produto["nome"],
+        gateway_id=preference_response["id"],
+        status="pending"
+    )
 
-        # Simulação de resposta do Mercado Pago
-        preference_response = {
-            "id": "fake_preference_id",
-            "init_point": "https://sandbox.mercadopago.com.br/checkout/v1/redirect?pref_id=fake_preference_id",
-            "sandbox_init_point": "https://sandbox.mercadopago.com.br/checkout/v1/redirect?pref_id=fake_preference_id"
-        }
+    db.add(pagamento)
+    db.commit()
+    db.refresh(pagamento)
 
-        # Registrar pagamento no banco
-        pagamento = Payment(
-            user_id=current_user.id,
-            product_id=produto.get("id"),
-            valor=produto["preco"],
-            plano=request.plano if not produto.get("id") else produto["nome"],
-            gateway_id=preference_response["id"],
-            status="pending"
-        )
-
-        db.add(pagamento)
-        db.commit()
-        db.refresh(pagamento)
-
-        return {
-            "success": True,
-            "message": "Checkout criado com sucesso",
-            "preference_id": preference_response["id"],
-            "init_point": preference_response["init_point"],
-            "sandbox_init_point": preference_response["sandbox_init_point"]
-        }
+    return {
+        "success": True,
+        "message": "Checkout criado com sucesso",
+        "preference_id": preference_response["id"],
+        "init_point": preference_response["init_point"],
+        "sandbox_init_point": preference_response["sandbox_init_point"]
+    }

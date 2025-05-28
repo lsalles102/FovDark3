@@ -11,7 +11,7 @@
         </div>
 
         <!-- Pricing Grid -->
-        <div class="pricing-grid" id="productsGrid">
+        <div class="products-grid" id="productsGrid">
             <!-- Loading state -->
             <div class="loading-container" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
                 <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary); margin-bottom: 1rem;"></i>
@@ -335,6 +335,223 @@
 </div>
 
 <style>
+/* Products Grid */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+    padding: 1rem;
+}
+
+.product-card {
+    background: linear-gradient(135deg, rgba(30, 30, 50, 0.9), rgba(20, 20, 40, 0.9));
+    border: 2px solid rgba(138, 43, 226, 0.3);
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary);
+    box-shadow: 0 10px 30px rgba(138, 43, 226, 0.3);
+}
+
+.product-image {
+    position: relative;
+    height: 180px;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    overflow: hidden;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image img {
+    transform: scale(1.1);
+}
+
+.product-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.product-status {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.product-status.private {
+    background: linear-gradient(135deg, #a55eea, #8b3dea);
+}
+
+.product-content {
+    flex: 1;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.product-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+.product-description {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.product-features {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0;
+}
+
+.product-features li {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    padding: 0.2rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.product-features li:before {
+    content: "✓";
+    color: var(--primary);
+    font-weight: bold;
+}
+
+.product-pricing {
+    margin-top: auto;
+    padding: 1rem 0;
+    border-top: 1px solid rgba(138, 43, 226, 0.2);
+}
+
+.product-price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.price-currency {
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
+.price-amount {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: white;
+}
+
+.price-decimal {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+}
+
+.product-duration {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.product-button {
+    width: 100%;
+    background: linear-gradient(135deg, #e056fd, #b83dcc);
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    color: white;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.product-button:hover {
+    background: linear-gradient(135deg, #b83dcc, #9c2fb8);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(224, 86, 253, 0.4);
+}
+
+.product-button:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.product-button:hover:before {
+    left: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .products-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        padding: 0.5rem;
+    }
+
+    .product-card {
+        min-height: 350px;
+    }
+
+    .product-content {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* Modal de Checkout Melhorado */
 .checkout-modal-overlay {
     display: none;
@@ -793,49 +1010,52 @@
             }
 
             container.innerHTML = products.map((product, index) => {
-                const features = product.features || [];
-                const featuresHtml = features.map(feature => 
-                    `<li><i class="fas fa-check"></i> ${feature.trim()}</li>`
+                const features = product.features ? product.features.split(',').map(f => f.trim()) : [
+                    'Aim Assist Avançado',
+                    'ESP & Wallhack', 
+                    'Anti-Detection',
+                    'Suporte 24/7'
+                ];
+                
+                const featuresHtml = features.slice(0, 4).map(feature => 
+                    `<li>${feature}</li>`
                 ).join('');
 
+                const imageUrl = product.image_url || '/static/cyberpunk-soldier.jpg';
                 const isFeatured = product.is_featured;
-                const cardClass = isFeatured ? 'pricing-card featured' : 'pricing-card';
-                const featuredBadge = isFeatured ? `
-                    <div class="featured-badge">
-                        <i class="fas fa-star"></i>
-                        MAIS POPULAR
-                    </div>
-                ` : '';
+                const priceInteger = Math.floor(product.price);
+                const priceDecimal = ((product.price % 1) * 100).toFixed(0).padStart(2, '0');
 
                 return `
-                    <div class="${cardClass}">
-                        ${featuredBadge}
-
-                        <div class="card-header">
-                            <div class="plan-icon">
-                                <i class="fas fa-${getProductIcon(index)}"></i>
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="${imageUrl}" alt="${product.name}" onerror="this.src='/static/cyberpunk-soldier.jpg'">
+                            ${isFeatured ? '<div class="product-badge">POPULAR</div>' : ''}
+                            <div class="product-status ${product.name.toLowerCase().includes('private') ? 'private' : ''}">
+                                ${product.name.toLowerCase().includes('private') ? 'PRIVADO' : 'EXTERNAL'}
                             </div>
-                            <h3 class="plan-name">${product.name.toUpperCase()}</h3>
-                            <div class="plan-price">
-                                <span class="currency">R$</span>
-                                <span class="price">${Math.floor(product.price)}</span>
-                                <span class="period">,${((product.price % 1) * 100).toFixed(0).padStart(2, '0')}</span>
-                            </div>
-                            <p class="plan-duration">${product.duration_days} dias de acesso</p>
                         </div>
 
-                        <div class="card-body">
-                            <p class="plan-description">${product.description || ''}</p>
-                            <ul class="features-list">
+                        <div class="product-content">
+                            <h3 class="product-title">${product.name}</h3>
+                            <p class="product-description">${product.description || 'Acesso completo às funcionalidades premium do nosso sistema.'}</p>
+                            
+                            <ul class="product-features">
                                 ${featuresHtml}
                             </ul>
-                        </div>
 
-                        <div class="card-footer">
-                            <button class="btn btn-primary" onclick="selectProduct(${product.id}, '${product.name}', ${product.price}, ${product.duration_days})">
-                                <i class="fas fa-${isFeatured ? 'crown' : 'rocket'}"></i>
-                                ESCOLHER ${product.name.toUpperCase()}
-                            </button>
+                            <div class="product-pricing">
+                                <div class="product-price">
+                                    <span class="price-currency">R$</span>
+                                    <span class="price-amount">${priceInteger}</span>
+                                    <span class="price-decimal">,${priceDecimal}</span>
+                                </div>
+                                <div class="product-duration">${product.duration_days} dias de acesso</div>
+                                
+                                <button class="product-button" onclick="openCheckoutModal('${product.name}', ${product.price}, ${product.duration_days}, ${product.id})">
+                                    <span>Comprar agora</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -847,33 +1067,44 @@
             return icons[index % icons.length];
         }
 
-        function selectProduct(productId, name, price, duration) {
+        function openCheckoutModal(name, price, duration, productId) {
             selectedProduct = productId;
             selectedPrice = price;
             selectedDuration = duration;
 
-            // Scroll to checkout
-            document.getElementById('checkout-section').scrollIntoView({
-                behavior: 'smooth'
-            });
+            // Verificar se o usuário está logado
+            const token = localStorage.getItem('access_token');
+            const modal = document.getElementById('checkoutModal');
+            
+            if (!token) {
+                // Mostrar prompt de login
+                document.getElementById('loginPrompt').style.display = 'block';
+                document.getElementById('checkoutForm').style.display = 'none';
+                document.getElementById('loadingPayment').style.display = 'none';
+            } else {
+                // Mostrar formulário de checkout
+                document.getElementById('loginPrompt').style.display = 'none';
+                document.getElementById('checkoutForm').style.display = 'block';
+                document.getElementById('loadingPayment').style.display = 'none';
+                
+                // Atualizar informações do produto
+                document.getElementById('selectedPlan').textContent = name.toUpperCase();
+                document.getElementById('selectedDuration').textContent = `${duration} dias`;
+                document.getElementById('selectedPrice').textContent = `R$ ${price.toFixed(2)}`;
+            }
 
-            // Update checkout info
-            document.getElementById('selected-plan').textContent = name.toUpperCase();
-            document.getElementById('selected-price').textContent = `R$ ${price.toFixed(2)}`;
-            document.getElementById('selected-duration').textContent = `${duration} dias`;
-
-            // Set form value
-            document.getElementById('plano-input').value = productId;
-
-            // Show checkout section
-            document.getElementById('checkout-section').style.display = 'block';
+            modal.style.display = 'flex';
         }
 
-        async function processPayment(event) {
-            event.preventDefault();
-            const form = document.getElementById('checkoutForm');
-            const formData = new FormData(form);
-            const submitBtn = form.querySelector('button[type="submit"]');
+        function closeCheckoutModal() {
+            document.getElementById('checkoutModal').style.display = 'none';
+        }
+
+        function selectProduct(productId, name, price, duration) {
+            openCheckoutModal(name, price, duration, productId);
+        }
+
+        async function processPayment() {
             const token = localStorage.getItem('access_token');
 
             if (!selectedProduct) {
@@ -882,8 +1113,8 @@
             }
 
             // Mostrar loading
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSANDO...';
-            submitBtn.disabled = true;
+            document.getElementById('checkoutForm').style.display = 'none';
+            document.getElementById('loadingPayment').style.display = 'block';
 
             try {
                 const response = await fetch('/api/criar-checkout', {
@@ -894,15 +1125,15 @@
                     },
                     body: JSON.stringify({
                         product_id: selectedProduct,
-                        plano: formData.get('plano')
+                        plano: `product_${selectedProduct}`
                     })
                 });
 
                 const data = await response.json();
 
-                if (response.ok && data.checkout_url) {
-                    // Redirecionar para o checkout
-                    window.location.href = data.checkout_url;
+                if (response.ok && data.init_point) {
+                    // Redirecionar para o checkout do Mercado Pago
+                    window.location.href = data.init_point;
                 } else {
                     if (response.status === 401) {
                         showToast('Sessão expirada. Faça login novamente.', 'error');
@@ -912,14 +1143,15 @@
                         }, 2000);
                     } else {
                         showToast(data.detail || 'Erro ao processar pagamento', 'error');
+                        document.getElementById('checkoutForm').style.display = 'block';
+                        document.getElementById('loadingPayment').style.display = 'none';
                     }
                 }
             } catch (error) {
                 console.error('Erro:', error);
                 showToast('Erro ao processar pagamento', 'error');
-            } finally {
-                submitBtn.innerHTML = 'COMPRAR AGORA';
-                submitBtn.disabled = false;
+                document.getElementById('checkoutForm').style.display = 'block';
+                document.getElementById('loadingPayment').style.display = 'none';
             }
         }
 

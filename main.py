@@ -237,11 +237,11 @@ async def create_product(
             is_active=is_active,
             is_featured=is_featured
         )
-        
+
         db.add(new_product)
         db.commit()
         db.refresh(new_product)
-        
+
         return {
             "message": "Produto criado com sucesso",
             "product": {
@@ -273,7 +273,7 @@ async def update_product(
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Produto não encontrado")
-    
+
     try:
         product.name = name
         product.description = description
@@ -283,9 +283,9 @@ async def update_product(
         product.features = features if features else None
         product.is_active = is_active
         product.is_featured = is_featured
-        
+
         db.commit()
-        
+
         return {
             "message": "Produto atualizado com sucesso",
             "product": {
@@ -309,7 +309,7 @@ async def delete_product(
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Produto não encontrado")
-    
+
     try:
         db.delete(product)
         db.commit()
@@ -347,27 +347,27 @@ async def upload_image(
         # Verificar se é uma imagem
         if not file.content_type.startswith('image/'):
             raise HTTPException(status_code=400, detail="Arquivo deve ser uma imagem")
-        
+
         # Criar diretório se não existir
         import os
         upload_dir = "static/uploads"
         os.makedirs(upload_dir, exist_ok=True)
-        
+
         # Gerar nome único para o arquivo
         import time
         timestamp = int(time.time())
         file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
         new_filename = f"{timestamp}_{file.filename.replace(' ', '_')}"
         file_path = os.path.join(upload_dir, new_filename)
-        
+
         # Salvar arquivo
         with open(file_path, "wb") as buffer:
             content = await file.read()
             buffer.write(content)
-        
+
         # Retornar URL da imagem
         image_url = f"/static/uploads/{new_filename}"
-        
+
         return {
             "message": "Imagem enviada com sucesso",
             "image_url": image_url,
