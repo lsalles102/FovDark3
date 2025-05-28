@@ -429,51 +429,69 @@ function animateElements() {
 
 // ===== PRODUCTS =====
 async function loadProducts() {
-    const container = document.getElementById('productsGrid');
+    // Tentar encontrar o container correto
+    let container = document.getElementById('productsGrid');
     if (!container) {
-        console.warn('⚠️ Container de produtos não encontrado');
+        container = document.getElementById('productsAdminGrid');
+    }
+    
+    if (!container) {
+        console.warn('⚠️ Container de produtos não encontrado em', window.location.pathname);
         return;
     }
 
     try {
         console.log('📦 Carregando produtos...');
+        
+        // Mostrar loading
+        container.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem; color: var(--primary);"></i>
+                <h3>Carregando produtos...</h3>
+            </div>
+        `;
+
         const response = await fetch('/api/products');
 
-        if (response.ok) {
-            const products = await response.json();
-            console.log('✅ Produtos carregados:', products);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
 
-            // Verificar se products é um array
-            if (Array.isArray(products)) {
-                displayProducts(products);
-            } else {
-                console.error('❌ Resposta inválida: produtos não é um array');
-                container.innerHTML = `
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem; color: var(--danger);"></i>
-                        <h3>Erro no formato dos dados</h3>
-                        <p>Dados dos produtos em formato inválido.</p>
-                    </div>
-                `;
-            }
-        } else {
-            console.error('❌ Erro ao carregar produtos:', response.status);
+        const products = await response.json();
+        console.log('✅ Produtos carregados:', products);
+
+        // Verificar se products é um array
+        if (!Array.isArray(products)) {
+            throw new Error('Resposta inválida: produtos não é um array');
+        }
+
+        displayProducts(products);
+
+    } catch (error) {
+        console.error('💥 Erro ao carregar produtos:', error);
+        
+        if (container) {
+            const errorMessage = error.message.includes('HTTP') ? 
+                `Erro ${error.message}` : 
+                'Erro de conexão';
+                
             container.innerHTML = `
                 <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
                     <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem; color: var(--danger);"></i>
-                    <h3>Erro ao carregar produtos</h3>
-                    <p>Status: ${response.status}. Tente recarregar a página.</p>
-                </div>
-            `;
-        }
-    } catch (error) {
-        console.error('💥 Erro de conexão:', error);
-        if (container) {
-            container.innerHTML = `
-                <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
-                    <i class="fas fa-wifi" style="font-size: 2rem; margin-bottom: 1rem; color: var(--danger);"></i>
-                    <h3>Erro de conexão</h3>
-                    <p>Verifique sua conexão e tente novamente.</p>
+                    <h3>${errorMessage}</h3>
+                    <p>Tente recarregar a página ou entre em contato com o suporte.</p>
+                    <button onclick="loadProducts()" style="
+                        margin-top: 1rem;
+                        padding: 0.5rem 1rem;
+                        background: var(--primary);
+                        color: white;
+                        border: none;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-weight: 600;
+                    ">
+                        <i class="fas fa-sync-alt"></i> Tentar Novamente
+                    </button>
                 </div>
             `;
         }
@@ -481,15 +499,35 @@ async function loadProducts() {
 }
 
 function displayProducts(products) {
-    const grid = document.getElementById('productsGrid');
+    // Tentar encontrar o container correto dependendo da página
+    let container = document.getElementById('productsGrid');
+    
+    // Se não encontrar, tentar outros possíveis IDs
+    if (!container) {
+        container = document.getElementById('productsAdminGrid');
+    }
+    
+    if (!container) {
+        console.warn('⚠️ Container de produtos não encontrado em', window.location.pathname);
+        return;
+    }
 
-    if (!grid) {
-        console.error('Grid de produtos não encontrado');
+    console.log('✅ Container encontrado, exibindo produtos:', products);
+
+    if (!Array.isArray(products)) {
+        console.error('❌ Products não é um array:', products);
+        container.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem; color: var(--danger);"></i>
+                <h3>Erro no formato dos dados</h3>
+                <p>Dados dos produtos em formato inválido.</p>
+            </div>
+        `;
         return;
     }
 
     if (products.length === 0) {
-        grid.innerHTML = `
+        container.innerHTML = `
             <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-secondary);">
                 <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
                 <h3>Nenhum produto disponível</h3>
@@ -499,11 +537,105 @@ function displayProducts(products) {
         return;
     }
 
-    grid.innerHTML = '';
+    try {
+        // Verificar se estamos na página de compras ou admin
+        const isAdminPage = window.location.pathname.includes('/admin');
+        
+        if (isAdminPage) {
+            // Usar função específica para admin
+            displayAdminProducts(products, container);
+        } else {
+            // Usar função para página de compras
+            displayPurchaseProducts(products, container);
+        }
+    } catch (error) {
+        console.error('❌ Erro ao exibir produtos:', error);
+        container.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem; color: var(--danger);"></i>
+                <h3>Erro ao exibir produtos</h3>
+                <p>Tente recarregar a página.</p>
+            </div>
+        `;
+    }
+}
+
+function displayPurchaseProducts(products, container) {
+    container.innerHTML = '';
     products.forEach(product => {
         const productCard = createProductCard(product);
-        grid.appendChild(productCard);
+        container.appendChild(productCard);
     });
+}
+
+function displayAdminProducts(products, container) {
+    container.innerHTML = products.map(product => {
+        const statusClass = product.is_active ? 'status-active' : 'status-inactive';
+        const statusText = product.is_active ? 'Ativo' : 'Inativo';
+        const statusIcon = product.is_active ? 'fas fa-check-circle' : 'fas fa-times-circle';
+        
+        const priceFormatted = new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }).format(product.price);
+
+        const featuresArray = product.features ? 
+            (typeof product.features === 'string' ? product.features.split(',') : product.features) : [];
+        const featuresHTML = featuresArray.slice(0, 3).map(feature => 
+            `<span class="feature-tag">${feature.trim()}</span>`
+        ).join('');
+
+        return `
+            <div class="product-admin-card">
+                <div class="product-card-header">
+                    <div class="product-status ${statusClass}">
+                        <i class="${statusIcon}"></i>
+                        <span>${statusText}</span>
+                    </div>
+                    <div class="product-id">#${product.id}</div>
+                </div>
+                
+                <div class="product-card-image">
+                    ${product.image_url ? 
+                        `<img src="${product.image_url}" alt="${product.name}" onerror="this.src='/static/hero-bg.jpg'">` :
+                        `<div class="no-image"><i class="fas fa-image"></i></div>`
+                    }
+                </div>
+                
+                <div class="product-card-content">
+                    <h3 class="product-card-title">${product.name}</h3>
+                    <p class="product-card-description">${product.description || 'Sem descrição'}</p>
+                    
+                    <div class="product-features">
+                        ${featuresHTML}
+                        ${featuresArray.length > 3 ? `<span class="feature-more">+${featuresArray.length - 3}</span>` : ''}
+                    </div>
+                    
+                    <div class="product-card-info">
+                        <div class="info-item">
+                            <span class="label">Preço:</span>
+                            <span class="value price">${priceFormatted}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Duração:</span>
+                            <span class="value">${product.duration_days} dias</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="product-card-actions">
+                    <button class="btn-action btn-edit" onclick="editProduct(${product.id})" title="Editar Produto">
+                        <i class="fas fa-edit"></i>
+                        <span>Editar</span>
+                    </button>
+                    <button class="btn-action btn-delete" onclick="confirmDeleteProduct(${product.id})" title="Deletar Produto">
+                        <i class="fas fa-trash"></i>
+                        <span>Deletar</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 function createProductCard(product) {
