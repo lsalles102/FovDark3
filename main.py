@@ -345,21 +345,55 @@ async def check_license(
     try:
         print(f"🔍 Verificando licença para usuário: {current_user.email}")
         
-        # Verificar se tem licença ativa
-        has_active_license = current_user.data_expiracao and current_user.data_expiracao > datetime.utcnow()
-        print(f"📅 Data de expiração: {current_user.data_expiracao}")
-        print(f"✅ Tem licença ativa: {has_active_license}")
+        # Verificar se tem data de expiração
+        now = datetime.utcnow()
         
-        if has_active_license:
-            # Calcular tempo restante
-            time_remaining = current_user.data_expiracao - datetime.utcnow()
+        if not current_user.data_expiracao:
+            # Verificar se há pagamentos pendentes
+            pending_payment = db.query(Payment).filter(
+                Payment.user_id == current_user.id,
+                Payment.status.in_(["pending", "processing"])
+            ).first()
+            
+            if pending_payment:
+                status = "pendente"
+                message = "Aguardando confirmação do pagamento"
+                print(f"💳 Pagamento pendente encontrado: {pending_payment.id}")
+            else:
+                status = "sem_licenca"
+                message = "Você não possui uma licença ativa"
+            
+            response = {
+                "valid": False,
+                "can_download": False,
+                "license_status": status,
+                "message": message,
+                "expires_at": None,
+                "days_remaining": 0,
+                "hours_remaining": 0,
+                "email": current_user.email,
+                "is_admin": current_user.is_admin or False
+            }
+            print(f"📤 Resposta (sem licença): {response}")
+            return response
+        
+        # Verificar se a licença está ativa
+        if current_user.data_expiracao > now:
+            # Licença ativa - calcular tempo restante
+            time_remaining = current_user.data_expiracao - now
             days_remaining = time_remaining.days
-            print(f"⏰ Dias restantes: {days_remaining}")
+            hours_remaining = time_remaining.seconds // 3600
+            
+            print(f"📅 Data de expiração: {current_user.data_expiracao}")
+            print(f"⏰ Tempo restante: {days_remaining} dias, {hours_remaining} horas")
             
             # Determinar status baseado no tempo restante
-            if days_remaining <= 1:
+            if days_remaining == 0 and hours_remaining <= 24:
                 status = "critico"
-                message = f"Sua licença expira em {days_remaining} dia(s)"
+                message = f"Sua licença expira em {hours_remaining} horas"
+            elif days_remaining <= 1:
+                status = "critico"
+                message = f"Sua licença expira em {days_remaining} dia e {hours_remaining} horas"
             elif days_remaining <= 3:
                 status = "expirando"
                 message = f"Sua licença expira em {days_remaining} dias"
@@ -376,26 +410,30 @@ async def check_license(
                 "license_status": status,
                 "message": message,
                 "expires_at": current_user.data_expiracao.isoformat(),
+                "days_remaining": days_remaining,
+                "hours_remaining": hours_remaining,
                 "email": current_user.email,
                 "is_admin": current_user.is_admin or False
             }
             print(f"📤 Resposta (licença ativa): {response}")
             return response
         else:
-            # Licença expirada ou inexistente
-            status = "expirada" if current_user.data_expiracao else "sem_licenca"
-            message = "Sua licença expirou" if current_user.data_expiracao else "Você não possui uma licença ativa"
+            # Licença expirada
+            expired_days = (now - current_user.data_expiracao).days
             
             response = {
                 "valid": False,
                 "can_download": False,
-                "license_status": status,
-                "message": message,
-                "expires_at": current_user.data_expiracao.isoformat() if current_user.data_expiracao else None,
+                "license_status": "expirada",
+                "message": f"Sua licença expirou há {expired_days} dias",
+                "expires_at": current_user.data_expiracao.isoformat(),
+                "days_remaining": 0,
+                "hours_remaining": 0,
+                "expired_days": expired_days,
                 "email": current_user.email,
                 "is_admin": current_user.is_admin or False
             }
-            print(f"📤 Resposta (sem licença): {response}")
+            print(f"📤 Resposta (licença expirada): {response}")
             return response
             
     except Exception as e:

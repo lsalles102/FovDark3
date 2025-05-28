@@ -4434,6 +4434,30 @@ h6 { font-size: 1rem; }
     border: 1px solid hsl(var(--secondary) / 0.3);
 }
 
+.status-pending {
+    background: linear-gradient(135deg, hsl(var(--warning) / 0.2), hsl(var(--warning) / 0.1));
+    border: 1px solid hsl(var(--warning) / 0.3);
+    color: hsl(var(--warning));
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-pending i {
+    font-size: 1.2rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
 .status-active {
     background: hsl(var(--success) / 0.1);
     color: hsl(var(--success));
