@@ -54,6 +54,15 @@
 
         <!-- Custom CSS -->
         <link rel="stylesheet" href="/static/style.css" />
+        
+        <!-- Cookie Management -->
+        <script src="/static/cookies.js"></script>
+        
+        <!-- User Preferences -->
+        <script src="/static/preferences.js"></script>
+        
+        <!-- Enhanced UX -->
+        <script src="/static/enhanced-ux.js"></script>
 
         {% block extra_head %}{% endblock %}
 
@@ -263,6 +272,8 @@
                         <h4>Suporte</h4>
                         <ul>
                             <li><a href="#">Discord</a></li>
+                            <li><a href="#" onclick="openPreferences()">Preferências</a></li>
+                            <li><a href="/privacy">Política de Privacidade</a></li>
                         </ul>
                     </div>
                 </div>
