@@ -278,9 +278,9 @@ async def login_user(
         print(f"✅ Autenticação bem-sucedida para: {email}")
 
         user.tentativas_login = 0
-    user.ultimo_login = datetime.utcnow()
-    user.ip_ultimo_login = request.client.host
-    db.commit()
+user.ultimo_login = datetime.utcnow()
+user.ip_ultimo_login = request.client.host
+db.commit()
         
         # Lista de emails autorizados como admin (case-insensitive)
         AUTHORIZED_ADMIN_EMAILS = [
