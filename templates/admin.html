@@ -2,2047 +2,794 @@
 
 {% block title %}Painel Administrativo - FovDark{% endblock %}
 
-{% block extra_head %}
-<style>
-    :root {
-        --bg-primary: #0a0a0f;
-        --bg-secondary: #1a1a2e;
-        --bg-tertiary: #16213e;
-        --primary: #00d4ff;
-        --secondary: #9d4edd;
-        --accent: #7209b7;
-        --success: #00ff88;
-        --warning: #ffaa00;
-        --danger: #ff4444;
-        --text-primary: #ffffff;
-        --text-secondary: #b8b8b8;
-        --text-muted: #888888;
-        --border: rgba(0, 212, 255, 0.3);
-        --glow: 0 0 20px rgba(0, 212, 255, 0.5);
-    }
-
-    body {
-        background: var(--bg-primary);
-        color: var(--text-primary);
-        font-family: 'Inter', sans-serif;
-        margin: 0;
-        padding: 0;
-        min-height: 100vh;
-    }
-
-    .admin-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 2rem;
-        min-height: 100vh;
-    }
-
-    .admin-header {
-        text-align: center;
-        margin-bottom: 3rem;
-        padding: 2rem 0;
-    }
-
-    .admin-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        margin: 0;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
-    .admin-subtitle {
-        color: var(--text-secondary);
-        margin-top: 0.5rem;
-        font-size: 1.1rem;
-    }
-
-    .admin-nav {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        gap: 1rem;
-        margin-bottom: 3rem;
-        padding: 0 1rem;
-    }
-
-    .admin-nav-btn {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 1.5rem 1rem;
-        background: var(--bg-secondary);
-        border: 2px solid var(--border);
-        border-radius: 15px;
-        color: var(--text-secondary);
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-transform: uppercase;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        font-size: 0.8rem;
-    }
-
-    .admin-nav-btn:hover {
-        background: var(--bg-tertiary);
-        border-color: var(--primary);
-        color: var(--primary);
-        transform: translateY(-3px);
-        box-shadow: var(--glow);
-    }
-
-    .admin-nav-btn.active {
-        background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(157, 78, 221, 0.1));
-        border-color: var(--primary);
-        color: var(--primary);
-        box-shadow: var(--glow);
-    }
-
-    .admin-nav-btn i {
-        font-size: 1.8rem;
-    }
-
-    .admin-tab {
-        display: none;
-    }
-
-    .admin-tab.active {
-        display: block;
-    }
-
-    /* Cards Grid */
-    .admin-cards-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
-        margin-bottom: 3rem;
-    }
-
-    .admin-card {
-        background: var(--bg-secondary);
-        border: 2px solid var(--border);
-        border-radius: 15px;
-        overflow: hidden;
-        transition: all 0.3s ease;
-        position: relative;
-    }
-
-    .admin-card:hover {
-        border-color: var(--primary);
-        box-shadow: var(--glow);
-        transform: translateY(-5px);
-    }
-
-    .admin-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, var(--primary), var(--secondary));
-    }
-
-    .card-header {
-        background: var(--bg-tertiary);
-        padding: 1.5rem;
-        border-bottom: 2px solid var(--border);
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .card-icon {
-        font-size: 1.5rem;
-        color: var(--primary);
-    }
-
-    .card-title {
-        font-size: 1rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        margin: 0;
-        color: var(--text-primary);
-    }
-
-    .card-content {
-        padding: 2rem;
-    }
-
-    /* Stats Cards */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 2rem;
-        margin-bottom: 3rem;
-    }
-
-    .stat-card {
-        background: var(--bg-secondary);
-        border: 2px solid var(--border);
-        border-radius: 15px;
-        padding: 2rem;
-        text-align: center;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, var(--primary), var(--secondary));
-    }
-
-    .stat-card:hover {
-        border-color: var(--primary);
-        box-shadow: var(--glow);
-        transform: translateY(-3px);
-    }
-
-    .stat-icon {
-        width: 60px;
-        height: 60px;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1rem;
-        font-size: 1.5rem;
-        color: white;
-    }
-
-    .stat-info h3 {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--primary);
-        margin: 0 0 0.5rem 0;
-        text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
-    }
-
-    .stat-info span {
-        color: var(--text-secondary);
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-size: 0.9rem;
-    }
-
-    .stat-change {
-        margin-top: 1rem;
-    }
-
-    .change-positive {
-        color: var(--success);
-        font-weight: 600;
-        font-size: 0.8rem;
-    }
-
-    /* Buttons */
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        justify-content: center;
-        font-size: 0.8rem;
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, var(--secondary), var(--accent));
-        color: white;
-        border: 2px solid transparent;
-    }
-
-    .btn-primary:hover {
-        background: linear-gradient(135deg, var(--accent), var(--secondary));
-        box-shadow: 0 0 15px rgba(157, 78, 221, 0.5);
-        transform: translateY(-2px);
-    }
-
-    .btn-secondary {
-        background: linear-gradient(135deg, var(--primary), #00b4d8);
-        color: white;
-        border: 2px solid transparent;
-    }
-
-    .btn-secondary:hover {
-        background: linear-gradient(135deg, #00b4d8, var(--primary));
-        box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
-        transform: translateY(-2px);
-    }
-
-    .btn-success {
-        background: linear-gradient(135deg, var(--success), #00cc66);
-        color: white;
-    }
-
-    .btn-warning {
-        background: linear-gradient(135deg, var(--warning), #cc8800);
-        color: white;
-    }
-
-    .btn-danger {
-        background: linear-gradient(135deg, var(--danger), #cc0000);
-        color: white;
-    }
-
-    .btn-small {
-        padding: 0.5rem 1rem;
-        font-size: 0.7rem;
-    }
-
-    /* Quick Actions */
-    .dashboard-quick-actions {
-        margin-bottom: 3rem;
-    }
-
-    .dashboard-quick-actions h3 {
-        color: var(--primary);
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 1.5rem;
-        text-align: center;
-    }
-
-    .quick-actions-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.5rem;
-    }
-
-    .quick-action-btn {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
-        padding: 2rem 1rem;
-        background: var(--bg-secondary);
-        border: 2px solid var(--border);
-        border-radius: 15px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        color: var(--text-primary);
-        text-decoration: none;
-    }
-
-    .quick-action-btn:hover {
-        background: var(--bg-tertiary);
-        border-color: var(--primary);
-        transform: translateY(-3px);
-        box-shadow: var(--glow);
-    }
-
-    .quick-action-btn i {
-        font-size: 2rem;
-        color: var(--primary);
-    }
-
-    .quick-action-btn span {
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-size: 0.8rem;
-    }
-
-    /* Recent Activity */
-    .recent-activity {
-        background: var(--bg-secondary);
-        border: 2px solid var(--border);
-        border-radius: 15px;
-        overflow: hidden;
-        margin-bottom: 3rem;
-    }
-
-    .recent-activity h3 {
-        background: var(--bg-tertiary);
-        margin: 0;
-        padding: 1.5rem;
-        color: var(--primary);
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        border-bottom: 2px solid var(--border);
-    }
-
-    .activity-list {
-        padding: 1.5rem;
-    }
-
-    .activity-item {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 1rem;
-        background: var(--bg-tertiary);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        margin-bottom: 1rem;
-        transition: all 0.3s ease;
-    }
-
-    .activity-item:hover {
-        border-color: var(--primary);
-        background: var(--bg-secondary);
-        transform: translateX(5px);
-    }
-
-    .activity-icon {
-        width: 40px;
-        height: 40px;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1rem;
-    }
-
-    .activity-info {
-        flex: 1;
-    }
-
-    .activity-info strong {
-        color: var(--text-primary);
-        display: block;
-        margin-bottom: 0.25rem;
-        font-weight: 600;
-    }
-
-    .activity-info span {
-        color: var(--text-secondary);
-        font-size: 0.85rem;
-    }
-
-    /* Tables */
-    .admin-table-container {
-        background: var(--bg-secondary);
-        border: 2px solid var(--border);
-        border-radius: 15px;
-        overflow: hidden;
-        margin: 2rem 0;
-    }
-
-    .admin-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .admin-table thead {
-        background: var(--bg-tertiary);
-    }
-
-    .admin-table th,
-    .admin-table td {
-        padding: 1rem;
-        text-align: left;
-        border-bottom: 1px solid var(--border);
-    }
-
-    .admin-table th {
-        color: var(--primary);
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-size: 0.8rem;
-    }
-
-    .admin-table td {
-        color: var(--text-primary);
-    }
-
-    .admin-table tbody tr:hover {
-        background: var(--bg-tertiary);
-    }
-
-    /* Badges */
-    .badge {
-        display: inline-block;
-        padding: 0.3rem 0.8rem;
-        border-radius: 20px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .badge-success {
-        background: linear-gradient(135deg, var(--success), #00cc66);
-        color: white;
-    }
-
-    .badge-warning {
-        background: linear-gradient(135deg, var(--warning), #cc8800);
-        color: white;
-    }
-
-    .badge-danger {
-        background: linear-gradient(135deg, var(--danger), #cc0000);
-        color: white;
-    }
-
-    .badge-admin {
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        color: white;
-    }
-
-    .badge-user {
-        background: var(--bg-tertiary);
-        color: var(--text-secondary);
-        border: 1px solid var(--border);
-    }
-
-    /* Action Buttons */
-    .action-buttons {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .btn-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 6px;
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        font-size: 0.8rem;
-    }
-
-    .btn-edit {
-        background: rgba(0, 212, 255, 0.2);
-        color: var(--primary);
-        border: 1px solid var(--primary);
-    }
-
-    .btn-edit:hover {
-        background: var(--primary);
-        color: white;
-    }
-
-    .btn-delete {
-        background: rgba(255, 68, 68, 0.2);
-        color: var(--danger);
-        border: 1px solid var(--danger);
-    }
-
-    .btn-delete:hover {
-        background: var(--danger);
-        color: white;
-    }
-
-    .btn-info {
-        background: rgba(157, 78, 221, 0.2);
-        color: var(--secondary);
-        border: 1px solid var(--secondary);
-    }
-
-    .btn-info:hover {
-        background: var(--secondary);
-        color: white;
-    }
-
-    /* Loading States */
-    .loading-row,
-    .error-row,
-    .empty-row {
-        text-align: center;
-        padding: 3rem;
-        color: var(--text-muted);
-    }
-
-    .error-row {
-        color: var(--danger);
-    }
-
-    .loading-row i,
-    .error-row i,
-    .empty-row i {
-        font-size: 2rem;
-        margin-bottom: 1rem;
-        display: block;
-    }
-
-    /* Tab Headers */
-    .tab-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-        padding: 1.5rem;
-        background: var(--bg-secondary);
-        border: 2px solid var(--border);
-        border-radius: 15px;
-    }
-
-    .tab-header h2 {
-        color: var(--primary);
-        margin: 0;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    .tab-actions {
-        display: flex;
-        gap: 1rem;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .admin-cards-grid,
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .admin-nav {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.75rem;
-        }
-
-        .admin-title {
-            font-size: 2rem;
-        }
-
-        .admin-nav-btn {
-            padding: 1rem 0.5rem;
-            font-size: 0.7rem;
-        }
-
-        .admin-nav-btn i {
-            font-size: 1.5rem;
-        }
-
-        .tab-header {
-            flex-direction: column;
-            gap: 1rem;
-            text-align: center;
-        }
-
-        .tab-actions {
-            flex-direction: column;
-            width: 100%;
-        }
-
-        .quick-actions-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    @media (max-width: 480px) {
-        .admin-nav {
-            grid-template-columns: 1fr;
-        }
-
-        .quick-actions-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .admin-table-container {
-            overflow-x: auto;
-        }
-
-        .admin-table {
-            min-width: 600px;
-        }
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="admin-container">
-    <!-- Admin Header -->
-    <div class="admin-header">
-        <h1 class="admin-title">PAINEL ADMINISTRATIVO</h1>
-        <p class="admin-subtitle">Controle total do sistema FovDark</p>
+<div class="admin-dashboard">
+    <div class="dashboard-header">
+        <h1><i class="fas fa-shield-alt"></i> Painel Administrativo</h1>
+        <div class="admin-actions">
+            <button class="btn btn-secondary" onclick="refreshDashboard()">
+                <i class="fas fa-sync"></i> Atualizar
+            </button>
+            <button class="btn btn-primary" onclick="exportData()">
+                <i class="fas fa-download"></i> Exportar
+            </button>
+        </div>
     </div>
 
-    <!-- Admin Navigation -->
-    <div class="admin-nav">
-        <button class="admin-nav-btn active" data-tab="overview">
-            <i class="fas fa-tachometer-alt"></i>
-            <span>DASHBOARD</span>
-        </button>
-        <button class="admin-nav-btn" data-tab="users">
-            <i class="fas fa-users"></i>
-            <span>USUÁRIOS</span>
-        </button>
-        <button class="admin-nav-btn" data-tab="products">
-            <i class="fas fa-box"></i>
-            <span>PRODUTOS</span>
-        </button>
-        <button class="admin-nav-btn" data-tab="payments">
-            <i class="fas fa-credit-card"></i>
-            <span>PAGAMENTOS</span>
-        </button>
-        <button class="admin-nav-btn" data-tab="themes">
-            <i class="fas fa-palette"></i>
-            <span>TEMAS</span>
-        </button>
-        <button class="admin-nav-btn" data-tab="settings">
-            <i class="fas fa-cog"></i>
-            <span>CONFIG</span>
-        </button>
-        <button class="admin-nav-btn" data-tab="logs">
-            <i class="fas fa-file-alt"></i>
-            <span>LOGS</span>
-        </button>
-        <button class="admin-nav-btn" data-tab="system">
-            <i class="fas fa-server"></i>
-            <span>SISTEMA</span>
-        </button>
-    </div>
-
-    <!-- Overview Tab -->
-    <div id="overview-tab" class="admin-tab active">
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 id="totalUsers">-</h3>
-                    <span>Total de Usuários</span>
-                </div>
-                <div class="stat-change">
-                    <span class="change-positive">+12% este mês</span>
-                </div>
+    <!-- Dashboard Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
             </div>
-
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 id="activeLicenses">-</h3>
-                    <span>Licenças Ativas</span>
-                </div>
-                <div class="stat-change">
-                    <span class="change-positive">+8% este mês</span>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-dollar-sign"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 id="totalRevenue">R$ -</h3>
-                    <span>Receita Total</span>
-                </div>
-                <div class="stat-change">
-                    <span class="change-positive">+25% este mês</span>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-calendar"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 id="todaySignups">-</h3>
-                    <span>Cadastros Hoje</span>
-                </div>
-                <div class="stat-change">
-                    <span class="change-positive">Hoje</span>
-                </div>
+            <div class="stat-content">
+                <h3 id="totalUsers">0</h3>
+                <p>Total de Usuários</p>
             </div>
         </div>
 
-        <!-- Quick Actions Dashboard -->
-        <div class="dashboard-quick-actions">
-            <h3>AÇÕES RÁPIDAS</h3>
-            <div class="quick-actions-grid">
-                <button class="quick-action-btn" onclick="openProductModal()">
-                    <i class="fas fa-plus"></i>
-                    <span>Novo Produto</span>
-                </button>
-                <button class="quick-action-btn" onclick="switchAdminTab('users')">
-                    <i class="fas fa-user-plus"></i>
-                    <span>Gerenciar Usuários</span>
-                </button>
-                <button class="quick-action-btn" onclick="switchAdminTab('themes')">
-                    <i class="fas fa-palette"></i>
-                    <span>Personalizar Site</span>
-                </button>
-                <button class="quick-action-btn" onclick="exportAllData()">
-                    <i class="fas fa-download"></i>
-                    <span>Exportar Dados</span>
-                </button>
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <i class="fas fa-key"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="activeLicenses">0</h3>
+                <p>Licenças Ativas</p>
             </div>
         </div>
 
-        <!-- Recent Activity -->
-        <div class="recent-activity">
-            <h3>ATIVIDADE RECENTE</h3>
-            <div class="activity-list" id="recentActivity">
-                <div class="activity-item">
-                    <i class="fas fa-user-plus activity-icon"></i>
-                    <div class="activity-info">
-                        <strong>Novo usuário registrado</strong>
-                        <span>usuario@email.com - há 5 minutos</span>
-                    </div>
-                </div>
-                <div class="activity-item">
-                    <i class="fas fa-shopping-cart activity-icon"></i>
-                    <div class="activity-info">
-                        <strong>Nova compra realizada</strong>
-                        <span>Plano Premium - R$ 29,90 - há 12 minutos</span>
-                    </div>
-                </div>
-                <div class="activity-item">
-                    <i class="fas fa-cog activity-icon"></i>
-                    <div class="activity-info">
-                        <strong>Configurações alteradas</strong>
-                        <span>Tema atualizado - há 1 hora</span>
-                    </div>
-                </div>
+        <div class="stat-card">
+            <div class="stat-icon warning">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="suspiciousLogins">0</h3>
+                <p>Logins Suspeitos</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon info">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="recentLogins">0</h3>
+                <p>Logins (24h)</p>
             </div>
         </div>
     </div>
 
-    <!-- Products Tab -->
-    <div id="products-tab" class="admin-tab">
-        <div class="tab-header">
-            <h2>GERENCIAR PRODUTOS</h2>
-            <div class="tab-actions">
-                <button class="btn btn-primary" onclick="openProductModal()">
-                    <i class="fas fa-plus"></i>
-                    NOVO PRODUTO
-                </button>
-                <button class="btn btn-secondary" onclick="refreshProducts()">
-                    <i class="fas fa-sync-alt"></i>
-                    ATUALIZAR
-                </button>
-            </div>
+    <!-- Charts Section -->
+    <div class="charts-section">
+        <div class="chart-container">
+            <h3><i class="fas fa-chart-pie"></i> Distribuição de Licenças</h3>
+            <canvas id="licenseChart"></canvas>
         </div>
 
-        <div class="admin-table-container">
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nome</th>
-                        <th>Preço</th>
-                        <th>Duração</th>
-                        <th>Status</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="productsTableBody">
-                    <tr>
-                        <td colspan="6" class="loading-row">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            Carregando produtos...
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="chart-container">
+            <h3><i class="fas fa-chart-line"></i> Registros por Dia</h3>
+            <canvas id="registrationChart"></canvas>
         </div>
     </div>
 
-    <!-- Users Tab -->
-    <div id="users-tab" class="admin-tab">
-        <div class="tab-header">
-            <h2>GERENCIAR USUÁRIOS</h2>
-            <div class="tab-actions">
-                <div class="search-filter-container">
-                    <input type="text" id="userSearch" placeholder="Buscar por email..." class="search-input">
-                    <select id="userFilter" class="filter-select">
-                        <option value="all">Todos os Usuários</option>
-                        <option value="active">Licenças Ativas</option>
-                        <option value="expired">Licenças Expiradas</option>
-                        <option value="no_license">Sem Licença</option>
-                        <option value="admin">Administradores</option>
-                    </select>
-                </div>
-                <div class="action-buttons-container">
-                    <button class="btn btn-secondary" onclick="exportUsers()">
-                        <i class="fas fa-download"></i>
-                        EXPORTAR
+    <!-- Filters Section -->
+    <div class="filters-section">
+        <h3><i class="fas fa-filter"></i> Filtros e Pesquisa</h3>
+        <div class="filter-grid">
+            <div class="filter-group">
+                <label>Status da Licença:</label>
+                <select id="statusFilter">
+                    <option value="">Todos</option>
+                    <option value="ativa">Ativa</option>
+                    <option value="expirada">Expirada</option>
+                    <option value="pendente">Pendente</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Min. Tentativas de Login:</label>
+                <input type="number" id="attemptsFilter" min="0" placeholder="Ex: 3">
+            </div>
+
+            <div class="filter-group">
+                <label>Filtro por IP:</label>
+                <input type="text" id="ipFilter" placeholder="Ex: 192.168">
+            </div>
+
+            <div class="filter-group">
+                <button class="btn btn-primary" onclick="applyFilters()">
+                    <i class="fas fa-search"></i> Aplicar Filtros
+                </button>
+                <button class="btn btn-secondary" onclick="clearFilters()">
+                    <i class="fas fa-times"></i> Limpar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="table-section">
+        <div class="table-header">
+            <h3><i class="fas fa-table"></i> Usuários</h3>
+            <div class="table-controls">
+                <span id="userCount">0 usuários</span>
+                <div class="pagination-controls">
+                    <button class="btn btn-sm" onclick="previousPage()" id="prevBtn">
+                        <i class="fas fa-chevron-left"></i>
                     </button>
-                    <button class="btn btn-primary" onclick="refreshUsers()">
-                        <i class="fas fa-sync-alt"></i>
-                        ATUALIZAR
+                    <span id="pageInfo">Página 1</span>
+                    <button class="btn btn-sm" onclick="nextPage()" id="nextBtn">
+                        <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Bulk Actions -->
-        <div class="bulk-actions-bar" id="bulkActionsBar" style="display: none;">
-            <div class="bulk-info">
-                <span id="selectedCount">0</span> usuários selecionados
-            </div>
-            <div class="bulk-buttons">
-                <button class="btn btn-warning btn-small" onclick="bulkExtendLicense()">
-                    <i class="fas fa-clock"></i>
-                    ESTENDER LICENÇAS
-                </button>
-                <button class="btn btn-danger btn-small" onclick="bulkDeleteUsers()">
-                    <i class="fas fa-trash"></i>
-                    DELETAR SELECIONADOS
-                </button>
-                <button class="btn btn-secondary btn-small" onclick="clearSelection()">
-                    <i class="fas fa-times"></i>
-                    LIMPAR SELEÇÃO
-                </button>
-            </div>
-        </div>
-
-        <div class="admin-table-container">
+        <div class="table-container">
             <table class="admin-table">
                 <thead>
                     <tr>
-                        <th>
-                            <input type="checkbox" id="selectAllUsers" onchange="toggleSelectAll()">
-                        </th>
                         <th>ID</th>
                         <th>Email</th>
-                        <th>Tipo</th>
-                        <th>Licença</th>
-                        <th>Status</th>
-                        <th>Cadastro</th>
+                        <th>Status Licença</th>
+                        <th>Tentativas Login</th>
                         <th>Último Login</th>
+                        <th>IP Registro</th>
+                        <th>IP Último Login</th>
+                        <th>Admin</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody id="usersTableBody">
-                    <tr>
-                        <td colspan="9" class="loading-row">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            Carregando usuários...
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Pagination -->
-        <div class="pagination-container">
-            <div class="pagination-info">
-                Mostrando <span id="showingStart">0</span> a <span id="showingEnd">0</span> de <span id="totalUsers">0</span> usuários
-            </div>
-            <div class="pagination-controls">
-                <button class="btn btn-secondary btn-small" onclick="previousPage()">
-                    <i class="fas fa-chevron-left"></i>
-                    Anterior
-                </button>
-                <span class="page-numbers" id="pageNumbers"></span>
-                <button class="btn btn-secondary btn-small" onclick="nextPage()">
-                    Próximo
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Payments Tab -->
-    <div id="payments-tab" class="admin-tab">
-        <div class="tab-header">
-            <h2>HISTÓRICO DE PAGAMENTOS</h2>
-            <div class="tab-actions">
-                <button class="btn btn-primary" onclick="refreshPayments()">
-                    <i class="fas fa-sync-alt"></i>
-                    ATUALIZAR
-                </button>
-            </div>
-        </div>
-
-        <div class="admin-table-container">
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Usuário</th>
-                        <th>Valor</th>
-                        <th>Data</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="paymentsTableBody">
-                    <tr>
-                        <td colspan="5" class="loading-row">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            Carregando pagamentos...
-                        </td>
-                    </tr>
+                    <!-- Dados carregados via JavaScript -->
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- Themes Tab -->
-    <div id="themes-tab" class="admin-tab">
-        <div class="admin-cards-grid">
-            <div class="admin-card">
-                <div class="card-header">
-                    <i class="fas fa-palette card-icon"></i>
-                    <h2 class="card-title">CORES DO TEMA</h2>
-                </div>
-                <div class="card-content">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div>
-                            <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Cor Primária:</label>
-                            <input type="color" id="primary-color" value="#00d4ff" style="width: 100%; height: 40px; border: none; border-radius: 8px;">
-                        </div>
-                        <div>
-                            <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Cor Secundária:</label>
-                            <input type="color" id="secondary-color" value="#9d4edd" style="width: 100%; height: 40px; border: none; border-radius: 8px;">
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;" onclick="saveThemeSettings()">
-                        <i class="fas fa-save"></i>
-                        SALVAR CORES
-                    </button>
-                </div>
-                                        </div>
+    <!-- Security Report Section -->
+    <div class="security-section">
+        <h3><i class="fas fa-shield-alt"></i> Relatório de Segurança</h3>
 
-            <div class="admin-card">
-                <div class="card-header">
-                    <i class="fas fa-font card-icon"></i>
-                    <h2 class="card-title">FONTES</h2>
-                </div>
-                <div class="card-content">
-                    <div style="margin-bottom: 1rem;">
-                        <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Fonte Principal:</label>
-                        <select id="primary-font" style="width: 100%; padding: 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
-                            <option value="Inter">Inter (Atual)</option>
-                            <option value="Orbitron">Orbitron</option>
-                            <option value="Rajdhani">Rajdhani</option>
-                            <option value="Exo 2">Exo 2</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-primary" style="width: 100%;" onclick="saveThemeSettings()">
-                        <i class="fas fa-save"></i>
-                        SALVAR FONTES
-                    </button>
+        <div class="security-grid">
+            <div class="security-card">
+                <h4><i class="fas fa-network-wired"></i> IPs Suspeitos</h4>
+                <div id="suspiciousIpsList">
+                    <!-- Carregado via JavaScript -->
                 </div>
             </div>
 
-            <div class="admin-card">
-                <div class="card-header">
-                    <i class="fas fa-edit card-icon"></i>
-                    <h2 class="card-title">TEXTOS</h2>
-                </div>
-                <div class="card-content">
-                    <div style="margin-bottom: 1rem;">
-                        <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Nome do Site:</label>
-                        <input type="text" id="site-name" value="FovDark" style="width: 100%; padding: 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
-                    </div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Slogan:</label>
-                        <input type="text" id="main-slogan" value="DOMINE O CAMPO DE BATALHA" style="width: 100%; padding: 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
-                    </div>
-                    <button class="btn btn-primary" style="width: 100%;" onclick="saveThemeSettings()">
-                        <i class="fas fa-save"></i>
-                        SALVAR TEXTOS
-                    </button>
+            <div class="security-card">
+                <h4><i class="fas fa-user-slash"></i> Usuários Inativos</h4>
+                <div id="inactiveUsersList">
+                    <!-- Carregado via JavaScript -->
                 </div>
             </div>
 
-            <div class="admin-card">
-                <div class="card-header">
-                    <i class="fas fa-eye card-icon"></i>
-                    <h2 class="card-title">PREVIEW</h2>
-                </div>
-                <div class="card-content">
-                    <div id="theme-preview" style="padding: 1.5rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 10px; text-align: center;">
-                        <h4 id="preview-site-name" style="color: var(--primary); margin: 0 0 0.5rem 0;">FovDark</h4>
-                        <h5 id="preview-slogan" style="color: var(--text-primary); margin: 0 0 1rem 0; font-size: 0.9rem;">DOMINE O CAMPO DE BATALHA</h5>
-                        <button id="preview-cta" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600;">COMEÇAR AGORA</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Settings Tab -->
-    <div id="settings-tab" class="admin-tab">
-        <div class="admin-cards-grid">
-            <div class="admin-card">
-                <div class="card-header">
-                    <i class="fas fa-globe card-icon"></i>
-                    <h2 class="card-title">CONFIGURAÇÕES GERAIS</h2>
-                </div>
-                <div class="card-content">
-                    <div style="margin-bottom: 1rem;">
-                        <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Nome do Site:</label>
-                        <input type="text" id="siteName" value="FovDark" style="width: 100%; padding: 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
-                    </div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Email de Suporte:</label>
-                        <input type="email" id="supportEmail" value="suporte@fovdark.com" style="width: 100%; padding: 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
-                    </div>
-                    <button class="btn btn-primary" style="width: 100%;" onclick="saveGeneralSettings()">
-                        <i class="fas fa-save"></i>
-                        SALVAR
-                    </button>
-                </div>
-            </div>
-
-            <div class="admin-card">
-                <div class="card-header">
-                    <i class="fas fa-key card-icon"></i>
-                    <h2 class="card-title">CHAVES API</h2>
-                </div>
-                <div class="card-content">
-                    <div style="margin-bottom: 1rem;">
-                        <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">MercadoPago Token:</label>
-                        <input type="password" id="mpToken" placeholder="TEST-1234..." style="width: 100%; padding: 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
-                    </div>
-                    <button class="btn btn-primary" style="width: 100%;" onclick="saveGeneralSettings()">
-                        <i class="fas fa-save"></i>
-                        SALVAR
-                    </button>
-                </div>
-            </div>
-
-            <div class="admin-card">
-                <div class="card-header">
-                    <i class="fas fa-download card-icon"></i>
-                    <h2 class="card-title">DOWNLOADS</h2>
-                </div>
-                <div class="card-content">
-                    <div style="margin-bottom: 1rem;">
-                        <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">URL do Download:</label>
-                        <input type="url" id="mainDownloadUrl" placeholder="https://..." style="width: 100%; padding: 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
-                    </div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Versão Atual:</label>
-                        <input type="text" id="currentVersion" value="1.0.0" style="width: 100%; padding: 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
-                    </div>
-                    <button class="btn btn-primary" style="width: 100%;" onclick="saveGeneralSettings()">
-                        <i class="fas fa-save"></i>
-                        SALVAR
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Logs Tab -->
-    <div id="logs-tab" class="admin-tab">
-        <div class="tab-header">
-            <h2>LOGS DO SISTEMA</h2>
-            <div class="tab-actions">
-                <button class="btn btn-secondary" onclick="refreshLogs()">
-                    <i class="fas fa-sync-alt"></i>
-                    ATUALIZAR
-                </button>
-                <button class="btn btn-warning" onclick="clearLogs()">
-                    <i class="fas fa-trash"></i>
-                    LIMPAR
-                </button>
-            </div>
-        </div>
-
-        <div class="admin-card">
-            <div class="card-header">
-                <i class="fas fa-file-alt card-icon"></i>
-                <h2 class="card-title">LOGS RECENTES</h2>
-            </div>
-            <div class="card-content">
-                <div id="logContent" style="background: var(--bg-primary); padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.8rem; max-height: 400px; overflow-y: auto;">
-                    <div style="color: var(--success); margin-bottom: 0.5rem;">
-                        [2024-01-26 10:30:15] INFO: Sistema iniciado com sucesso
-                    </div>
-                    <div style="color: var(--primary); margin-bottom: 0.5rem;">
-                        [2024-01-26 10:30:16] INFO: Conexão com banco estabelecida
-                    </div>
-                    <div style="color: var(--warning); margin-bottom: 0.5rem;">
-                        [2024-01-26 10:35:22] WARNING: Token MercadoPago não configurado
-                    </div>
-                    <div style="color: var(--danger); margin-bottom: 0.5rem;">
-                        [2024-01-26 10:40:33] ERROR: Tentativa de login falhada
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- System Tab -->
-    <div id="system-tab" class="admin-tab">
-        <div class="admin-cards-grid">
-            <div class="admin-card">
-                <div class="card-header">
-                    <i class="fas fa-server card-icon"></i>
-                    <h2 class="card-title">STATUS DOS SERVIÇOS</h2>
-                </div>
-                <div class="card-content">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: 8px;">
-                        <span style="color: var(--text-primary);">Banco de Dados</span>
-                        <span class="badge badge-success">ONLINE</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: 8px;">
-                        <span style="color: var(--text-primary);">Servidor Web</span>
-                        <span class="badge badge-success">ONLINE</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: 8px;">
-                        <span style="color: var(--text-primary);">MercadoPago</span>
-                        <span class="badge badge-warning">PENDENTE</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="admin-card">
-                <div class="card-header">
-                    <i class="fas fa-tools card-icon"></i>
-                    <h2 class="card-title">MANUTENÇÃO</h2>
-                </div>
-                <div class="card-content">
-                    <div style="text-align: center; margin-bottom: 1.5rem;">
-                        <div style="color: var(--success); margin-bottom: 1rem;">
-                            <i class="fas fa-check-circle" style="font-size: 2rem;"></i>
-                        </div>
-                        <p style="color: var(--success); font-weight: 600; margin: 0;">SITE ONLINE</p>
-                    </div>
-                    <button class="btn btn-danger" style="width: 100%; margin-bottom: 1rem;" onclick="toggleMaintenance(true)">
-                        <i class="fas fa-power-off"></i>
-                        ATIVAR MANUTENÇÃO
-                    </button>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                        <button class="btn btn-secondary btn-small" onclick="clearCache()">
-                            <i class="fas fa-broom"></i>
-                            CACHE
-                        </button>
-                        <button class="btn btn-secondary btn-small" onclick="backupDatabase()">
-                            <i class="fas fa-download"></i>
-                            BACKUP
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="admin-card">
-                <div class="card-header">
-                    <i class="fas fa-chart-line card-icon"></i>
-                    <h2 class="card-title">INFORMAÇÕES</h2>
-                </div>
-                <div class="card-content">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: 8px;">
-                        <span style="color: var(--text-secondary);">Versão:</span>
-                        <span style="color: var(--text-primary); font-weight: 600;">1.0.0</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: 8px;">
-                        <span style="color: var(--text-secondary);">Uptime:</span>
-                        <span style="color: var(--text-primary); font-weight: 600;">2d 5h</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: 8px;">
-                        <span style="color: var(--text-secondary);">Memória:</span>
-                        <span style="color: var(--text-primary); font-weight: 600;">145 MB</span>
-                    </div>
+            <div class="security-card">
+                <h4><i class="fas fa-exclamation-circle"></i> Tentativas Falhadas</h4>
+                <div id="failedAttemptsList">
+                    <!-- Carregado via JavaScript -->
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
+let currentPage = 1;
+let totalPages = 1;
+let currentFilters = {};
+
 document.addEventListener('DOMContentLoaded', function() {
     checkAdminAuth();
-    setupAdminNavigation();
-    loadOverviewData();
+    loadDashboard();
+    loadUsers();
+    loadSecurityReport();
 });
 
-function checkAdminAuth() {
+async function checkAdminAuth() {
     const token = localStorage.getItem('access_token');
-    const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
-
-    if (!token || !userData.is_admin) {
-        showToast('Acesso negado. Privilégios de administrador necessários.', 'error');
-        setTimeout(() => {
-            window.location.href = '/';
-        }, 2000);
+    if (!token) {
+        window.location.href = '/login';
         return;
     }
-}
 
-function setupAdminNavigation() {
-    document.querySelectorAll('.admin-nav-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const tabName = this.dataset.tab;
-            switchAdminTab(tabName);
+    try {
+        const response = await fetch('/api/admin/users', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
         });
-    });
-}
 
-function switchAdminTab(tabName) {
-    document.querySelectorAll('.admin-nav-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));
-
-    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-    document.getElementById(`${tabName}-tab`).classList.add('active');
-
-    switch(tabName) {
-        case 'users':
-            loadUsers();
-            break;
-        case 'products':
-            loadProducts();
-            break;
-        case 'payments':
-            loadPayments();
-            break;
-        case 'themes':
-            break;
-        case 'overview':
-            loadOverviewData();
-            break;
-        case 'settings':
-            break;
-        case 'logs':
-            break;
-        case 'system':
-            break;
+        if (!response.ok) {
+            if (response.status === 403) {
+                alert('Acesso negado. Privilégios de administrador necessários.');
+                window.location.href = '/painel';
+            } else {
+                throw new Error('Erro na autenticação');
+            }
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        window.location.href = '/login';
     }
 }
 
-async function loadOverviewData() {
+async function loadDashboard() {
     const token = localStorage.getItem('access_token');
 
     try {
-        const [usersResponse, paymentsResponse] = await Promise.all([
-            fetch('/api/admin/users', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            }),
-            fetch('/api/admin/payments', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-        ]);
+        const response = await fetch('/api/admin/dashboard', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
 
-        if (usersResponse.ok && paymentsResponse.ok) {
-            const users = await usersResponse.json();
-            const payments = await paymentsResponse.json();
-
-            const totalUsers = users.length;
-            const activeLicenses = users.filter(user => 
-                user.data_expiracao && new Date(user.data_expiracao) > new Date()
-            ).length;
-            const totalRevenue = payments.reduce((sum, payment) => sum + payment.valor, 0);
-            const today = new Date().toDateString();
-            const todaySignups = users.filter(user => 
-                user.created_at && new Date(user.created_at).toDateString() === today
-            ).length;
-
-            document.getElementById('totalUsers').textContent = totalUsers.toLocaleString('pt-BR');
-            document.getElementById('activeLicenses').textContent = activeLicenses.toLocaleString('pt-BR');
-            document.getElementById('totalRevenue').textContent = `R$ ${totalRevenue.toLocaleString('pt-BR', {
-                minimumFractionDigits: 2
-            })}`;
-            document.getElementById('todaySignups').textContent = todaySignups.toLocaleString('pt-BR');
+        if (response.ok) {
+            const data = await response.json();
+            updateDashboardStats(data);
+            createCharts(data);
         }
     } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-        document.getElementById('totalUsers').textContent = '1,234';
-        document.getElementById('activeLicenses').textContent = '892';
-        document.getElementById('totalRevenue').textContent = 'R$ 45,678';
-        document.getElementById('todaySignups').textContent = '15';
+        console.error('Erro ao carregar dashboard:', error);
     }
+}
+
+function updateDashboardStats(data) {
+    document.getElementById('totalUsers').textContent = data.general_stats.total_users;
+    document.getElementById('activeLicenses').textContent = data.general_stats.active_licenses;
+    document.getElementById('suspiciousLogins').textContent = data.general_stats.suspicious_logins;
+    document.getElementById('recentLogins').textContent = data.general_stats.recent_logins_24h;
+}
+
+function createCharts(data) {
+    // Gráfico de distribuição de licenças
+    const licenseCtx = document.getElementById('licenseChart').getContext('2d');
+    new Chart(licenseCtx, {
+        type: 'doughnut',
+        data: {
+            labels: data.license_distribution.map(item => item.status),
+            datasets: [{
+                data: data.license_distribution.map(item => item.count),
+                backgroundColor: [
+                    '#00ff88',
+                    '#ff6b6b', 
+                    '#4ecdc4',
+                    '#45b7d1',
+                    '#f9ca24'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#ffffff'
+                    }
+                }
+            }
+        }
+    });
+
+    // Gráfico de registros por dia
+    const registrationCtx = document.getElementById('registrationChart').getContext('2d');
+    new Chart(registrationCtx, {
+        type: 'line',
+        data: {
+            labels: data.daily_registrations.map(item => new Date(item.date).toLocaleDateString('pt-BR')),
+            datasets: [{
+                label: 'Registros',
+                data: data.daily_registrations.map(item => item.count),
+                borderColor: '#00ff88',
+                backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    ticks: {
+                        color: '#ffffff'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: '#ffffff'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#ffffff'
+                    }
+                }
+            }
+        }
+    });
 }
 
 async function loadUsers() {
     const token = localStorage.getItem('access_token');
-    const tbody = document.getElementById('usersTableBody');
+    const offset = (currentPage - 1) * 50;
+
+    // Construir URL com filtros
+    const params = new URLSearchParams({
+        limit: 50,
+        offset: offset,
+        ...currentFilters
+    });
 
     try {
-        const response = await fetch('/api/admin/users', {
-            headers: { 'Authorization': `Bearer ${token}` }
+        const response = await fetch(`/api/admin/users?${params}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
         });
 
         if (response.ok) {
-            const users = await response.json();
-            displayUsers(users);
-        } else {
-            throw new Error('Erro ao carregar usuários');
+            const data = await response.json();
+            displayUsers(data.users);
+            updatePagination(data.total, data.offset, data.limit);
         }
     } catch (error) {
-        console.error('Erro:', error);
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="error-row">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    Erro ao carregar usuários
-                </td>
-            </tr>
-        `;
+        console.error('Erro ao carregar usuários:', error);
     }
 }
 
 function displayUsers(users) {
     const tbody = document.getElementById('usersTableBody');
+    tbody.innerHTML = '';
 
-    if (users.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="empty-row">
-                    <i class="fas fa-users"></i>
-                    Nenhum usuário encontrado
-                </td>
-            </tr>
-        `;
-        return;
-    }
+    users.forEach(user => {
+        const row = document.createElement('tr');
 
-    tbody.innerHTML = users.map(user => {
-        const licenseStatus = user.data_expiracao ? 
-            (new Date(user.data_expiracao) > new Date() ? 'Ativa' : 'Expirada') : 
-            'Sem licença';
+        const statusClass = getStatusClass(user.status_licenca);
+        const adminBadge = user.is_admin ? '<span class="admin-badge">ADMIN</span>' : '';
+        const lastLogin = user.ultimo_login ? 
+            new Date(user.ultimo_login).toLocaleString('pt-BR') : 
+            'Nunca';
 
-        const userType = user.is_admin ? 'Admin' : 'Usuário';
-        const cadastroDate = user.created_at ? 
-            new Date(user.created_at).toLocaleDateString('pt-BR') : 
-            '-';
-
-        return `
-            <tr>
-                <td>${user.id}</td>
-                <td>${user.email}</td>
-                <td>
-                    <span class="badge ${user.is_admin ? 'badge-admin' : 'badge-user'}">
-                        ${userType}
-                    </span>
-                </td>
-                <td>
-                    <span class="badge ${licenseStatus === 'Ativa' ? 'badge-success' : licenseStatus === 'Expirada' ? 'badge-warning' : 'badge-danger'}">
-                        ${licenseStatus}
-                    </span>
-                </td>
-                <td>${cadastroDate}</td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="btn-icon btn-edit" onclick="editUser(${user.id}, '${user.email}')" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-icon btn-info" onclick="viewUserDetails(${user.id})" title="Detalhes">
-                            <i class="fas fa-info-circle"></i>
-                        </button>
-                        ${!user.is_admin ? `
-                            <button class="btn-icon btn-delete" onclick="deleteUser(${user.id})" title="Deletar">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        ` : ''}
-                    </div>
-                </td>
-            </tr>
-        `;
-    }).join('');
-}
-
-async function loadProducts() {
-    const token = localStorage.getItem('access_token');
-    const tbody = document.getElementById('productsTableBody');
-
-    if (!tbody) {
-        console.error('Elemento productsTableBody não encontrado');
-        return;
-    }
-
-    try {
-        const response = await fetch('/api/admin/products', {
-            headers: { 
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (response.ok) {
-            const products = await response.json();
-            displayProducts(products);
-        } else if (response.status === 401) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="error-row">
-                        <i class="fas fa-lock"></i>
-                        Sessão expirada. Faça login novamente.
-                    </td>
-                </tr>
-            `;
-            setTimeout(() => {
-                localStorage.clear();
-                window.location.href = '/login';
-            }, 2000);
-        } else {
-            throw new Error('Erro ao carregar produtos');
-        }
-    } catch (error) {
-        console.error('Erro:', error);
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="error-row">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    Erro ao carregar produtos: ${error.message}
-                </td>
-            </tr>
-        `;
-    }
-}
-
-function displayProducts(products) {
-    const tbody = document.getElementById('productsTableBody');
-
-    if (products.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="empty-row">
-                    <i class="fas fa-box"></i>
-                    Nenhum produto encontrado
-                </td>
-            </tr>
-        `;
-        return;
-    }
-
-    tbody.innerHTML = products.map(product => {
-        const statusBadge = product.is_active ? 
-            '<span class="badge badge-success">Ativo</span>' : 
-            '<span class="badge badge-danger">Inativo</span>';
-
-        const priceFormatted = `R$ ${product.price.toFixed(2)}`;
-        const durationText = `${product.duration_days} dias`;
-
-        return `
-            <tr>
-                <td>${product.id}</td>
-                <td>${product.name}</td>
-                <td>${priceFormatted}</td>
-                <td>${durationText}</td>
-                <td>${statusBadge}</td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="btn-icon btn-edit" onclick="editProduct(${product.id})" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-icon btn-delete" onclick="deleteProduct(${product.id})" title="Deletar">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    }).join('');
-}
-
-async function loadPayments() {
-    const token = localStorage.getItem('access_token');
-    const tbody = document.getElementById('paymentsTableBody');
-
-    try {
-        const response = await fetch('/api/admin/payments', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (response.ok) {
-            const payments = await response.json();
-            displayPayments(payments);
-        } else {
-            throw new Error('Erro ao carregar pagamentos');
-        }
-    } catch (error) {
-        console.error('Erro:', error);
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="5" class="error-row">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    Erro ao carregar pagamentos
-                </td>
-            </tr>
-        `;
-    }
-}
-
-function displayPayments(payments) {
-    const tbody = document.getElementById('paymentsTableBody');
-
-    if (payments.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="5" class="empty-row">
-                    <i class="fas fa-credit-card"></i>
-                    Nenhum pagamento encontrado
-                </td>
-            </tr>
-        `;
-        return;
-    }
-
-    tbody.innerHTML = payments.map(payment => {
-        const dataFormatada = new Date(payment.data_pagamento).toLocaleDateString('pt-BR');
-        const valorFormatado = `R$ ${payment.valor.toFixed(2)}`;
-
-        return `
-            <tr>
-                <td>${payment.id}</td>
-                <td>Usuário #${payment.user_id}</td>
-                <td>${valorFormatado}</td>
-                <td>${dataFormatada}</td>
-                <td>
-                    <span class="badge badge-success">
-                        ${payment.status}
-                    </span>
-                </td>
-            </tr>
-        `;
-    }).join('');
-}
-
-// Funções para gerenciamento de produtos
-function openProductModal() {
-    const modal = createProductModal();
-    document.body.appendChild(modal);
-    modal.style.display = 'flex';
-}
-
-function createProductModal() {
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-    `;
-
-    modal.innerHTML = `
-        <div class="modal-content" style="
-            background: var(--bg-secondary);
-            border: 2px solid var(--border);
-            border-radius: 15px;
-            padding: 2rem;
-            max-width: 500px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        ">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                <h3 style="color: var(--primary); margin: 0;">NOVO PRODUTO</h3>
-                <button onclick="closeModal(this)" style="
-                    background: none;
-                    border: none;
-                    color: var(--text-secondary);
-                    font-size: 1.5rem;
-                    cursor: pointer;
-                ">
-                    <i class="fas fa-times"></i>
+        row.innerHTML = `
+            <td>${user.id}</td>
+            <td>${user.email}</td>
+            <td><span class="status-badge ${statusClass}">${user.status_licenca}</span></td>
+            <td>${user.tentativas_login}</td>
+            <td>${lastLogin}</td>
+            <td>${user.ip_registro || 'N/A'}</td>
+            <td>${user.ip_ultimo_login || 'N/A'}</td>
+            <td>${adminBadge}</td>
+            <td>
+                <button class="btn btn-sm btn-primary" onclick="viewUserDetails(${user.id})">
+                    <i class="fas fa-eye"></i>
                 </button>
-            </div>
+                <button class="btn btn-sm btn-warning" onclick="editUser(${user.id})">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </td>
+        `;
 
-            <form id="productForm" onsubmit="submitProduct(event)">
-                <div style="margin-bottom: 1rem;">
-                    <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Nome do Produto:</label>
-                    <input type="text" name="name" required style="
-                        width: 100%;
-                        padding: 0.75rem;
-                        background: var(--bg-tertiary);
-                        border: 1px solid var(--border);
-                        border-radius: 8px;
-                        color: var(--text-primary);
-                    ">
-                </div>
-
-                <div style="margin-bottom: 1rem;">
-                    <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Descrição:</label>
-                    <textarea name="description" rows="3" style="
-                        width: 100%;
-                        padding: 0.75rem;
-                        background: var(--bg-tertiary);
-                        border: 1px solid var(--border);
-                        border-radius: 8px;
-                        color: var(--text-primary);
-                        resize: vertical;
-                    "></textarea>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                    <div>
-                        <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Preço (R$):</label>
-                        <input type="number" name="price" step="0.01" required style="
-                            width: 100%;
-                            padding: 0.75rem;
-                            background: var(--bg-tertiary);
-                            border: 1px solid var(--border);
-                            border-radius: 8px;
-                            color: var(--text-primary);
-                        ">
-                    </div>
-                    <div>
-                        <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Duração (dias):</label>
-                        <input type="number" name="duration_days" required style="
-                            width: 100%;
-                            padding: 0.75rem;
-                            background: var(--bg-tertiary);
-                            border: 1px solid var(--border);
-                            border-radius: 8px;
-                            color: var(--text-primary);
-                        ">
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 1rem;">
-                    <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Imagem do Produto:</label>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <input type="url" name="image_url" placeholder="URL da imagem ou upload abaixo" style="
-                            flex: 1;
-                            padding: 0.75rem;
-                            background: var(--bg-tertiary);
-                            border: 1px solid var(--border);
-                            border-radius: 8px;
-                            color: var(--text-primary);
-                        ">
-                        <button type="button" onclick="document.getElementById('imageUpload').click()" style="
-                            padding: 0.75rem 1rem;
-                            background: var(--bg-tertiary);
-                            border: 1px solid var(--border);
-                            border-radius: 8px;
-                            color: var(--primary);
-                            cursor: pointer;
-                        ">
-                            <i class="fas fa-upload"></i> Upload
-                        </button>
-                    </div>
-                    <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="uploadProductImage(this)">
-                    <div id="imagePreview" style="margin-top: 0.5rem; display: none;">
-                        <img id="previewImg" style="max-width: 100%; max-height: 120px; border-radius: 8px; border: 1px solid var(--border);">
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 1rem;">
-                    <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Recursos (separados por vírgula):</label>
-                    <textarea name="features" rows="2" placeholder="Aimbot, ESP, Anti-Cheat, etc." style="
-                        width: 100%;
-                        padding: 0.75rem;
-                        background: var(--bg-tertiary);
-                        border: 1px solid var(--border);
-                        border-radius: 8px;
-                        color: var(--text-primary);
-                        resize: vertical;
-                    "></textarea>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
-                    <label style="color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
-                        <input type="checkbox" name="is_active" checked id="is_active" style="
-                            width: 18px;
-                            height: 18px;
-                        ">
-                        Produto Ativo
-                    </label>
-                    <label style="color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
-                        <input type="checkbox" name="is_featured" id="is_featured" style="
-                            width: 18px;
-                            height: 18px;
-                        ">
-                        Produto em Destaque
-                    </label>
-                </div>
-
-                <div style="display: flex; gap: 1rem;">
-                    <button type="button" onclick="closeModal(this)" class="btn btn-secondary" style="flex: 1;">
-                        CANCELAR
-                    </button>
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">
-                        <i class="fas fa-save"></i>
-                        CRIAR PRODUTO
-                    </button>
-                </div>
-            </form>
-        </div>
-    `;
-
-    // Fechar modal ao clicar fora
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            closeModal(modal.querySelector('button'));
-        }
+        tbody.appendChild(row);
     });
-
-    return modal;
 }
 
-function closeModal(button) {
-    const modal = button.closest('.modal-overlay');
-    if (modal) {
-        modal.remove();
+function getStatusClass(status) {
+    switch(status) {
+        case 'ativa': return 'status-active';
+        case 'expirada': return 'status-expired';
+        case 'pendente': return 'status-pending';
+        default: return 'status-unknown';
     }
 }
 
-async function uploadProductImage(input) {
-    const file = input.files[0];
-    if (!file) return;
+function updatePagination(total, offset, limit) {
+    totalPages = Math.ceil(total / limit);
+    currentPage = Math.floor(offset / limit) + 1;
 
+    document.getElementById('userCount').textContent = `${total} usuários`;
+    document.getElementById('pageInfo').textContent = `Página ${currentPage} de ${totalPages}`;
+
+    document.getElementById('prevBtn').disabled = currentPage <= 1;
+    document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+}
+
+function applyFilters() {
+    currentFilters = {};
+
+    const statusFilter = document.getElementById('statusFilter').value;
+    const attemptsFilter = document.getElementById('attemptsFilter').value;
+    const ipFilter = document.getElementById('ipFilter').value;
+
+    if (statusFilter) currentFilters.status_licenca = statusFilter;
+    if (attemptsFilter) currentFilters.min_tentativas = attemptsFilter;
+    if (ipFilter) currentFilters.ip_filter = ipFilter;
+
+    currentPage = 1;
+    loadUsers();
+}
+
+function clearFilters() {
+    document.getElementById('statusFilter').value = '';
+    document.getElementById('attemptsFilter').value = '';
+    document.getElementById('ipFilter').value = '';
+
+    currentFilters = {};
+    currentPage = 1;
+    loadUsers();
+}
+
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        loadUsers();
+    }
+}
+
+function nextPage() {
+    if (currentPage < totalPages) {
+        currentPage++;
+        loadUsers();
+    }
+}
+
+async function loadSecurityReport() {
     const token = localStorage.getItem('access_token');
-    const formData = new FormData();
-    formData.append('file', file);
 
     try {
-        showToast('Fazendo upload da imagem...', 'info');
-
-        const response = await fetch('/api/admin/upload-image', {
-            method: 'POST',
+        const response = await fetch('/api/admin/security-report', {
             headers: {
                 'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            // Atualizar campo URL da imagem
-            const imageUrlInput = document.querySelector('input[name="image_url"]');
-            imageUrlInput.value = data.image_url;
-
-            // Mostrar preview
-            const preview = document.getElementById('imagePreview');
-            const previewImg = document.getElementById('previewImg');
-            previewImg.src = data.image_url;
-            preview.style.display = 'block';
-
-            showToast('Imagem enviada com sucesso!', 'success');
-        } else {
-            showToast(data.detail || 'Erro ao enviar imagem', 'error');
-        }
-    } catch (error) {
-        console.error('Erro:', error);
-        showToast('Erro ao enviar imagem', 'error');
-    }
-}
-
-async function submitProduct(event) {
-    event.preventDefault();
-
-    const form = event.target;
-    const formData = new FormData(form);
-    const token = localStorage.getItem('access_token');
-
-    const submitButton = form.querySelector('button[type="submit"]');
-    const originalText = submitButton.innerHTML;
-    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CRIANDO...';
-    submitButton.disabled = true;
-
-    try {
-        const response = await fetch('/api/admin/products', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            showToast('Produto criado com sucesso!', 'success');
-            closeModal(submitButton);
-            loadProducts(); // Recarregar lista de produtos
-        } else {
-            showToast(data.detail || 'Erro ao criar produto', 'error');
-        }
-    } catch (error) {
-        console.error('Erro:', error);
-        showToast('Erro de conexão', 'error');
-    } finally {
-        submitButton.innerHTML = originalText;
-        submitButton.disabled = false;
-    }
-}
-async function saveProduct() {
-    const form = document.getElementById('productForm');
-    const formData = new FormData(form);
-
-    // Adicionar valores booleanos corretamente
-    const isActive = document.getElementById('is_active').checked;
-    const isFeatured = document.getElementById('is_featured').checked;
-
-    formData.set('is_active', isActive);
-    formData.set('is_featured', isFeatured);
-
-    // Log dos dados que estão sendo enviados
-    console.log('Dados do produto:');
-    for (let [key, value] of formData.entries()) {
-        console.log(key, value);
-    }
-
-    const editingId = document.getElementById('editingProductId').value;
-    const url = editingId ? `/api/admin/products/${editingId}` : '/api/admin/products';
-    const method = editingId ? 'PUT' : 'POST';
-
-    try {
-        const response = await fetch(url, {
-            method: method,
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-            },
-            body: formData
-        });
-
-        if (response.ok) {
-            const result = await response.json();
-            showToast(result.message, 'success');
-            closeModal(form.querySelector('button[type="submit"]'));
-            loadProducts();
-            // Também recarregar a página de compras se estiver aberta
-            console.log('Produto salvo com sucesso:', result.product);
-        } else {
-            const error = await response.json();
-            throw new Error(error.detail || 'Erro ao salvar produto');
-        }
-    } catch (error) {
-        console.error('Erro ao salvar produto:', error);
-        showToast('Erro ao salvar produto: ' + error.message, 'error');
-    }
-}
-function editUser(id, email) { showToast('Funcionalidade em desenvolvimento', 'info'); }
-function viewUserDetails(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
-function deleteUser(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
-function editProduct(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
-function deleteProduct(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
-function refreshUsers() { loadUsers(); }
-function refreshProducts() { loadProducts(); }
-function refreshPayments() { loadPayments(); }
-function saveThemeSettings() { showToast('Configurações salvas', 'success'); }
-function saveGeneralSettings() { showToast('Configurações salvas', 'success'); }
-function exportAllData() { showToast('Exportação iniciada', 'info'); }
-function toggleMaintenance(enable) { showToast('Modo manutenção ' + (enable ? 'ativado' : 'desativado'), 'warning'); }
-function clearCache() { showToast('Cache limpo', 'success'); }
-function backupDatabase() { showToast('Backup iniciado', 'info'); }
-function refreshLogs() { showToast('Logs atualizados', 'info'); }
-function clearLogs() { showToast('Logs limpos', 'success'); }
-
-function showToast(message, type = 'info') {
-    const container = document.getElementById('toast-container') || createToastContainer();
-
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'}-circle"></i>
-        <span>${message}</span>
-    `;
-
-    container.appendChild(toast);
-
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        setTimeout(() => {
-            if (container.contains(toast)) {
-                container.removeChild(toast);
             }
-        }, 300);
-    }, 3000);
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            displaySecurityReport(data);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar relatório de segurança:', error);
+    }
 }
 
-function createToastContainer() {
-    const container = document.createElement('div');
-    container.id = 'toast-container';
-    container.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 10000;
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    `;
-    document.body.appendChild(container);
-    return container;
+function displaySecurityReport(data) {
+    // IPs suspeitos
+    const suspiciousIpsList = document.getElementById('suspiciousIpsList');
+    suspiciousIpsList.innerHTML = data.suspicious_ips.map(item => 
+        `<div class="security-item">
+            <span class="ip">${item.ip}</span>
+            <span class="count">${item.user_count} usuários</span>
+        </div>`
+    ).join('');
+
+    // Usuários inativos
+    const inactiveUsersList = document.getElementById('inactiveUsersList');
+    inactiveUsersList.innerHTML = `<div class="security-metric">${data.inactive_users_count} usuários inativos</div>`;
+}
+
+function refreshDashboard() {
+    loadDashboard();
+    loadUsers();
+    loadSecurityReport();
+}
+
+function exportData() {
+    // Implementar exportação de dados
+    alert('Funcionalidade de exportação em desenvolvimento');
+}
+
+function viewUserDetails(userId) {
+    // Implementar visualização de detalhes do usuário
+    alert(`Visualizar detalhes do usuário ${userId}`);
+}
+
+function editUser(userId) {
+    // Implementar edição de usuário
+    alert(`Editar usuário ${userId}`);
 }
 </script>
 
 <style>
-.toast {
+.admin-dashboard {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.dashboard-header h1 {
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: hsl(var(--bg-glass));
+    backdrop-filter: blur(10px);
+    border: 2px solid hsl(var(--border-primary));
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stat-icon.success {
+    background: linear-gradient(135deg, hsl(var(--success)), #00cc66);
+}
+
+.stat-icon.warning {
+    background: linear-gradient(135deg, hsl(var(--warning)), #ff9900);
+}
+
+.stat-icon.info {
+    background: linear-gradient(135deg, hsl(var(--accent)), #0099ff);
+}
+
+.stat-content h3 {
+    font-size: 2rem;
+    margin: 0;
+    color: hsl(var(--text-primary));
+}
+
+.stat-content p {
+    margin: 0.5rem 0 0 0;
+    color: hsl(var(--text-secondary));
+}
+
+.charts-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.chart-container {
+    background: hsl(var(--bg-glass));
+    backdrop-filter: blur(10px);
+    border: 2px solid hsl(var(--border-primary));
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+}
+
+.chart-container h3 {
+    margin-bottom: 1rem;
+    color: hsl(var(--text-primary));
+}
+
+.filters-section {
+    background: hsl(var(--bg-glass));
+    backdrop-filter: blur(10px);
+    border: 2px solid hsl(var(--border-primary));
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    color: hsl(var(--text-secondary));
+    font-weight: 500;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 0.5rem;
+    border: 1px solid hsl(var(--border-primary));
+    border-radius: var(--radius-md);
+    background: hsl(var(--bg-secondary));
+    color: hsl(var(--text-primary));
+}
+
+.table-section {
+    background: hsl(var(--bg-glass));
+    backdrop-filter: blur(10px);
+    border: 2px solid hsl(var(--border-primary));
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.table-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.pagination-controls {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid hsl(var(--border-primary));
+}
+
+.admin-table th {
+    background: hsl(var(--bg-tertiary));
+    color: hsl(var(--text-primary));
+    font-weight: 600;
+}
+
+.admin-table td {
+    color: hsl(var(--text-secondary));
+}
+
+.status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-active {
+    background: hsl(var(--success) / 0.2);
+    color: hsl(var(--success));
+}
+
+.status-expired {
+    background: hsl(var(--danger) / 0.2);
+    color: hsl(var(--danger));
+}
+
+.status-pending {
+    background: hsl(var(--warning) / 0.2);
+    color: hsl(var(--warning));
+}
+
+.admin-badge {
+    background: hsl(var(--secondary));
     color: white;
-    font-weight: 500;
-    transition: opacity 0.3s ease;
-    min-width: 300px;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
 }
 
-.toast-success {
-    background: linear-gradient(135deg, var(--success), #00cc66);
+.security-section {
+    background: hsl(var(--bg-glass));
+    backdrop-filter: blur(10px);
+    border: 2px solid hsl(var(--border-primary));
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
 }
 
-.toast-error {
-    background: linear-gradient(135deg, var(--danger), #cc0000);
+.security-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
 }
 
-.toast-info {
-    background: linear-gradient(135deg, var(--primary), #0099cc);
+.security-card {
+    background: hsl(var(--bg-secondary));
+    border: 1px solid hsl(var(--border-primary));
+    border-radius: var(--radius-md);
+    padding: 1rem;
 }
 
-.toast-warning {
-    background: linear-gradient(135deg, var(--warning), #cc8800);
+.security-card h4 {
+    margin-bottom: 1rem;
+    color: hsl(var(--text-primary));
 }
 
-/* Modal Styles */
-.modal-overlay {
-    backdrop-filter: blur(5px);
-    animation: modalFadeIn 0.3s ease;
+.security-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid hsl(var(--border-primary));
 }
 
-.modal-content {
-    animation: modalSlideIn 0.3s ease;
-    box-shadow: var(--glow);
+.security-item:last-child {
+    border-bottom: none;
 }
 
-@keyframes modalFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+.security-metric {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: hsl(var(--text-primary));
+    text-align: center;
+    padding: 1rem;
 }
 
-@keyframes modalSlideIn {
-    from { 
-        opacity: 0;
-        transform: translateY(-20px);
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        gap: 1rem;
     }
-    to { 
-        opacity: 1;
-        transform: translateY(0);
+
+    .stats-grid {
+        grid-template-columns: 1fr;
     }
-}
 
-.modal-content input:focus,
-.modal-content textarea:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
-    outline: none;
-}
+    .charts-section {
+        grid-template-columns: 1fr;
+    }
 
-.modal-content input[type="checkbox"] {
-    accent-color: var(--primary);
-}
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
 
-.modal-content form button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+    .table-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .security-grid {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
 {% endblock %}

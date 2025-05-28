@@ -154,23 +154,208 @@ async def login_user(
 @app.get("/api/admin/users")
 async def get_all_users(
     admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db),
+    status_licenca: Optional[str] = None,
+    min_tentativas: Optional[int] = None,
+    ip_filter: Optional[str] = None,
+    limit: Optional[int] = 100,
+    offset: Optional[int] = 0
+):
+    query = db.query(User)
+    
+    # Aplicar filtros
+    if status_licenca:
+        query = query.filter(User.status_licenca == status_licenca)
+    
+    if min_tentativas is not None:
+        query = query.filter(User.tentativas_login >= min_tentativas)
+    
+    if ip_filter:
+        query = query.filter(
+            (User.ip_registro.like(f"%{ip_filter}%")) |
+            (User.ip_ultimo_login.like(f"%{ip_filter}%"))
+        )
+    
+    # Paginação
+    total = query.count()
+    users = query.offset(offset).limit(limit).all()
+    
+    return {
+        "users": [
+            {
+                "id": user.id,
+                "email": user.email,
+                "is_admin": user.is_admin,
+                "data_expiracao": user.data_expiracao.isoformat() if user.data_expiracao else None,
+                "status_licenca": user.status_licenca,
+                "tentativas_login": user.tentativas_login,
+                "ultimo_login": user.ultimo_login.isoformat() if user.ultimo_login else None,
+                "ip_registro": user.ip_registro,
+                "ip_ultimo_login": user.ip_ultimo_login,
+                "created_at": user.created_at.isoformat() if user.created_at else None
+            }
+            for user in users
+        ],
+        "total": total,
+        "offset": offset,
+        "limit": limit
+    }
+
+@app.get("/api/admin/dashboard")
+async def get_admin_dashboard(
+    admin_user: User = Depends(get_admin_user),
     db: Session = Depends(get_db)
 ):
-    users = db.query(User).all()
-    return [
-        {
-            "id": user.id,
-            "email": user.email,
-            "is_admin": user.is_admin,
-            "data_expiracao": user.data_expiracao.isoformat() if user.data_expiracao else None,
-            "status_licenca": user.status_licenca,
-            "tentativas_login": user.tentativas_login,
-            "ultimo_login": user.ultimo_login.isoformat() if user.ultimo_login else None,
-            "ip_registro": user.ip_registro,
-            "ip_ultimo_login": user.ip_ultimo_login
-        }
-        for user in users
-    ]
+    # Estatísticas gerais
+    total_users = db.query(User).count()
+    active_licenses = db.query(User).filter(
+        User.data_expiracao.isnot(None),
+        User.data_expiracao > datetime.utcnow()
+    ).count()
+    
+    # Estatísticas por status de licença
+    license_stats = db.query(
+        User.status_licenca,
+        db.func.count(User.id).label('count')
+    ).group_by(User.status_licenca).all()
+    
+    # Usuários com tentativas de login suspeitas
+    suspicious_logins = db.query(User).filter(User.tentativas_login >= 3).count()
+    
+    # Últimos logins (últimas 24h)
+    last_24h = datetime.utcnow() - timedelta(hours=24)
+    recent_logins = db.query(User).filter(
+        User.ultimo_login >= last_24h
+    ).count()
+    
+    # IPs mais comuns
+    ip_stats = db.query(
+        User.ip_ultimo_login,
+        db.func.count(User.id).label('count')
+    ).filter(
+        User.ip_ultimo_login.isnot(None)
+    ).group_by(User.ip_ultimo_login).order_by(
+        db.func.count(User.id).desc()
+    ).limit(10).all()
+    
+    # Registros por dia (últimos 30 dias)
+    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    daily_registrations = db.query(
+        db.func.date(User.created_at).label('date'),
+        db.func.count(User.id).label('count')
+    ).filter(
+        User.created_at >= thirty_days_ago
+    ).group_by(db.func.date(User.created_at)).all()
+    
+    return {
+        "general_stats": {
+            "total_users": total_users,
+            "active_licenses": active_licenses,
+            "suspicious_logins": suspicious_logins,
+            "recent_logins_24h": recent_logins
+        },
+        "license_distribution": [
+            {"status": status, "count": count}
+            for status, count in license_stats
+        ],
+        "top_ips": [
+            {"ip": ip, "count": count}
+            for ip, count in ip_stats if ip
+        ],
+        "daily_registrations": [
+            {"date": date.isoformat(), "count": count}
+            for date, count in daily_registrations
+        ]
+    }
+
+@app.get("/api/admin/user-activity")
+async def get_user_activity(
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db),
+    days: Optional[int] = 7
+):
+    start_date = datetime.utcnow() - timedelta(days=days)
+    
+    # Atividade de login por dia
+    login_activity = db.query(
+        db.func.date(User.ultimo_login).label('date'),
+        db.func.count(User.id).label('logins')
+    ).filter(
+        User.ultimo_login >= start_date
+    ).group_by(db.func.date(User.ultimo_login)).all()
+    
+    # Tentativas de login falhadas
+    failed_attempts = db.query(
+        User.email,
+        User.tentativas_login,
+        User.ip_ultimo_login
+    ).filter(
+        User.tentativas_login > 0
+    ).order_by(User.tentativas_login.desc()).limit(20).all()
+    
+    return {
+        "login_activity": [
+            {"date": date.isoformat(), "logins": logins}
+            for date, logins in login_activity
+        ],
+        "failed_attempts": [
+            {
+                "email": email,
+                "attempts": attempts,
+                "last_ip": ip
+            }
+            for email, attempts, ip in failed_attempts
+        ]
+    }
+
+@app.get("/api/admin/security-report")
+async def get_security_report(
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    # Múltiplos IPs por usuário
+    multi_ip_users = db.query(
+        User.email,
+        User.ip_registro,
+        User.ip_ultimo_login
+    ).filter(
+        User.ip_registro != User.ip_ultimo_login,
+        User.ip_registro.isnot(None),
+        User.ip_ultimo_login.isnot(None)
+    ).all()
+    
+    # Usuários sem login recente (30 dias)
+    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    inactive_users = db.query(User).filter(
+        (User.ultimo_login < thirty_days_ago) |
+        (User.ultimo_login.is_(None))
+    ).count()
+    
+    # IPs suspeitos (múltiplos usuários)
+    suspicious_ips = db.query(
+        User.ip_ultimo_login,
+        db.func.count(User.id).label('user_count')
+    ).filter(
+        User.ip_ultimo_login.isnot(None)
+    ).group_by(User.ip_ultimo_login).having(
+        db.func.count(User.id) > 3
+    ).order_by(db.func.count(User.id).desc()).all()
+    
+    return {
+        "multi_ip_users": [
+            {
+                "email": email,
+                "registration_ip": reg_ip,
+                "last_login_ip": login_ip
+            }
+            for email, reg_ip, login_ip in multi_ip_users
+        ],
+        "inactive_users_count": inactive_users,
+        "suspicious_ips": [
+            {"ip": ip, "user_count": count}
+            for ip, count in suspicious_ips
+        ]
+    }
 
 # Rotas HTML
 @app.get("/", response_class=HTMLResponse)
