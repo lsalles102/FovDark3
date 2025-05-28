@@ -189,32 +189,52 @@ class CookieManager {
     // Verificar consentimento para cookies
     checkCookieConsent() {
         const consent = this.getCookie('fovdark_cookie_consent');
-        if (!consent) {
-            this.showCookieConsent();
+        console.log('🍪 Status do consentimento:', consent || 'não definido');
+        
+        if (!consent || consent === 'undefined') {
+            // Aguardar um pouco para garantir que a página carregou
+            setTimeout(() => {
+                this.showCookieConsent();
+                // Bloquear scroll enquanto banner estiver ativo
+                document.body.style.overflow = 'hidden';
+            }, 1000);
+            return false;
         }
-        return consent === 'accepted';
+        
+        return consent === 'accepted' || consent === 'essential';
     }
 
     // Mostrar banner de consentimento
     showCookieConsent() {
+        // Remover qualquer banner existente
+        const existingBanner = document.querySelector('.cookie-consent-banner');
+        if (existingBanner) {
+            existingBanner.remove();
+        }
+
         const banner = document.createElement('div');
         banner.className = 'cookie-consent-banner';
         banner.innerHTML = `
+            <div class="cookie-consent-overlay"></div>
             <div class="cookie-consent-content">
                 <div class="cookie-consent-text">
-                    <h4><i class="fas fa-cookie-bite"></i> Uso de Cookies</h4>
-                    <p>Utilizamos cookies para melhorar sua experiência de navegação, personalizar conteúdo e analisar nosso tráfego. 
-                    Ao continuar navegando, você concorda com nosso uso de cookies.</p>
+                    <h4><i class="fas fa-cookie-bite"></i> 🍪 Política de Cookies</h4>
+                    <p><strong>Este site utiliza cookies essenciais para seu funcionamento.</strong></p>
+                    <p>Utilizamos cookies para melhorar sua experiência de navegação, personalizar conteúdo, 
+                    salvar suas preferências e analisar nosso tráfego. Alguns cookies são necessários 
+                    para o funcionamento básico do site.</p>
+                    <p>Ao continuar navegando, você concorda com nosso uso de cookies conforme nossa 
+                    <a href="/privacy" target="_blank" class="privacy-link">Política de Privacidade</a>.</p>
                 </div>
                 <div class="cookie-consent-actions">
                     <button class="btn-consent-accept" onclick="cookieManager.acceptCookies()">
-                        <i class="fas fa-check"></i> Aceitar Todos
+                        <i class="fas fa-check"></i> Aceitar Todos os Cookies
+                    </button>
+                    <button class="btn-consent-essential" onclick="cookieManager.acceptEssentialOnly()">
+                        <i class="fas fa-shield-alt"></i> Apenas Essenciais
                     </button>
                     <button class="btn-consent-config" onclick="cookieManager.showCookieSettings()">
                         <i class="fas fa-cog"></i> Configurar
-                    </button>
-                    <button class="btn-consent-decline" onclick="cookieManager.declineCookies()">
-                        <i class="fas fa-times"></i> Recusar
                     </button>
                 </div>
             </div>
@@ -225,84 +245,187 @@ class CookieManager {
         style.textContent = `
             .cookie-consent-banner {
                 position: fixed;
-                bottom: 0;
+                top: 0;
                 left: 0;
                 right: 0;
-                background: var(--background-darker);
-                border-top: 2px solid var(--primary);
-                padding: 20px;
-                z-index: 10000;
-                box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
-                animation: slideInUp 0.3s ease;
+                bottom: 0;
+                z-index: 99999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: fadeIn 0.5s ease;
+            }
+            
+            .cookie-consent-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(5px);
             }
             
             .cookie-consent-content {
-                max-width: 1200px;
-                margin: 0 auto;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 20px;
-                flex-wrap: wrap;
+                position: relative;
+                z-index: 100000;
+                background: hsl(var(--bg-secondary));
+                border: 2px solid hsl(var(--primary));
+                border-radius: var(--radius-xl);
+                padding: 2rem;
+                max-width: 600px;
+                width: 90%;
+                box-shadow: 
+                    0 20px 60px rgba(0, 0, 0, 0.5),
+                    0 0 0 1px hsl(var(--primary) / 0.3),
+                    inset 0 0 0 1px hsl(var(--primary) / 0.2);
+                animation: slideInScale 0.5s ease;
+            }
+            
+            .cookie-consent-text {
+                text-align: center;
+                margin-bottom: 2rem;
             }
             
             .cookie-consent-text h4 {
-                margin: 0 0 8px 0;
-                color: var(--primary);
-                font-size: 1.1rem;
+                margin: 0 0 1rem 0;
+                color: hsl(var(--primary));
+                font-size: 1.5rem;
+                font-family: var(--font-primary);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                text-shadow: 0 0 10px hsl(var(--primary) / 0.5);
             }
             
             .cookie-consent-text p {
-                margin: 0;
-                color: var(--text-secondary);
-                font-size: 0.9rem;
-                line-height: 1.4;
+                margin: 0 0 1rem 0;
+                color: hsl(var(--text-secondary));
+                font-size: 0.95rem;
+                line-height: 1.6;
+            }
+            
+            .cookie-consent-text p:last-child {
+                margin-bottom: 0;
+            }
+            
+            .privacy-link {
+                color: hsl(var(--secondary));
+                text-decoration: none;
+                font-weight: 600;
+                transition: color 0.3s ease;
+            }
+            
+            .privacy-link:hover {
+                color: hsl(var(--primary));
+                text-shadow: 0 0 5px hsl(var(--primary));
             }
             
             .cookie-consent-actions {
                 display: flex;
-                gap: 10px;
+                gap: 1rem;
                 flex-wrap: wrap;
+                justify-content: center;
             }
             
             .cookie-consent-actions button {
-                padding: 8px 16px;
+                padding: 0.75rem 1.5rem;
                 border: none;
-                border-radius: 6px;
+                border-radius: var(--radius-md);
                 cursor: pointer;
-                font-weight: 600;
-                font-size: 0.9rem;
+                font-weight: 700;
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
                 transition: all 0.3s ease;
+                font-family: var(--font-primary);
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
             }
             
             .btn-consent-accept {
-                background: var(--primary);
+                background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
                 color: white;
+                box-shadow: 0 4px 15px hsl(var(--primary) / 0.4);
+            }
+            
+            .btn-consent-accept:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px hsl(var(--primary) / 0.6);
+            }
+            
+            .btn-consent-essential {
+                background: linear-gradient(135deg, hsl(var(--warning)), hsl(var(--warning) / 0.8));
+                color: white;
+                box-shadow: 0 4px 15px hsl(var(--warning) / 0.4);
+            }
+            
+            .btn-consent-essential:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px hsl(var(--warning) / 0.6);
             }
             
             .btn-consent-config {
-                background: var(--secondary);
-                color: white;
-            }
-            
-            .btn-consent-decline {
                 background: transparent;
-                color: var(--text-secondary);
-                border: 1px solid var(--border-color);
+                color: hsl(var(--text-secondary));
+                border: 2px solid hsl(var(--border-primary));
             }
             
-            @keyframes slideInUp {
-                from { transform: translateY(100%); }
-                to { transform: translateY(0); }
+            .btn-consent-config:hover {
+                background: hsl(var(--bg-tertiary));
+                border-color: hsl(var(--primary));
+                color: hsl(var(--primary));
+                transform: translateY(-2px);
+            }
+            
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            
+            @keyframes slideInScale {
+                from { 
+                    opacity: 0;
+                    transform: scale(0.8) translateY(50px);
+                }
+                to { 
+                    opacity: 1;
+                    transform: scale(1) translateY(0);
+                }
+            }
+            
+            @keyframes slideOutDown {
+                from { 
+                    opacity: 1;
+                    transform: scale(1) translateY(0);
+                }
+                to { 
+                    opacity: 0;
+                    transform: scale(0.8) translateY(50px);
+                }
             }
             
             @media (max-width: 768px) {
                 .cookie-consent-content {
-                    flex-direction: column;
-                    text-align: center;
+                    width: 95%;
+                    padding: 1.5rem;
+                }
+                
+                .cookie-consent-text h4 {
+                    font-size: 1.25rem;
+                }
+                
+                .cookie-consent-text p {
+                    font-size: 0.875rem;
                 }
                 
                 .cookie-consent-actions {
+                    flex-direction: column;
+                    gap: 0.75rem;
+                }
+                
+                .cookie-consent-actions button {
+                    width: 100%;
                     justify-content: center;
                 }
             }
@@ -316,14 +439,32 @@ class CookieManager {
         }
     }
 
-    // Aceitar cookies
+    // Aceitar todos os cookies
     acceptCookies() {
         this.setCookie('fovdark_cookie_consent', 'accepted', 365);
         this.removeCookieBanner();
-        showToast('Cookies aceitos', 'success');
+        console.log('🍪 Todos os cookies aceitos pelo usuário');
+        if (window.showToast) {
+            showToast('Todos os cookies foram aceitos', 'success');
+        }
     }
 
-    // Recusar cookies
+    // Aceitar apenas cookies essenciais
+    acceptEssentialOnly() {
+        this.setCookie('fovdark_cookie_consent', 'essential', 365);
+        // Limpar cookies não essenciais
+        const nonEssentialKeys = ['fovdark_animations', 'fovdark_sound', 'fovdark_dashboard_layout'];
+        nonEssentialKeys.forEach(key => {
+            this.deleteCookie(key);
+        });
+        this.removeCookieBanner();
+        console.log('🍪 Apenas cookies essenciais aceitos pelo usuário');
+        if (window.showToast) {
+            showToast('Apenas cookies essenciais foram aceitos', 'info');
+        }
+    }
+
+    // Recusar cookies não essenciais
     declineCookies() {
         this.setCookie('fovdark_cookie_consent', 'declined', 365);
         this.removeCookieBanner();
@@ -331,23 +472,41 @@ class CookieManager {
         Object.keys(this.preferences).forEach(key => {
             this.deleteCookie(`fovdark_${key}`);
         });
-        showToast('Cookies recusados', 'info');
+        console.log('🍪 Cookies recusados pelo usuário');
+        if (window.showToast) {
+            showToast('Cookies não essenciais foram recusados', 'warning');
+        }
     }
 
     // Remover banner
     removeCookieBanner() {
         const banner = document.querySelector('.cookie-consent-banner');
         if (banner) {
-            banner.style.animation = 'slideOutDown 0.3s ease';
-            setTimeout(() => banner.remove(), 300);
+            banner.style.animation = 'slideOutDown 0.5s ease';
+            setTimeout(() => {
+                banner.remove();
+                // Restaurar scroll da página
+                document.body.style.overflow = '';
+            }, 500);
         }
     }
 
     // Mostrar configurações de cookies
     showCookieSettings() {
-        // Esta função pode abrir um modal com configurações detalhadas
-        showToast('Funcionalidade em desenvolvimento', 'info');
-        this.acceptCookies(); // Por enquanto, aceita automaticamente
+        this.removeCookieBanner();
+        
+        // Abrir modal de preferências se disponível
+        if (window.preferencesManager && window.preferencesManager.openModal) {
+            window.preferencesManager.openModal();
+        } else {
+            // Fallback: aceitar cookies essenciais
+            if (window.showToast) {
+                showToast('Abrindo configurações de preferências...', 'info');
+            }
+            setTimeout(() => {
+                this.acceptEssentialOnly();
+            }, 1000);
+        }
     }
 }
 
