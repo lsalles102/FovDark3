@@ -127,37 +127,36 @@ block content %}
         // Verificar se já está logado com token válido
         const token = localStorage.getItem("access_token");
         if (token) {
-            // Verificar se o token ainda é válido
-            fetch("/api/admin/users", {
+            // Usar endpoint de verificação de licença que é mais confiável
+            fetch("/api/license/check", {
                 headers: { Authorization: `Bearer ${token}` },
             })
                 .then((response) => {
                     if (response.ok) {
-                        const userData = JSON.parse(
-                            localStorage.getItem("user_data") || "{}",
-                        );
-                        console.log(
-                            "🔍 Token válido, verificando usuário:",
-                            userData,
-                        );
-
-                        if (userData && userData.is_admin === true) {
-                            console.log("👑 Redirecionando admin para /admin");
-                            window.location.href = "/admin";
-                        } else {
-                            console.log(
-                                "👤 Redirecionando usuário para /painel",
-                            );
-                            window.location.href = "/painel";
-                        }
+                        return response.json();
                     } else if (response.status === 401) {
                         console.log("❌ Token expirado, limpando localStorage");
                         localStorage.clear();
+                        return null;
+                    }
+                    throw new Error(`HTTP ${response.status}`);
+                })
+                .then((data) => {
+                    if (data) {
+                        console.log("🔍 Token válido, verificando usuário:", data);
+
+                        if (data.is_admin === true) {
+                            console.log("👑 Redirecionando admin para /admin");
+                            window.location.href = "/admin";
+                        } else {
+                            console.log("👤 Redirecionando usuário para /painel");
+                            window.location.href = "/painel";
+                        }
                     }
                 })
                 .catch((error) => {
                     console.log("❌ Erro na verificação do token:", error);
-                    localStorage.clear();
+                    // Não limpar localStorage em caso de erro de rede
                 });
             return;
         }

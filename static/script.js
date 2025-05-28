@@ -98,10 +98,15 @@ function checkAuthenticationStatus() {
         }).then(response => {
             if (response.status === 401) {
                 // Token expirado
+                console.log('🔄 Token expirado, fazendo logout');
                 logout();
+            } else if (!response.ok) {
+                console.log('⚠️ Erro na verificação, mas não é 401:', response.status);
+                // Não fazer logout em caso de erro de servidor
             }
         }).catch(error => {
-            console.log('Erro ao verificar token:', error);
+            console.log('❌ Erro de rede ao verificar token:', error);
+            // Não fazer logout em caso de erro de rede
         });
     }
 
@@ -399,6 +404,7 @@ async function loadProducts() {
 
     try {
         console.log('📦 Carregando produtos...');
+        console.log('🌐 URL da requisição:', '/api/products');
 
         // Mostrar loading
         container.innerHTML = `
@@ -409,16 +415,31 @@ async function loadProducts() {
         `;
 
         const response = await fetch('/api/products');
+        console.log('📡 Status da resposta:', response.status, response.statusText);
 
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            const errorText = await response.text();
+            console.error('❌ Erro HTTP:', response.status, errorText);
+            throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
         }
 
-        const products = await response.json();
+        const responseText = await response.text();
+        console.log('📥 Resposta bruta:', responseText);
+
+        let products;
+        try {
+            products = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('❌ Erro ao fazer parse do JSON:', parseError);
+            throw new Error('Resposta não é um JSON válido');
+        }
+
         console.log('✅ Produtos carregados:', products);
+        console.log('🔍 Tipo da resposta:', typeof products, 'É array?', Array.isArray(products));
 
         // Verificar se products é um array
         if (!Array.isArray(products)) {
+            console.error('❌ Products não é um array:', products);
             throw new Error('Resposta inválida: produtos não é um array');
         }
 

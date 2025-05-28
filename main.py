@@ -175,21 +175,39 @@ async def get_all_users(
 
 @app.get("/api/products")
 async def get_products(db: Session = Depends(get_db)):
-    products = db.query(Product).filter(Product.is_active == True).all()
-    return [
-        {
-            "id": product.id,
-            "name": product.name,
-            "description": product.description,
-            "price": product.price,
-            "duration_days": product.duration_days,
-            "image_url": product.image_url,
-            "is_active": product.is_active,
-            "is_featured": product.is_featured,
-            "features": product.features.split(',') if product.features else []
-        }
-        for product in products
-    ]
+    try:
+        print("🔍 Carregando produtos do banco de dados...")
+        products = db.query(Product).filter(Product.is_active == True).all()
+        print(f"📊 Encontrados {len(products)} produtos ativos")
+        
+        products_data = []
+        for product in products:
+            try:
+                product_dict = {
+                    "id": product.id,
+                    "name": product.name,
+                    "description": product.description or "",
+                    "price": float(product.price) if product.price else 0.0,
+                    "duration_days": product.duration_days or 30,
+                    "image_url": product.image_url or "",
+                    "is_active": product.is_active,
+                    "is_featured": product.is_featured or False,
+                    "features": product.features.split(',') if product.features else []
+                }
+                products_data.append(product_dict)
+                print(f"✅ Produto processado: {product.name}")
+            except Exception as product_error:
+                print(f"❌ Erro ao processar produto {product.id}: {product_error}")
+                continue
+        
+        print(f"🎯 Retornando {len(products_data)} produtos")
+        return products_data
+        
+    except Exception as e:
+        print(f"❌ Erro no endpoint /api/products: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erro interno do servidor: {str(e)}")
 
 @app.get("/api/admin/products")
 async def get_admin_products(
@@ -325,13 +343,18 @@ async def check_license(
 ):
     """Verificar status da licença do usuário"""
     try:
+        print(f"🔍 Verificando licença para usuário: {current_user.email}")
+        
         # Verificar se tem licença ativa
         has_active_license = current_user.data_expiracao and current_user.data_expiracao > datetime.utcnow()
+        print(f"📅 Data de expiração: {current_user.data_expiracao}")
+        print(f"✅ Tem licença ativa: {has_active_license}")
         
         if has_active_license:
             # Calcular tempo restante
             time_remaining = current_user.data_expiracao - datetime.utcnow()
             days_remaining = time_remaining.days
+            print(f"⏰ Dias restantes: {days_remaining}")
             
             # Determinar status baseado no tempo restante
             if days_remaining <= 1:
@@ -347,33 +370,39 @@ async def check_license(
                 status = "ativa"
                 message = f"Licença ativa por mais {days_remaining} dias"
             
-            return {
+            response = {
                 "valid": True,
                 "can_download": True,
                 "license_status": status,
                 "message": message,
                 "expires_at": current_user.data_expiracao.isoformat(),
                 "email": current_user.email,
-                "is_admin": current_user.is_admin
+                "is_admin": current_user.is_admin or False
             }
+            print(f"📤 Resposta (licença ativa): {response}")
+            return response
         else:
             # Licença expirada ou inexistente
             status = "expirada" if current_user.data_expiracao else "sem_licenca"
             message = "Sua licença expirou" if current_user.data_expiracao else "Você não possui uma licença ativa"
             
-            return {
+            response = {
                 "valid": False,
                 "can_download": False,
                 "license_status": status,
                 "message": message,
                 "expires_at": current_user.data_expiracao.isoformat() if current_user.data_expiracao else None,
                 "email": current_user.email,
-                "is_admin": current_user.is_admin
+                "is_admin": current_user.is_admin or False
             }
+            print(f"📤 Resposta (sem licença): {response}")
+            return response
             
     except Exception as e:
-        print(f"Erro ao verificar licença: {e}")
-        raise HTTPException(status_code=500, detail="Erro interno do servidor")
+        print(f"❌ Erro ao verificar licença: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erro interno do servidor: {str(e)}")
 
 @app.get("/api/admin/payments")
 async def get_admin_payments(
