@@ -25,7 +25,9 @@ class UXEnhancer {
             // Ctrl/Cmd + , para abrir preferências
             if ((e.ctrlKey || e.metaKey) && e.key === ',') {
                 e.preventDefault();
-                openPreferences();
+                if (typeof openPreferences === 'function') {
+                    openPreferences();
+                }
             }
 
             // Escape para fechar modais
@@ -92,8 +94,15 @@ class UXEnhancer {
             });
         });
 
+        // Verificar se document.body existe antes de adicionar
         if (document.body) {
             document.body.appendChild(button);
+        } else {
+            document.addEventListener('DOMContentLoaded', () => {
+                if (document.body) {
+                    document.body.appendChild(button);
+                }
+            });
         }
 
         // Mostrar/esconder baseado no scroll
@@ -110,13 +119,79 @@ class UXEnhancer {
 
     // Melhorias de formulários
     setupFormEnhancements() {
-        // Auto-save em formulários
-        if (cookieManager.getPreference('autoSave')) {
+        // Auto-save em formulários (verificar se cookieManager existe)
+        if (typeof cookieManager !== 'undefined' && cookieManager.getPreference('autoSave')) {
             this.setupAutoSave();
         }
 
         // Validação em tempo real
         this.setupRealTimeValidation();
+    }
+
+    // Configurar melhorias de busca
+    setupSearchEnhancements() {
+        // Adicionar funcionalidade de busca em tempo real
+        const searchInputs = document.querySelectorAll('input[type="search"], .search-input');
+        searchInputs.forEach(input => {
+            input.addEventListener('input', debounce((e) => {
+                this.performSearch(e.target.value);
+            }, 300));
+        });
+
+        // Destacar resultados de busca
+        this.setupSearchHighlight();
+    }
+
+    // Realizar busca
+    performSearch(query) {
+        if (query.length < 2) return;
+        
+        // Implementar lógica de busca básica
+        const searchableElements = document.querySelectorAll('[data-searchable], .searchable');
+        searchableElements.forEach(element => {
+            const text = element.textContent.toLowerCase();
+            const matches = text.includes(query.toLowerCase());
+            
+            if (matches) {
+                element.style.display = '';
+                this.highlightText(element, query);
+            } else {
+                element.style.display = 'none';
+            }
+        });
+    }
+
+    // Destacar texto de busca
+    highlightText(element, query) {
+        if (!query) return;
+        
+        const regex = new RegExp(`(${query})`, 'gi');
+        const originalHTML = element.dataset.originalHTML || element.innerHTML;
+        
+        if (!element.dataset.originalHTML) {
+            element.dataset.originalHTML = originalHTML;
+        }
+        
+        element.innerHTML = originalHTML.replace(regex, '<mark>$1</mark>');
+    }
+
+    // Configurar destaque de busca
+    setupSearchHighlight() {
+        // Limpar destaques ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-container')) {
+                this.clearSearchHighlights();
+            }
+        });
+    }
+
+    // Limpar destaques de busca
+    clearSearchHighlights() {
+        const highlightedElements = document.querySelectorAll('[data-original-html]');
+        highlightedElements.forEach(element => {
+            element.innerHTML = element.dataset.originalHTML;
+            delete element.dataset.originalHTML;
+        });
     }
 
     // Auto-save para formulários
@@ -128,16 +203,18 @@ class UXEnhancer {
                 if (input.type !== 'password') {
                     const key = `autosave_${form.id || 'form'}_${input.name || input.id}`;
                     
-                    // Carregar valor salvo
-                    const saved = cookieManager.getCookie(key);
-                    if (saved) {
-                        input.value = saved;
-                    }
+                    // Carregar valor salvo (verificar se cookieManager existe)
+                    if (typeof cookieManager !== 'undefined') {
+                        const saved = cookieManager.getCookie(key);
+                        if (saved) {
+                            input.value = saved;
+                        }
 
-                    // Salvar em mudanças
-                    input.addEventListener('input', debounce(() => {
-                        cookieManager.setCookie(key, input.value, 1); // 1 dia
-                    }, 500));
+                        // Salvar em mudanças
+                        input.addEventListener('input', debounce(() => {
+                            cookieManager.setCookie(key, input.value, 1); // 1 dia
+                        }, 500));
+                    }
                 }
             });
         });
@@ -204,13 +281,15 @@ class UXEnhancer {
     // Busca rápida
     openQuickSearch() {
         // Implementar busca rápida
-        showToast('Busca rápida: Ctrl+K', 'info');
+        if (typeof showToast === 'function') {
+            showToast('Busca rápida: Ctrl+K', 'info');
+        }
     }
 
     // Fechar todos os modais
     closeAllModals() {
         // Fechar modal de preferências
-        if (window.preferencesManager) {
+        if (window.preferencesManager && typeof window.preferencesManager.closeModal === 'function') {
             window.preferencesManager.closeModal();
         }
 
@@ -233,7 +312,9 @@ class UXEnhancer {
             <p><strong>F1:</strong> Esta ajuda</p>
         `;
         
-        showToast(helpContent, 'info', 8000);
+        if (typeof showToast === 'function') {
+            showToast(helpContent, 'info', 8000);
+        }
     }
 
     // Melhorias de acessibilidade
@@ -249,37 +330,52 @@ class UXEnhancer {
             document.body.classList.remove('keyboard-navigation');
         });
 
-        // Alto contraste
-        if (cookieManager.getCookie('high_contrast') === 'true') {
+        // Alto contraste (verificar se cookieManager existe)
+        if (typeof cookieManager !== 'undefined' && cookieManager.getCookie('high_contrast') === 'true') {
             document.body.classList.add('high-contrast');
         }
     }
 }
 
 // Adicionar estilos de validação
-const validationStyles = document.createElement('style');
-validationStyles.textContent = `
-    .field-valid {
-        border-color: var(--success) !important;
-        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
+function addValidationStyles() {
+    const validationStyles = document.createElement('style');
+    validationStyles.textContent = `
+        .field-valid {
+            border-color: var(--success) !important;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
+        }
+        
+        .field-invalid {
+            border-color: var(--danger) !important;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+        }
+        
+        .keyboard-navigation *:focus {
+            outline: 2px solid var(--primary) !important;
+            outline-offset: 2px;
+        }
+        
+        .high-contrast {
+            filter: contrast(150%);
+        }
+
+        mark {
+            background-color: yellow;
+            color: black;
+            padding: 0 2px;
+        }
+    `;
+
+    if (document.head) {
+        document.head.appendChild(validationStyles);
+    } else {
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.head) {
+                document.head.appendChild(validationStyles);
+            }
+        });
     }
-    
-    .field-invalid {
-        border-color: var(--danger) !important;
-        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
-    }
-    
-    .keyboard-navigation *:focus {
-        outline: 2px solid var(--primary) !important;
-        outline-offset: 2px;
-    }
-    
-    .high-contrast {
-        filter: contrast(150%);
-    }
-`;
-if (document.head) {
-    document.head.appendChild(validationStyles);
 }
 
 // Utilitário debounce
@@ -299,9 +395,11 @@ function debounce(func, wait) {
 function initializeUXEnhancer() {
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
+            addValidationStyles();
             window.uxEnhancer = new UXEnhancer();
         });
     } else {
+        addValidationStyles();
         window.uxEnhancer = new UXEnhancer();
     }
 }
