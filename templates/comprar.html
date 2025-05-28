@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Comprar - FovDark{% endblock %}
@@ -11,37 +10,144 @@
             <p>Domine o campo de batalha com precisão absoluta</p>
         </div>
 
-        <div class="pricing-grid" id="productsContainer">
-            <div class="loading-products">
-                <div class="loading-spinner"></div>
-                <p>Carregando produtos...</p>
+        <div class="pricing-grid">
+            <!-- Card Mensal -->
+            <div class="pricing-card">
+                <div class="card-header">
+                    <h3>MENSAL</h3>
+                    <div class="price">
+                        <span class="currency">R$</span>
+                        <span class="amount">29</span>
+                        <span class="period">,90/mês</span>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check"></i> Aim Assist Inteligente</li>
+                        <li><i class="fas fa-check"></i> Anti-Detecção Ativo</li>
+                        <li><i class="fas fa-check"></i> Suporte via Discord</li>
+                        <li><i class="fas fa-check"></i> Atualizações Gratuitas</li>
+                        <li><i class="fas fa-check"></i> Configurações Básicas</li>
+                    </ul>
+
+                    <button class="btn btn-primary btn-full" onclick="selectPlan('mensal', 29.90)">
+                        <i class="fas fa-shopping-cart"></i>
+                        ESCOLHER PLANO
+                    </button>
+                </div>
+            </div>
+
+            <!-- Card Trimestral (Mais Popular) -->
+            <div class="pricing-card pricing-popular">
+                <div class="popular-badge">MAIS POPULAR</div>
+                <div class="card-header">
+                    <h3>TRIMESTRAL</h3>
+                    <div class="price">
+                        <span class="currency">R$</span>
+                        <span class="amount">79</span>
+                        <span class="period">,90/3 meses</span>
+                    </div>
+                    <div class="savings">Economize 28%</div>
+                </div>
+
+                <div class="card-body">
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check"></i> Tudo do plano mensal</li>
+                        <li><i class="fas fa-check"></i> Configurações Premium</li>
+                        <li><i class="fas fa-check"></i> Suporte Prioritário</li>
+                        <li><i class="fas fa-check"></i> Acesso Antecipado</li>
+                        <li><i class="fas fa-check"></i> Recursos Avançados</li>
+                    </ul>
+
+                    <button class="btn btn-primary btn-full" onclick="selectPlan('trimestral', 79.90)">
+                        <i class="fas fa-crown"></i>
+                        ESCOLHER PLANO
+                    </button>
+                </div>
+            </div>
+
+            <!-- Card Anual -->
+            <div class="pricing-card">
+                <div class="card-header">
+                    <h3>ANUAL</h3>
+                    <div class="price">
+                        <span class="currency">R$</span>
+                        <span class="amount">299</span>
+                        <span class="period">,90/ano</span>
+                    </div>
+                    <div class="savings">Economize 43%</div>
+                </div>
+
+                <div class="card-body">
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check"></i> Tudo dos planos anteriores</li>
+                        <li><i class="fas fa-check"></i> Recursos Exclusivos</li>
+                        <li><i class="fas fa-check"></i> Suporte VIP 24/7</li>
+                        <li><i class="fas fa-check"></i> Beta Access</li>
+                        <li><i class="fas fa-check"></i> Configurações Elite</li>
+                    </ul>
+
+                    <button class="btn btn-primary btn-full" onclick="selectPlan('anual', 199.90)">
+                        <i class="fas fa-star"></i>
+                        ESCOLHER PLANO
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- Seção de Recursos -->
         <div class="features-comparison">
-            <h2>NOSSOS RECURSOS</h2>
-            <div class="features-grid">
-                <div class="feature-item">
-                    <i class="fas fa-crosshairs"></i>
-                    <h3>Aim Assist Inteligente</h3>
-                    <p>Sistema avançado de mira com precisão absoluta</p>
-                </div>
-                <div class="feature-item">
-                    <i class="fas fa-shield-alt"></i>
-                    <h3>Anti-Detecção</h3>
-                    <p>Proteção contra sistemas de detecção</p>
-                </div>
-                <div class="feature-item">
-                    <i class="fas fa-headset"></i>
-                    <h3>Suporte 24/7</h3>
-                    <p>Suporte técnico disponível sempre que precisar</p>
-                </div>
-                <div class="feature-item">
-                    <i class="fas fa-sync"></i>
-                    <h3>Atualizações Gratuitas</h3>
-                    <p>Sempre atualizado com as últimas versões</p>
-                </div>
+            <h2>COMPARAÇÃO DE RECURSOS</h2>
+            <div class="comparison-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Recursos</th>
+                            <th>Mensal</th>
+                            <th>Trimestral</th>
+                            <th>Anual</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Aim Assist Inteligente</td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td>Anti-detecção</td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td>Configurações Premium</td>
+                            <td><i class="fas fa-times text-danger"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td>Suporte Prioritário</td>
+                            <td><i class="fas fa-times text-danger"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td>Recursos Exclusivos</td>
+                            <td><i class="fas fa-times text-danger"></i></td>
+                            <td><i class="fas fa-times text-danger"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td>Beta Access</td>
+                            <td><i class="fas fa-times text-danger"></i></td>
+                            <td><i class="fas fa-times text-danger"></i></td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -168,7 +274,7 @@
                         <i class="fas fa-chevron-down"></i>
                     </div>
                     <div class="faq-answer">
-                        <p>Após a compra, você recebe uma licença única vinculada ao seu e-mail. A licença é válida conforme o plano escolhido.</p>
+                        <p>Após a compra, você recebe uma licença única vinculada ao seu e-mail. A licença é válida por 30, 90 ou 365 dias dependendo do plano escolhido.</p>
                     </div>
                 </div>
 
@@ -196,7 +302,7 @@
     </div>
 </section>
 
-<!-- Modal de Checkout -->
+<!-- Modal de Checkout Melhorado -->
 <div id="checkoutModal" class="checkout-modal-overlay">
     <div class="checkout-modal">
         <div class="checkout-header">
@@ -306,68 +412,7 @@
 </div>
 
 <style>
-/* Loading de produtos */
-.loading-products {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 4rem 2rem;
-    color: hsl(var(--text-secondary));
-}
-
-.loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid hsl(var(--border-primary));
-    border-top: 4px solid hsl(var(--primary));
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 1rem;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Features Grid */
-.features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
-    margin-top: 2rem;
-}
-
-.feature-item {
-    text-align: center;
-    padding: 2rem;
-    background: hsl(var(--bg-tertiary));
-    border: 1px solid hsl(var(--border-primary));
-    border-radius: var(--radius-lg);
-    transition: all var(--transition-medium);
-}
-
-.feature-item:hover {
-    border-color: hsl(var(--primary));
-    box-shadow: var(--shadow-glow);
-}
-
-.feature-item i {
-    font-size: 3rem;
-    color: hsl(var(--primary));
-    margin-bottom: 1rem;
-}
-
-.feature-item h3 {
-    margin-bottom: 1rem;
-    color: hsl(var(--text-primary));
-}
-
-.feature-item p {
-    color: hsl(var(--text-secondary));
-    line-height: 1.6;
-}
-
-/* Modal de Checkout */
+/* Modal de Checkout Melhorado */
 .checkout-modal-overlay {
     display: none;
     position: fixed;
@@ -732,212 +777,8 @@
     100% { width: 100%; }
 }
 
-/* Trust Badges */
-.trust-badges {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 2rem;
-    margin: 4rem 0;
-    padding: 2rem 0;
-    border-top: 1px solid hsl(var(--border-primary));
-    border-bottom: 1px solid hsl(var(--border-primary));
-}
-
-.trust-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    text-align: left;
-}
-
-.trust-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    flex-shrink: 0;
-}
-
-.trust-icon.ssl {
-    background: linear-gradient(135deg, #00ff8c, #00d4aa);
-    color: #000;
-}
-
-.trust-icon.secure {
-    background: linear-gradient(135deg, #007bff, #0056b3);
-    color: #fff;
-}
-
-.trust-icon.verified {
-    background: linear-gradient(135deg, #ffc107, #e0a800);
-    color: #000;
-}
-
-.trust-icon.privacy {
-    background: linear-gradient(135deg, #6f42c1, #5a32a3);
-    color: #fff;
-}
-
-.trust-info h4 {
-    margin: 0 0 0.25rem 0;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: hsl(var(--text-primary));
-}
-
-.trust-info p {
-    margin: 0;
-    font-size: 0.8rem;
-    color: hsl(var(--text-secondary));
-}
-
-/* Reviews Section */
-.reviews-section {
-    margin: 6rem 0;
-    text-align: center;
-}
-
-.reviews-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    margin-top: 3rem;
-}
-
-.review-card {
-    background: hsl(var(--bg-tertiary));
-    border: 1px solid hsl(var(--border-primary));
-    border-radius: var(--radius-lg);
-    padding: 2rem;
-    text-align: left;
-    transition: all var(--transition-medium);
-}
-
-.review-card:hover {
-    border-color: hsl(var(--primary));
-    box-shadow: var(--shadow-glow);
-}
-
-.review-rating {
-    display: flex;
-    gap: 0.25rem;
-    margin-bottom: 1rem;
-}
-
-.review-rating i {
-    color: #ffc107;
-    font-size: 0.9rem;
-}
-
-.review-text {
-    color: hsl(var(--text-secondary));
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
-    font-style: italic;
-}
-
-.review-author {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.author-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    color: #000;
-    font-size: 0.9rem;
-}
-
-.author-name {
-    font-weight: 600;
-    color: hsl(var(--text-primary));
-    font-size: 0.9rem;
-}
-
-.author-date {
-    font-size: 0.8rem;
-    color: hsl(var(--text-muted));
-}
-
-/* FAQ Section */
-.faq-section {
-    margin: 6rem 0;
-}
-
-.faq-list {
-    margin-top: 3rem;
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.faq-item {
-    border: 1px solid hsl(var(--border-primary));
-    border-radius: var(--radius-md);
-    margin-bottom: 1rem;
-    overflow: hidden;
-    transition: all var(--transition-medium);
-}
-
-.faq-item:hover {
-    border-color: hsl(var(--primary));
-}
-
-.faq-question {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem;
-    cursor: pointer;
-    background: hsl(var(--bg-tertiary));
-    transition: all var(--transition-medium);
-}
-
-.faq-question:hover {
-    background: hsl(var(--bg-secondary));
-}
-
-.faq-question span {
-    font-weight: 600;
-    color: hsl(var(--text-primary));
-    font-size: 0.9rem;
-}
-
-.faq-question i {
-    color: hsl(var(--primary));
-    transition: transform var(--transition-medium);
-}
-
-.faq-item.active .faq-question i {
-    transform: rotate(180deg);
-}
-
-.faq-answer {
-    max-height: 0;
-    overflow: hidden;
-    transition: all var(--transition-medium);
-    background: hsl(var(--bg-primary));
-}
-
-.faq-answer p {
-    padding: 2rem;
-    margin: 0;
-    color: hsl(var(--text-secondary));
-    line-height: 1.6;
-}
-
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
     .checkout-modal {
         margin: 1rem;
         max-width: calc(100% - 2rem);
@@ -956,18 +797,6 @@
         flex-direction: column;
         gap: 0.75rem;
     }
-    
-    .trust-badges {
-        grid-template-columns: 1fr;
-    }
-    
-    .reviews-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .features-grid {
-        grid-template-columns: 1fr;
-    }
 }
 </style>
 {% endblock %}
@@ -977,163 +806,47 @@
 let selectedPlanData = null;
 let availableProducts = [];
 
-// Carregar produtos ao inicializar a página
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('📦 Carregando produtos...');
-    loadProducts();
-    
-    // Verificar autenticação
-    const token = localStorage.getItem('access_token');
-    console.log('Usuário autenticado:', !!token);
-    
-    // Verificar se há redirecionamento de login
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('from') === 'login') {
-        showToast('Login realizado com sucesso! Escolha seu plano.', 'success');
-    }
-});
-
-async function loadProducts() {
-    try {
-        const response = await fetch('/api/products');
-        if (response.ok) {
-            const products = await response.json();
-            console.log('✅ Produtos carregados:', products);
-            displayProducts(products);
-        } else {
-            console.error('❌ Erro ao carregar produtos:', response.status);
-            displayErrorMessage();
-        }
-    } catch (error) {
-        console.error('❌ Erro ao carregar produtos:', error);
-        displayErrorMessage();
-    }
-}
-
-function displayProducts(products) {
-    const container = document.getElementById('productsContainer');
-    if (!container) {
-        console.error('⚠️ Container de produtos não encontrado');
-        return;
-    }
-
-    if (products.length === 0) {
-        container.innerHTML = `
-            <div class="no-products">
-                <i class="fas fa-box-open"></i>
-                <h3>Nenhum produto disponível</h3>
-                <p>Novos produtos serão adicionados em breve.</p>
-            </div>
-        `;
-        return;
-    }
-
-    // Limpar loading
-    container.innerHTML = '';
-    
-    // Renderizar produtos
-    products.forEach(product => {
-        const productCard = createProductCard(product);
-        container.appendChild(productCard);
-    });
-}
-
-function createProductCard(product) {
-    const card = document.createElement('div');
-    card.className = 'pricing-card';
-    
-    if (product.is_featured) {
-        card.classList.add('pricing-popular');
-    }
-
-    const features = product.features ? product.features.split(',') : [
-        'Aim Assist Avançado',
-        'ESP & Wallhack', 
-        'Anti-Detection',
-        'Suporte 24/7'
-    ];
-    
-    const featuresHTML = features.map(feature => 
-        `<li><i class="fas fa-check"></i> ${feature.trim()}</li>`
-    ).join('');
-
-    card.innerHTML = `
-        ${product.is_featured ? '<div class="popular-badge">MAIS POPULAR</div>' : ''}
-        <div class="card-header">
-            <h3>${product.name}</h3>
-            <div class="price">
-                <span class="currency">R$</span>
-                <span class="amount">${Math.floor(product.price)}</span>
-                <span class="period">,${(product.price % 1 * 100).toFixed(0).padStart(2, '0')}/${product.duration_days} dias</span>
-            </div>
-            ${product.price > 50 ? '<div class="savings">Melhor valor</div>' : ''}
-        </div>
-
-        <div class="card-body">
-            <div class="product-description">
-                <p>${product.description || 'Acesso completo às funcionalidades premium do FovDark'}</p>
-            </div>
-
-            <ul class="pricing-features">
-                ${featuresHTML}
-            </ul>
-
-            <button class="btn btn-primary btn-full" onclick="selectProduct(${product.id}, '${product.name}', ${product.price}, ${product.duration_days})">
-                <i class="fas fa-shopping-cart"></i>
-                ESCOLHER PLANO
-            </button>
-        </div>
-    `;
-
-    return card;
-}
-
-function displayErrorMessage() {
-    const container = document.getElementById('productsContainer');
-    if (container) {
-        container.innerHTML = `
-            <div class="error-products">
-                <i class="fas fa-exclamation-triangle"></i>
-                <h3>Erro ao carregar produtos</h3>
-                <p>Tente recarregar a página ou entre em contato com o suporte.</p>
-                <button class="btn btn-primary" onclick="loadProducts()">
-                    <i class="fas fa-sync"></i>
-                    Tentar Novamente
-                </button>
-            </div>
-        `;
-    }
-}
-
-function selectProduct(productId, productName, price, durationDays) {
-    console.log('Selecionando produto:', productId, productName, price, durationDays);
-    selectedPlanData = { 
-        product_id: productId,
-        name: productName,
-        price: price,
-        duration_days: durationDays
-    };
+function selectPlan(planType, price) {
+    console.log('Selecionando plano:', planType, price);
+    selectedPlanData = { type: planType, price: price };
 
     // Verificar se o usuário está logado
     const token = localStorage.getItem('access_token');
+    console.log('Token encontrado:', !!token);
+
     if (!token) {
-        showToast('Faça login para continuar com a compra', 'warning');
-        setTimeout(() => {
-            window.location.href = '/login?redirect=comprar';
-        }, 1500);
+        // Se não estiver logado, redirecionar para login
+        window.location.href = '/login?redirect=comprar';
         return;
     }
 
     // Se estiver logado, abrir modal de checkout
-    openCheckoutModal();
+    openCheckoutModal(planType, price);
 }
 
-function openCheckoutModal() {
-    if (!selectedPlanData) {
-        showToast('Selecione um produto primeiro', 'error');
+function selectProduct(productId, planType, price) {
+    console.log('Selecionando produto:', productId, planType, price);
+    selectedPlanData = { 
+        product_id: productId,
+        type: planType, 
+        price: price 
+    };
+
+    // Verificar se o usuário está logado
+    const token = localStorage.getItem('access_token');
+    console.log('Token encontrado:', !!token);
+
+    if (!token) {
+        // Se não estiver logado, redirecionar para login
+        window.location.href = '/login?redirect=comprar';
         return;
     }
 
+    // Se estiver logado, abrir modal de checkout
+    openCheckoutModal(planType, price);
+}
+
+function openCheckoutModal(planType, price) {
     const modal = document.getElementById('checkoutModal');
     const loginPrompt = document.getElementById('loginPrompt');
     const checkoutForm = document.getElementById('checkoutForm');
@@ -1144,30 +857,37 @@ function openCheckoutModal() {
     if (loginPrompt) loginPrompt.style.display = 'none';
     if (checkoutForm) checkoutForm.style.display = 'block';
 
-    // Atualizar resumo do pedido
+    // Atualizar resumo
     const selectedPlanElement = document.getElementById('selectedPlan');
     const selectedPriceElement = document.getElementById('selectedPrice');
     const selectedDurationElement = document.getElementById('selectedDuration');
 
     if (selectedPlanElement) {
-        selectedPlanElement.textContent = selectedPlanData.name;
+        selectedPlanElement.textContent = planType.toUpperCase();
     }
     if (selectedPriceElement) {
-        selectedPriceElement.textContent = `R$ ${selectedPlanData.price.toFixed(2).replace('.', ',')}`;
+        selectedPriceElement.textContent = `R$ ${price.toFixed(2).replace('.', ',')}`;
     }
     if (selectedDurationElement) {
-        selectedDurationElement.textContent = `${selectedPlanData.duration_days} dias`;
+        const durations = {
+            'mensal': '30 dias',
+            'trimestral': '90 dias',
+            'anual': '365 dias'
+        };
+        selectedDurationElement.textContent = durations[planType] || '30 dias';
     }
 
     // Abrir modal
     if (modal) {
         modal.style.display = 'flex';
-        console.log('Modal de checkout aberto');
+        console.log('Modal aberto');
         
         // Adicionar animação
         setTimeout(() => {
             modal.classList.add('active');
         }, 10);
+    } else {
+        console.error('Modal não encontrado');
     }
 }
 
@@ -1185,18 +905,22 @@ async function processPayment() {
     console.log('Processando pagamento...');
 
     if (!selectedPlanData) {
-        showToast('Erro: Nenhum produto selecionado', 'error');
+        console.error('Nenhum plano selecionado');
+        showToast('Erro: Nenhum plano selecionado', 'error');
         return;
     }
 
     const token = localStorage.getItem('access_token');
     if (!token) {
+        console.error('Token não encontrado');
         showToast('Sessão expirada. Redirecionando para login...', 'error');
         setTimeout(() => {
             window.location.href = '/login?redirect=comprar';
         }, 2000);
         return;
     }
+
+    console.log('Criando preferência de pagamento:', selectedPlanData);
 
     // Mostrar loading
     const checkoutForm = document.getElementById('checkoutForm');
@@ -1208,7 +932,12 @@ async function processPayment() {
     try {
         // Preparar dados da compra
         const formData = new FormData();
-        formData.append('product_id', selectedPlanData.product_id);
+        
+        if (selectedPlanData.product_id) {
+            formData.append('product_id', selectedPlanData.product_id);
+        } else {
+            formData.append('plano', selectedPlanData.type);
+        }
 
         console.log('Criando preferência de pagamento...');
 
@@ -1297,86 +1026,170 @@ window.onclick = function(event) {
     }
 }
 
-// Função para exibir toast
+async function loadProducts() {
+    try {
+        const response = await fetch('/api/products');
+        if (response.ok) {
+            const products = await response.json();
+            console.log('Produtos carregados:', products);
+            
+            // Atualizar preços na página se houver produtos disponíveis
+            if (products.length > 0) {
+                updatePricingFromProducts(products);
+            }
+        }
+    } catch (error) {
+        console.error('Erro ao carregar produtos:', error);
+    }
+}
+
+function updatePricingFromProducts(products) {
+    availableProducts = products;
+    
+    // Mapear produtos por duração
+    const productMap = {};
+    products.forEach(product => {
+        if (product.duration_days === 30) {
+            productMap.mensal = product;
+        } else if (product.duration_days === 90) {
+            productMap.trimestral = product;
+        } else if (product.duration_days === 365) {
+            productMap.anual = product;
+        }
+    });
+
+    // Atualizar cards com produtos do banco
+    const cards = document.querySelectorAll('.pricing-card');
+    cards.forEach((card, index) => {
+        const planTypes = ['mensal', 'trimestral', 'anual'];
+        const planType = planTypes[index];
+        const product = productMap[planType];
+        
+        if (product) {
+            // Atualizar preço
+            const priceAmount = card.querySelector('.amount');
+            if (priceAmount) {
+                priceAmount.textContent = Math.floor(product.price);
+            }
+            
+            // Atualizar período
+            const period = card.querySelector('.period');
+            if (period) {
+                if (product.duration_days === 30) {
+                    period.textContent = ',90/mês';
+                } else if (product.duration_days === 90) {
+                    period.textContent = ',90/3 meses';
+                } else if (product.duration_days === 365) {
+                    period.textContent = ',90/ano';
+                }
+            }
+            
+            // Atualizar recursos
+            if (product.features) {
+                const featuresList = card.querySelector('.pricing-features');
+                if (featuresList) {
+                    const features = product.features.split(',');
+                    featuresList.innerHTML = features.map(feature => 
+                        `<li><i class="fas fa-check"></i> ${feature.trim()}</li>`
+                    ).join('');
+                }
+            }
+            
+            // Atualizar botão
+            const button = card.querySelector('button');
+            if (button) {
+                button.setAttribute('onclick', `selectProduct(${product.id}, '${planType}', ${product.price})`);
+            }
+        }
+    });
+}
+
+function selectProduct(productId, planType, price) {
+    console.log('Selecionando produto:', productId, planType, price);
+    selectedPlanData = { 
+        product_id: productId,
+        type: planType, 
+        price: price 
+    };
+
+    // Verificar se o usuário está logado
+    const token = localStorage.getItem('access_token');
+    console.log('Token encontrado:', !!token);
+
+    if (!token) {
+        // Se não estiver logado, redirecionar para login
+        showToast('Faça login para continuar com a compra', 'warning');
+        setTimeout(() => {
+            window.location.href = '/login?redirect=comprar';
+        }, 1500);
+        return;
+    }
+
+    // Se estiver logado, abrir modal de checkout
+    openCheckoutModal(planType, price);
+}
+
+// Função para exibir toast (caso não exista)
 function showToast(message, type = 'info') {
     console.log(`Toast ${type}: ${message}`);
     
-    // Criar elemento toast
+    // Criar elemento toast se não existir sistema de toast
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
-        background: ${type === 'success' ? '#00ff8c' : type === 'error' ? '#ff006b' : type === 'warning' ? '#ffc107' : '#007bff'};
-        color: ${type === 'warning' ? '#000' : '#fff'};
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        z-index: 10001;
-        max-width: 350px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        background: ${type === 'success' ? '#00ff8c' : type === 'error' ? '#ff006b' : '#007bff'};
+        color: #000;
+        padding: 1rem;
+        border-radius: 5px;
+        z-index: 10000;
+        max-width: 300px;
         animation: slideIn 0.3s ease;
-        font-weight: 500;
     `;
-    
-    toast.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
-            ${message}
-        </div>
-    `;
+    toast.textContent = message;
     
     document.body.appendChild(toast);
     
     setTimeout(() => {
         toast.remove();
-    }, 4000);
+    }, 3000);
 }
 
-// CSS para animação do toast
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateX(100%);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
+// Debug e inicialização
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Página de compras carregada');
     
-    .no-products,
-    .error-products {
-        grid-column: 1 / -1;
-        text-align: center;
-        padding: 4rem 2rem;
-        color: hsl(var(--text-secondary));
-        background: hsl(var(--bg-tertiary));
-        border: 1px solid hsl(var(--border-primary));
-        border-radius: var(--radius-lg);
-    }
+    // Carregar produtos disponíveis
+    loadProducts();
+
+    // Verificar se elementos existem
+    const modal = document.getElementById('checkoutModal');
+    const loginPrompt = document.getElementById('loginPrompt');
+    const checkoutForm = document.getElementById('checkoutForm');
+
+    console.log('Modal encontrado:', !!modal);
+    console.log('Login prompt encontrado:', !!loginPrompt);
+    console.log('Checkout form encontrado:', !!checkoutForm);
+
+    // Animar cards de pricing
+    const cards = document.querySelectorAll('.pricing-card');
+    cards.forEach((card, index) => {
+        setTimeout(() => {
+            card.classList.add('animate-slide-up');
+        }, index * 200);
+    });
+
+    // Verificar autenticação
+    const token = localStorage.getItem('access_token');
+    console.log('Usuário autenticado:', !!token);
     
-    .no-products i,
-    .error-products i {
-        font-size: 4rem;
-        margin-bottom: 1.5rem;
-        opacity: 0.5;
+    // Verificar se há redirecionamento de login
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('from') === 'login') {
+        showToast('Login realizado com sucesso! Escolha seu plano.', 'success');
     }
-    
-    .no-products h3,
-    .error-products h3 {
-        margin-bottom: 1rem;
-        color: hsl(var(--text-primary));
-    }
-    
-    .no-products p,
-    .error-products p {
-        margin-bottom: 2rem;
-        line-height: 1.6;
-    }
-`;
-document.head.appendChild(style);
+});
 </script>
 {% endblock %}

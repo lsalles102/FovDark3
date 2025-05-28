@@ -1,211 +1,95 @@
 
 {% extends "base.html" %}
 
-{% block title %}Pagamento Aprovado - FovDark{% endblock %}
+{% block title %}Pagamento Aprovado - DarkFov{% endblock %}
 
 {% block content %}
-<section class="success-section">
+<section class="payment-status-section">
     <div class="container">
-        <div class="success-card">
-            <div class="success-icon">
+        <div class="status-card success">
+            <div class="status-icon">
                 <i class="fas fa-check-circle"></i>
             </div>
+            <h1>Pagamento Aprovado!</h1>
+            <p>Seu pagamento foi processado com sucesso. Sua licença já está ativa!</p>
             
-            <h1>PAGAMENTO APROVADO!</h1>
-            <p class="success-message">{{ message or "Sua compra foi realizada com sucesso!" }}</p>
-            
-            <div class="success-details">
-                <div class="detail-item">
-                    <i class="fas fa-receipt"></i>
-                    <span>ID do Pagamento: {{ payment_id or "N/A" }}</span>
-                </div>
-                <div class="detail-item">
-                    <i class="fas fa-calendar-check"></i>
-                    <span>Licença ativada com sucesso</span>
-                </div>
-                <div class="detail-item">
-                    <i class="fas fa-download"></i>
-                    <span>Download disponível no painel</span>
-                </div>
-            </div>
-            
-            <div class="success-actions">
+            <div class="status-actions">
                 <a href="/painel" class="btn btn-primary">
                     <i class="fas fa-tachometer-alt"></i>
-                    ACESSAR PAINEL
+                    Ir para o Painel
                 </a>
-                <a href="/" class="btn btn-outline">
-                    <i class="fas fa-home"></i>
-                    PÁGINA INICIAL
+                <a href="/api/download/script" class="btn btn-secondary">
+                    <i class="fas fa-download"></i>
+                    Baixar Script
                 </a>
-            </div>
-            
-            <div class="next-steps">
-                <h3>PRÓXIMOS PASSOS:</h3>
-                <ul>
-                    <li><i class="fas fa-check"></i> Acesse o painel de controle</li>
-                    <li><i class="fas fa-check"></i> Faça o download do software</li>
-                    <li><i class="fas fa-check"></i> Configure suas preferências</li>
-                    <li><i class="fas fa-check"></i> Entre em contato com o suporte se precisar de ajuda</li>
-                </ul>
             </div>
         </div>
     </div>
 </section>
 
 <style>
-.success-section {
+.payment-status-section {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 2rem 0;
-    background: linear-gradient(135deg, hsl(var(--bg-primary)), hsl(var(--bg-secondary)));
 }
 
-.success-card {
-    background: hsl(var(--bg-tertiary));
-    border: 2px solid hsl(var(--success));
-    border-radius: var(--radius-xl);
-    padding: 3rem;
-    text-align: center;
-    max-width: 600px;
-    width: 100%;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    animation: successSlideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes successSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(30px) scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-.success-icon {
-    font-size: 5rem;
-    color: hsl(var(--success));
-    margin-bottom: 2rem;
-    animation: successPulse 1.5s ease-in-out infinite;
-}
-
-@keyframes successPulse {
-    0%, 100% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.1);
-    }
-}
-
-.success-card h1 {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    background: linear-gradient(135deg, hsl(var(--success)), hsl(var(--primary)));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.success-message {
-    font-size: 1.2rem;
-    color: hsl(var(--text-secondary));
-    margin-bottom: 3rem;
-    line-height: 1.6;
-}
-
-.success-details {
+.status-card {
     background: hsl(var(--bg-secondary));
     border: 1px solid hsl(var(--border-primary));
     border-radius: var(--radius-lg);
-    padding: 2rem;
-    margin-bottom: 3rem;
-}
-
-.detail-item {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-    color: hsl(var(--text-primary));
-}
-
-.detail-item:last-child {
-    margin-bottom: 0;
-}
-
-.detail-item i {
-    color: hsl(var(--success));
-    font-size: 1.1rem;
-}
-
-.success-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    margin-bottom: 3rem;
-    flex-wrap: wrap;
-}
-
-.next-steps {
-    background: hsl(var(--bg-primary));
-    border: 1px solid hsl(var(--border-primary));
-    border-radius: var(--radius-lg);
-    padding: 2rem;
-    text-align: left;
-}
-
-.next-steps h3 {
+    padding: 3rem;
     text-align: center;
+    max-width: 500px;
+    width: 100%;
+}
+
+.status-card.success {
+    border-color: #10b981;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+}
+
+.status-icon {
+    font-size: 4rem;
     margin-bottom: 1.5rem;
-    color: hsl(var(--primary));
-    font-size: 1.2rem;
 }
 
-.next-steps ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+.status-card.success .status-icon {
+    color: #10b981;
 }
 
-.next-steps li {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+.status-card h1 {
+    font-size: 2rem;
     margin-bottom: 1rem;
+    color: #10b981;
+}
+
+.status-card p {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
     color: hsl(var(--text-secondary));
 }
 
-.next-steps li:last-child {
-    margin-bottom: 0;
+.status-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
 }
 
-.next-steps li i {
-    color: hsl(var(--success));
-    font-size: 0.9rem;
+.status-actions .btn {
+    padding: 0.75rem 1.5rem;
 }
 
 @media (max-width: 640px) {
-    .success-card {
-        margin: 1rem;
-        padding: 2rem 1.5rem;
-    }
-    
-    .success-card h1 {
-        font-size: 2rem;
-    }
-    
-    .success-actions {
+    .status-actions {
         flex-direction: column;
     }
     
-    .success-icon {
-        font-size: 4rem;
+    .status-card {
+        padding: 2rem;
+        margin: 1rem;
     }
 }
 </style>
