@@ -244,6 +244,7 @@ async def register_user(
 # Login
 @app.post("/api/login")
 async def login_user(
+    request: Request,
     email: str = Form(...),
     password: str = Form(...),
     db: Session = Depends(get_db)
