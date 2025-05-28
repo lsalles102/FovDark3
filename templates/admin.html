@@ -1924,8 +1924,11 @@ async function loadProducts() {
     const token = localStorage.getItem('access_token');
     const grid = document.getElementById('productsGrid');
 
+    console.log('🔄 Iniciando carregamento de produtos...');
+    console.log('📦 Container encontrado:', !!grid);
+
     if (!grid) {
-        console.error('Container de produtos não encontrado');
+        console.error('❌ Container de produtos não encontrado');
         return;
     }
 
@@ -1938,6 +1941,7 @@ async function loadProducts() {
     `;
 
     try {
+        console.log('🌐 Fazendo requisição para /api/admin/products...');
         const response = await fetch('/api/admin/products', {
             headers: { 
                 'Authorization': `Bearer ${token}`,
@@ -1945,11 +1949,14 @@ async function loadProducts() {
             }
         });
 
+        console.log('📡 Resposta recebida:', response.status);
+
         if (response.ok) {
             const data = await response.json();
-            console.log('Produtos carregados:', data);
+            console.log('✅ Produtos carregados:', data.length, 'produtos');
             displayProducts(data);
         } else if (response.status === 401) {
+            console.log('🔐 Sessão expirada');
             grid.innerHTML = `
                 <div class="empty-state">
                     <i class="fas fa-lock"></i>
@@ -1966,7 +1973,7 @@ async function loadProducts() {
             throw new Error(errorData.detail || 'Erro ao carregar produtos');
         }
     } catch (error) {
-        console.error('Erro ao carregar produtos:', error);
+        console.error('❌ Erro ao carregar produtos:', error);
         grid.innerHTML = `
             <div class="empty-state">
                 <i class="fas fa-exclamation-triangle"></i>
@@ -1978,7 +1985,7 @@ async function loadProducts() {
 }
 
 function displayProducts(products) {
-    const grid = document.getElementById('productsAdminGrid');
+    const grid = document.getElementById('productsGrid');
     
     if (!grid) {
         console.error('Grid de produtos não encontrado');
@@ -2423,6 +2430,13 @@ async function submitProduct(event) {
     const editingId = document.getElementById('editingProductId').value;
     const isEditing = editingId !== '';
 
+    // Adicionar valores booleanos corretamente
+    const isActive = document.getElementById('is_active').checked;
+    const isFeatured = document.getElementById('is_featured').checked;
+
+    formData.set('is_active', isActive);
+    formData.set('is_featured', isFeatured);
+
     const submitButton = form.querySelector('button[type="submit"]');
     const originalText = submitButton.innerHTML;
     submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${isEditing ? 'ATUALIZANDO...' : 'CRIANDO...'}`;
@@ -2520,10 +2534,16 @@ async function editProduct(id) {
             const product = products.find(p => p.id === id);
             
             if (product) {
+                console.log('Editando produto:', product);
                 openProductModal(product);
+            } else {
+                showToast('Produto não encontrado', 'error');
             }
+        } else {
+            showToast('Erro ao carregar produtos', 'error');
         }
     } catch (error) {
+        console.error('Erro ao editar produto:', error);
         showToast('Erro ao carregar produto', 'error');
     }
 }
