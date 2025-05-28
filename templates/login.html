@@ -108,7 +108,7 @@ block content %}
                         >
                     </div>
                     <div class="terminal-line terminal-cursor">
-                        <span class="prompt">root@darkfov:~$</span>
+                        <span class="prompt">root@fovdark:~$</span>
                         <span class="cursor">_</span>
                     </div>
                 </div>
@@ -138,13 +138,18 @@ block content %}
                 })
                 .then((data) => {
                     if (data) {
-                        console.log("🔍 Token válido, verificando usuário:", data);
+                        console.log(
+                            "🔍 Token válido, verificando usuário:",
+                            data,
+                        );
 
                         if (data.is_admin === true) {
                             console.log("👑 Redirecionando admin para /admin");
                             window.location.href = "/admin";
                         } else {
-                            console.log("👤 Redirecionando usuário para /painel");
+                            console.log(
+                                "👤 Redirecionando usuário para /painel",
+                            );
                             window.location.href = "/painel";
                         }
                     }
@@ -159,9 +164,9 @@ block content %}
         const loginForm = document.getElementById("loginForm");
         if (loginForm) {
             loginForm.addEventListener("submit", handleLogin);
-            
+
             // Debug para verificar se o form foi encontrado
-            console.log('📋 Formulário de login encontrado:', !!loginForm);
+            console.log("📋 Formulário de login encontrado:", !!loginForm);
         }
 
         // Listeners para tecla Enter
@@ -183,7 +188,7 @@ block content %}
             passwordField.addEventListener("keypress", function (e) {
                 if (e.key === "Enter") {
                     e.preventDefault();
-                    loginForm.dispatchEvent(new Event('submit'));
+                    loginForm.dispatchEvent(new Event("submit"));
                 }
             });
         }
@@ -191,118 +196,121 @@ block content %}
 
     function clearErrors() {
         // Limpar mensagens de erro visuais
-        const errorElements = document.querySelectorAll('.input-error');
-        errorElements.forEach(error => {
-            error.textContent = '';
+        const errorElements = document.querySelectorAll(".input-error");
+        errorElements.forEach((error) => {
+            error.textContent = "";
         });
 
         // Remover classes de erro dos campos
-        const formFields = document.querySelectorAll('input');
-        formFields.forEach(field => {
-            field.classList.remove('error');
+        const formFields = document.querySelectorAll("input");
+        formFields.forEach((field) => {
+            field.classList.remove("error");
         });
 
         // Habilitar o botão se estiver desabilitado
-        const loginBtn = document.getElementById('login-btn');
+        const loginBtn = document.getElementById("login-btn");
         if (loginBtn && loginBtn.disabled) {
             loginBtn.disabled = false;
-            loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i><span>INICIAR SESSÃO</span>';
+            loginBtn.innerHTML =
+                '<i class="fas fa-sign-in-alt"></i><span>INICIAR SESSÃO</span>';
         }
     }
 
     async function handleLogin(e) {
         e.preventDefault();
-        
-        const emailField = document.getElementById('email');
-        const passwordField = document.getElementById('password');
-        const loginBtn = document.getElementById('login-btn');
-        
+
+        const emailField = document.getElementById("email");
+        const passwordField = document.getElementById("password");
+        const loginBtn = document.getElementById("login-btn");
+
         const email = emailField.value.trim();
         const password = passwordField.value;
-        
-        console.log('🔄 Iniciando processo de login...');
-        
+
+        console.log("🔄 Iniciando processo de login...");
+
         // Limpar erros anteriores
         clearErrors();
-        
+
         // Validações básicas
         if (!email || !password) {
-            showError('email', 'Por favor, preencha todos os campos');
+            showError("email", "Por favor, preencha todos os campos");
             return;
         }
-        
+
         // Validar formato do email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            showError('email', 'Por favor, insira um email válido');
+            showError("email", "Por favor, insira um email válido");
             return;
         }
-        
+
         // Estado de loading
         const originalText = loginBtn.innerHTML;
-        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>ENTRANDO...</span>';
+        loginBtn.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> <span>ENTRANDO...</span>';
         loginBtn.disabled = true;
-        
+
         try {
-            console.log('📧 Email:', email);
-            
+            console.log("📧 Email:", email);
+
             // Preparar dados do formulário
             const formData = new FormData();
-            formData.append('email', email);
-            formData.append('password', password);
-            
-            const response = await fetch('/api/login', {
-                method: 'POST',
-                body: formData
+            formData.append("email", email);
+            formData.append("password", password);
+
+            const response = await fetch("/api/login", {
+                method: "POST",
+                body: formData,
             });
-            
-            console.log('📡 Status da resposta:', response.status);
-            
+
+            console.log("📡 Status da resposta:", response.status);
+
             const data = await response.json();
-            console.log('📊 Dados recebidos:', data);
-            
+            console.log("📊 Dados recebidos:", data);
+
             if (response.ok && data.access_token) {
-                console.log('✅ Login bem-sucedido!');
-                
+                console.log("✅ Login bem-sucedido!");
+
                 // Salvar dados no localStorage
-                localStorage.setItem('access_token', data.access_token);
-                localStorage.setItem('user_data', JSON.stringify(data.user));
-                
-                showToast('Login realizado com sucesso!', 'success');
-                
+                localStorage.setItem("access_token", data.access_token);
+                localStorage.setItem("user_data", JSON.stringify(data.user));
+
+                showToast("Login realizado com sucesso!", "success");
+
                 // Aguardar um pouco antes do redirecionamento
                 setTimeout(() => {
                     if (data.user.is_admin) {
-                        console.log('👑 Redirecionando admin para /admin');
-                        window.location.href = '/admin';
+                        console.log("👑 Redirecionando admin para /admin");
+                        window.location.href = "/admin";
                     } else {
-                        console.log('👤 Redirecionando usuário para /painel');
-                        window.location.href = '/painel';
+                        console.log("👤 Redirecionando usuário para /painel");
+                        window.location.href = "/painel";
                     }
                 }, 1000);
-                
             } else {
-                console.log('❌ Erro no login:', data.detail || 'Erro desconhecido');
-                
+                console.log(
+                    "❌ Erro no login:",
+                    data.detail || "Erro desconhecido",
+                );
+
                 // Mostrar erro específico no campo apropriado
-                if (data.detail && data.detail.includes('Email ou senha')) {
-                    showError('password', 'Email ou senha incorretos');
+                if (data.detail && data.detail.includes("Email ou senha")) {
+                    showError("password", "Email ou senha incorretos");
                     // Limpar o campo de senha para permitir nova tentativa
-                    passwordField.value = '';
+                    passwordField.value = "";
                     passwordField.focus();
                 } else {
-                    showToast(data.detail || 'Erro no login', 'error');
+                    showToast(data.detail || "Erro no login", "error");
                 }
-                
+
                 // Restaurar botão imediatamente para permitir nova tentativa
                 loginBtn.innerHTML = originalText;
                 loginBtn.disabled = false;
             }
-            
         } catch (error) {
-            console.error('💥 Erro na requisição:', error);
-            showToast('Erro de conexão. Tente novamente.', 'error');
-            
+            console.error("💥 Erro na requisição:", error);
+            showToast("Erro de conexão. Tente novamente.", "error");
+
             // Restaurar botão
             loginBtn.innerHTML = originalText;
             loginBtn.disabled = false;
@@ -311,38 +319,38 @@ block content %}
 
     function showError(fieldName, message) {
         const field = document.getElementById(fieldName);
-        const errorElement = document.getElementById(fieldName + '-error');
-        
+        const errorElement = document.getElementById(fieldName + "-error");
+
         if (field) {
-            field.classList.add('error');
+            field.classList.add("error");
         }
-        
+
         if (errorElement) {
             errorElement.textContent = message;
         }
-        
-        showToast(message, 'error');
+
+        showToast(message, "error");
     }
 
-    function showToast(message, type = 'info') {
+    function showToast(message, type = "info") {
         // Remover toast anterior se existir
-        const existingToast = document.querySelector('.toast');
+        const existingToast = document.querySelector(".toast");
         if (existingToast) {
             existingToast.remove();
         }
-        
+
         // Criar novo toast
-        const toast = document.createElement('div');
+        const toast = document.createElement("div");
         toast.className = `toast toast-${type}`;
         toast.innerHTML = `
-            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <i class="fas fa-${type === "success" ? "check-circle" : type === "error" ? "exclamation-circle" : "info-circle"}"></i>
             <span>${message}</span>
         `;
-        
+
         // Adicionar estilos se não existirem
-        if (!document.querySelector('#toast-styles')) {
-            const style = document.createElement('style');
-            style.id = 'toast-styles';
+        if (!document.querySelector("#toast-styles")) {
+            const style = document.createElement("style");
+            style.id = "toast-styles";
             style.textContent = `
                 .toast {
                     position: fixed;
@@ -403,9 +411,9 @@ block content %}
             `;
             document.head.appendChild(style);
         }
-        
+
         document.body.appendChild(toast);
-        
+
         // Remover após 5 segundos
         setTimeout(() => {
             if (toast.parentNode) {
