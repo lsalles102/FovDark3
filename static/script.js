@@ -481,7 +481,7 @@ async function loadProducts() {
 }
 
 function displayProducts(products) {
-    const container = document.querySelector('.pricing-grid');
+    const container = document.getElementById('productsGrid');
     if (!container) {
         console.warn('⚠️ Container de produtos não encontrado');
         return;

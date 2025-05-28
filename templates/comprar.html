@@ -983,8 +983,7 @@
             } catch (error) {
                 console.error('Erro ao carregar produtos:', error);
                 document.getElementById('productsGrid').innerHTML = `
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem; color: var(--danger);"></i>
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem; color: var(--danger);"></i>
                         <h3>Erro ao carregar produtos</h3>
                         <p>Tente recarregar a página.</p>
                     </div>
@@ -996,11 +995,25 @@
             const container = document.getElementById('productsGrid');
 
             if (!container) {
-                console.error('Container de produtos não encontrado');
+                console.error('❌ Container productsGrid não encontrado no DOM');
                 return;
             }
 
-            if (!Array.isArray(products) || products.length === 0) {
+            console.log('✅ Container encontrado, exibindo produtos:', products);
+
+            if (!Array.isArray(products)) {
+                console.error('❌ Products não é um array:', products);
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem; color: var(--danger);"></i>
+                        <h3>Erro no formato dos dados</h3>
+                        <p>Dados dos produtos em formato inválido.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            if (products.length === 0) {
                 container.innerHTML = `
                     <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
                         <i class="fas fa-box-open" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
@@ -1014,7 +1027,7 @@
             try {
                 container.innerHTML = products.map((product, index) => {
                     if (!product || typeof product !== 'object') {
-                        console.error('Produto inválido:', product);
+                        console.error('❌ Produto inválido:', product);
                         return '';
                     }
 
@@ -1025,7 +1038,7 @@
                         'Anti-Detection',
                         'Suporte 24/7'
                     ];
-                    
+
                     const featuresHtml = features.slice(0, 4).map(feature => 
                         `<li>${feature}</li>`
                     ).join('');
@@ -1049,7 +1062,7 @@
                         <div class="product-content">
                             <h3 class="product-title">${product.name}</h3>
                             <p class="product-description">${product.description || 'Acesso completo às funcionalidades premium do nosso sistema.'}</p>
-                            
+
                             <ul class="product-features">
                                 ${featuresHtml}
                             </ul>
@@ -1061,7 +1074,7 @@
                                     <span class="price-decimal">,${priceDecimal}</span>
                                 </div>
                                 <div class="product-duration">${product.duration_days} dias de acesso</div>
-                                
+
                                 <button class="product-button" onclick="openCheckoutModal('${product.name}', ${product.price}, ${product.duration_days}, ${product.id})">
                                     <span>Comprar agora</span>
                                 </button>
@@ -1095,7 +1108,7 @@
             // Verificar se o usuário está logado
             const token = localStorage.getItem('access_token');
             const modal = document.getElementById('checkoutModal');
-            
+
             if (!token) {
                 // Mostrar prompt de login
                 document.getElementById('loginPrompt').style.display = 'block';
@@ -1106,7 +1119,7 @@
                 document.getElementById('loginPrompt').style.display = 'none';
                 document.getElementById('checkoutForm').style.display = 'block';
                 document.getElementById('loadingPayment').style.display = 'none';
-                
+
                 // Atualizar informações do produto
                 document.getElementById('selectedPlan').textContent = name.toUpperCase();
                 document.getElementById('selectedDuration').textContent = `${duration} dias`;
