@@ -21,8 +21,8 @@ function initializeApp() {
     // Setup auth state
     updateAuthenticationUI();
 
-    // Load products if on purchase page
-    if (window.location.pathname === '/comprar') {
+    // Load products if on purchase page and products container exists
+    if (window.location.pathname === '/comprar' && document.getElementById('productsGrid')) {
         loadProducts();
     }
 }
@@ -429,6 +429,12 @@ function animateElements() {
 
 // ===== PRODUCTS =====
 async function loadProducts() {
+    const container = document.getElementById('productsGrid');
+    if (!container) {
+        console.warn('⚠️ Container de produtos não encontrado');
+        return;
+    }
+
     try {
         console.log('📦 Carregando produtos...');
         const response = await fetch('/api/products');
@@ -436,14 +442,41 @@ async function loadProducts() {
         if (response.ok) {
             const products = await response.json();
             console.log('✅ Produtos carregados:', products);
-            displayProducts(products);
+            
+            // Verificar se products é um array
+            if (Array.isArray(products)) {
+                displayProducts(products);
+            } else {
+                console.error('❌ Resposta inválida: produtos não é um array');
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem; color: var(--danger);"></i>
+                        <h3>Erro no formato dos dados</h3>
+                        <p>Dados dos produtos em formato inválido.</p>
+                    </div>
+                `;
+            }
         } else {
             console.error('❌ Erro ao carregar produtos:', response.status);
-            showToast('Erro ao carregar produtos', 'error');
+            container.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem; color: var(--danger);"></i>
+                    <h3>Erro ao carregar produtos</h3>
+                    <p>Status: ${response.status}. Tente recarregar a página.</p>
+                </div>
+            `;
         }
     } catch (error) {
         console.error('💥 Erro de conexão:', error);
-        showToast('Erro de conexão ao carregar produtos', 'error');
+        if (container) {
+            container.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+                    <i class="fas fa-wifi" style="font-size: 2rem; margin-bottom: 1rem; color: var(--danger);"></i>
+                    <h3>Erro de conexão</h3>
+                    <p>Verifique sua conexão e tente novamente.</p>
+                </div>
+            `;
+        }
     }
 }
 

@@ -960,10 +960,7 @@
 
 {% block scripts %}
 <script>
-        // Verificar se o usuário está logado
-        if (!localStorage.getItem('access_token')) {
-            window.location.href = '/login';
-        }
+        // A verificação de login será feita apenas ao tentar comprar
 
         let selectedProduct = null;
         let selectedPrice = 0;
@@ -998,7 +995,12 @@
         function displayProducts(products) {
             const container = document.getElementById('productsGrid');
 
-            if (products.length === 0) {
+            if (!container) {
+                console.error('Container de produtos não encontrado');
+                return;
+            }
+
+            if (!Array.isArray(products) || products.length === 0) {
                 container.innerHTML = `
                     <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
                         <i class="fas fa-box-open" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
@@ -1009,22 +1011,30 @@
                 return;
             }
 
-            container.innerHTML = products.map((product, index) => {
-                const features = product.features ? product.features.split(',').map(f => f.trim()) : [
-                    'Aim Assist Avançado',
-                    'ESP & Wallhack', 
-                    'Anti-Detection',
-                    'Suporte 24/7'
-                ];
-                
-                const featuresHtml = features.slice(0, 4).map(feature => 
-                    `<li>${feature}</li>`
-                ).join('');
+            try {
+                container.innerHTML = products.map((product, index) => {
+                    if (!product || typeof product !== 'object') {
+                        console.error('Produto inválido:', product);
+                        return '';
+                    }
 
-                const imageUrl = product.image_url || '/static/cyberpunk-soldier.jpg';
-                const isFeatured = product.is_featured;
-                const priceInteger = Math.floor(product.price);
-                const priceDecimal = ((product.price % 1) * 100).toFixed(0).padStart(2, '0');
+                    const features = product.features ? 
+                        (typeof product.features === 'string' ? product.features.split(',').map(f => f.trim()) : product.features) : [
+                        'Aim Assist Avançado',
+                        'ESP & Wallhack', 
+                        'Anti-Detection',
+                        'Suporte 24/7'
+                    ];
+                    
+                    const featuresHtml = features.slice(0, 4).map(feature => 
+                        `<li>${feature}</li>`
+                    ).join('');
+
+                    const imageUrl = product.image_url || '/static/cyberpunk-soldier.jpg';
+                    const isFeatured = product.is_featured || false;
+                    const price = parseFloat(product.price) || 0;
+                    const priceInteger = Math.floor(price);
+                    const priceDecimal = ((price % 1) * 100).toFixed(0).padStart(2, '0');
 
                 return `
                     <div class="product-card">
@@ -1059,7 +1069,17 @@
                         </div>
                     </div>
                 `;
-            }).join('');
+                }).join('');
+            } catch (error) {
+                console.error('Erro ao renderizar produtos:', error);
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem; color: var(--danger);"></i>
+                        <h3>Erro ao exibir produtos</h3>
+                        <p>Erro interno ao processar os dados dos produtos.</p>
+                    </div>
+                `;
+            }
         }
 
         function getProductIcon(index) {
