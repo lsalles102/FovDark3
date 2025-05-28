@@ -259,6 +259,9 @@ async def login_user(
             print(f"❌ Usuário não encontrado: {email}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
+                if user_check:
+    user_check.tentativas_login = (user_check.tentativas_login or 0) + 1
+    db.commit()
                 detail="Email ou senha incorretos"
             )
         
