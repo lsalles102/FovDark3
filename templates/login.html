@@ -158,7 +158,7 @@ block content %}
 
         const loginForm = document.getElementById("loginForm");
         if (loginForm) {
-            loginForm.addEventListener("submit", login);
+            loginForm.addEventListener("submit", handleLogin);
             
             // Debug para verificar se o form foi encontrado
             console.log('📋 Formulário de login encontrado:', !!loginForm);
@@ -169,19 +169,250 @@ block content %}
         const passwordField = document.getElementById("password");
 
         if (emailField && passwordField) {
+            // Limpar erros quando o usuário começar a digitar novamente
+            emailField.addEventListener("input", clearErrors);
+            passwordField.addEventListener("input", clearErrors);
+
             emailField.addEventListener("keypress", function (e) {
                 if (e.key === "Enter") {
+                    e.preventDefault();
                     passwordField.focus();
                 }
             });
 
             passwordField.addEventListener("keypress", function (e) {
                 if (e.key === "Enter") {
-                    login(e);
+                    e.preventDefault();
+                    loginForm.dispatchEvent(new Event('submit'));
                 }
             });
         }
     });
+
+    function clearErrors() {
+        // Limpar mensagens de erro visuais
+        const errorElements = document.querySelectorAll('.input-error');
+        errorElements.forEach(error => {
+            error.textContent = '';
+        });
+
+        // Remover classes de erro dos campos
+        const formFields = document.querySelectorAll('input');
+        formFields.forEach(field => {
+            field.classList.remove('error');
+        });
+
+        // Habilitar o botão se estiver desabilitado
+        const loginBtn = document.getElementById('login-btn');
+        if (loginBtn && loginBtn.disabled) {
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i><span>INICIAR SESSÃO</span>';
+        }
+    }
+
+    async function handleLogin(e) {
+        e.preventDefault();
+        
+        const emailField = document.getElementById('email');
+        const passwordField = document.getElementById('password');
+        const loginBtn = document.getElementById('login-btn');
+        
+        const email = emailField.value.trim();
+        const password = passwordField.value;
+        
+        console.log('🔄 Iniciando processo de login...');
+        
+        // Limpar erros anteriores
+        clearErrors();
+        
+        // Validações básicas
+        if (!email || !password) {
+            showError('email', 'Por favor, preencha todos os campos');
+            return;
+        }
+        
+        // Validar formato do email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            showError('email', 'Por favor, insira um email válido');
+            return;
+        }
+        
+        // Estado de loading
+        const originalText = loginBtn.innerHTML;
+        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>ENTRANDO...</span>';
+        loginBtn.disabled = true;
+        
+        try {
+            console.log('📧 Email:', email);
+            
+            // Preparar dados do formulário
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('password', password);
+            
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                body: formData
+            });
+            
+            console.log('📡 Status da resposta:', response.status);
+            
+            const data = await response.json();
+            console.log('📊 Dados recebidos:', data);
+            
+            if (response.ok && data.access_token) {
+                console.log('✅ Login bem-sucedido!');
+                
+                // Salvar dados no localStorage
+                localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('user_data', JSON.stringify(data.user));
+                
+                showToast('Login realizado com sucesso!', 'success');
+                
+                // Aguardar um pouco antes do redirecionamento
+                setTimeout(() => {
+                    if (data.user.is_admin) {
+                        console.log('👑 Redirecionando admin para /admin');
+                        window.location.href = '/admin';
+                    } else {
+                        console.log('👤 Redirecionando usuário para /painel');
+                        window.location.href = '/painel';
+                    }
+                }, 1000);
+                
+            } else {
+                console.log('❌ Erro no login:', data.detail || 'Erro desconhecido');
+                
+                // Mostrar erro específico no campo apropriado
+                if (data.detail && data.detail.includes('Email ou senha')) {
+                    showError('password', 'Email ou senha incorretos');
+                    // Limpar o campo de senha para permitir nova tentativa
+                    passwordField.value = '';
+                    passwordField.focus();
+                } else {
+                    showToast(data.detail || 'Erro no login', 'error');
+                }
+                
+                // Restaurar botão imediatamente para permitir nova tentativa
+                loginBtn.innerHTML = originalText;
+                loginBtn.disabled = false;
+            }
+            
+        } catch (error) {
+            console.error('💥 Erro na requisição:', error);
+            showToast('Erro de conexão. Tente novamente.', 'error');
+            
+            // Restaurar botão
+            loginBtn.innerHTML = originalText;
+            loginBtn.disabled = false;
+        }
+    }
+
+    function showError(fieldName, message) {
+        const field = document.getElementById(fieldName);
+        const errorElement = document.getElementById(fieldName + '-error');
+        
+        if (field) {
+            field.classList.add('error');
+        }
+        
+        if (errorElement) {
+            errorElement.textContent = message;
+        }
+        
+        showToast(message, 'error');
+    }
+
+    function showToast(message, type = 'info') {
+        // Remover toast anterior se existir
+        const existingToast = document.querySelector('.toast');
+        if (existingToast) {
+            existingToast.remove();
+        }
+        
+        // Criar novo toast
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        `;
+        
+        // Adicionar estilos se não existirem
+        if (!document.querySelector('#toast-styles')) {
+            const style = document.createElement('style');
+            style.id = 'toast-styles';
+            style.textContent = `
+                .toast {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: hsl(var(--bg-secondary));
+                    color: hsl(var(--text-primary));
+                    padding: 1rem 1.5rem;
+                    border-radius: var(--radius-md);
+                    border: 1px solid hsl(var(--border-primary));
+                    box-shadow: var(--shadow-lg);
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    z-index: 9999;
+                    animation: slideIn 0.3s ease-out;
+                }
+                
+                .toast-success {
+                    border-color: hsl(var(--success));
+                    background: hsl(var(--success) / 0.1);
+                }
+                
+                .toast-error {
+                    border-color: hsl(var(--danger));
+                    background: hsl(var(--danger) / 0.1);
+                }
+                
+                .toast-success i {
+                    color: hsl(var(--success));
+                }
+                
+                .toast-error i {
+                    color: hsl(var(--danger));
+                }
+
+                .input-error {
+                    color: hsl(var(--danger));
+                    font-size: 0.8rem;
+                    margin-top: 0.25rem;
+                }
+
+                input.error {
+                    border-color: hsl(var(--danger)) !important;
+                    background: hsl(var(--danger) / 0.05);
+                }
+                
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        document.body.appendChild(toast);
+        
+        // Remover após 5 segundos
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, 5000);
+    }
 
     function togglePassword(fieldId) {
         const field = document.getElementById(fieldId);
