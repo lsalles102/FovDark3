@@ -103,9 +103,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const token = localStorage.getItem('access_token');
     if (token) {
         const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
-        if (userData.is_admin) {
+        console.log('🔍 Verificando usuário logado:', userData);
+        
+        if (userData && userData.is_admin === true) {
+            console.log('👑 Redirecionando admin para /admin');
             window.location.href = '/admin';
         } else {
+            console.log('👤 Redirecionando usuário para /painel');
             window.location.href = '/painel';
         }
         return;

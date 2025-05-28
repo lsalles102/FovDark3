@@ -291,50 +291,22 @@ function validatePassword(password) {
 
 // ===== LOGIN FUNCTION =====
 async function login(event) {
-    if (event) {
-        event.preventDefault();
-    }
+    event.preventDefault();
+
+    const loginBtn = document.getElementById('login-btn');
+    const originalText = loginBtn.innerHTML;
+
+    loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>CONECTANDO...</span>';
+    loginBtn.disabled = true;
 
     console.log('🔐 Iniciando processo de login');
 
-    const emailField = document.getElementById('email');
-    const passwordField = document.getElementById('password');
-
-    if (!emailField || !passwordField) {
-        showToast('Campos de login não encontrados', 'error');
-        return;
-    }
-
-    const email = emailField.value.trim();
-    const password = passwordField.value;
-
-    // Validações
-    if (!email || !password) {
-        showToast('Preencha todos os campos', 'error');
-        return;
-    }
-
-    if (!validateEmail(email)) {
-        showToast('Email inválido', 'error');
-        return;
-    }
-
-    const submitBtn = document.querySelector('button[type="submit"]') || document.getElementById('login-btn');
-    if (!submitBtn) {
-        showToast('Botão de login não encontrado', 'error');
-        return;
-    }
-
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CONECTANDO...';
-    submitBtn.disabled = true;
-
     try {
-        console.log('📡 Enviando requisição de login');
-
         const formData = new FormData();
-        formData.append('email', email);
-        formData.append('password', password);
+        formData.append('email', document.getElementById('email').value);
+        formData.append('password', document.getElementById('password').value);
+
+        console.log('📡 Enviando requisição de login');
 
         const response = await fetch('/api/login', {
             method: 'POST',
@@ -343,67 +315,52 @@ async function login(event) {
 
         console.log('📥 Resposta recebida:', response.status);
 
+        const data = await response.json();
+
         if (!response.ok) {
-            let errorMessage = 'Erro no login';
-
-            try {
-                const errorData = await response.json();
-                errorMessage = errorData.detail || errorMessage;
-            } catch (e) {
-                console.error('Erro ao parsear resposta de erro:', e);
-                if (response.status === 401) {
-                    errorMessage = 'Email ou senha incorretos';
-                } else if (response.status === 500) {
-                    errorMessage = 'Erro interno do servidor';
-                } else {
-                    errorMessage = `Erro ${response.status}: ${response.statusText}`;
-                }
-            }
-
-            showToast(errorMessage, 'error');
-            throw new Error(errorMessage);
+            throw new Error(data.detail || 'Erro no login');
         }
 
-        const data = await response.json();
         console.log('✅ Login bem-sucedido:', data);
 
-        if (data.access_token && data.user) {
-            // Salvar dados do usuário
-            localStorage.setItem('access_token', data.access_token);
-            localStorage.setItem('user_data', JSON.stringify(data.user));
+        // Armazenar token e dados do usuário
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('user_data', JSON.stringify(data.user));
 
-            showToast('Login realizado com sucesso!', 'success');
-            updateAuthenticationUI();
+        // Mostrar sucesso temporariamente
+        loginBtn.innerHTML = '<i class="fas fa-check"></i> <span>SUCESSO!</span>';
+        loginBtn.style.background = 'linear-gradient(135deg, #00d4ff, #1e90ff)';
 
-            // Verificar redirecionamento
-            const urlParams = new URLSearchParams(window.location.search);
-            const redirect = urlParams.get('redirect');
-
-            setTimeout(() => {
-                if (redirect === 'comprar') {
-                    window.location.href = '/comprar?from=login';
-                } else if (data.user && data.user.is_admin) {
-                    window.location.href = '/admin';
-                } else {
-                    window.location.href = '/painel';
-                }
-            }, 1000);
-
-            return data;
-        } else {
-            throw new Error('Dados de resposta inválidos');
-        }
+        // Redirecionamento baseado no tipo de usuário com verificação adicional
+        setTimeout(() => {
+            if (data.user && data.user.is_admin === true) {
+                console.log('👑 Redirecionando admin para /admin');
+                window.location.href = '/admin';
+            } else {
+                console.log('👤 Redirecionando usuário para /painel');
+                window.location.href = '/painel';
+            }
+        }, 1000);
 
     } catch (error) {
         console.error('❌ Erro no login:', error);
-        showToast(error.message || 'Erro inesperado no login', 'error');
-        throw error;
-    } finally {
-        // Restaurar botão
-        if (submitBtn) {
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-        }
+
+        loginBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <span>ERRO!</span>';
+        loginBtn.style.background = 'linear-gradient(135deg, #ff4757, #ff3742)';
+
+        // Mostrar erro específico
+        const errorMessage = error.message === 'Email ou senha incorretos' 
+            ? 'Credenciais inválidas' 
+            : 'Erro de conexão';
+
+        showNotification(errorMessage, 'error');
+
+        // Restaurar botão após 2 segundos
+        setTimeout(() => {
+            loginBtn.innerHTML = originalText;
+            loginBtn.style.background = '';
+            loginBtn.disabled = false;
+        }, 2000);
     }
 }
 
@@ -434,7 +391,7 @@ async function loadProducts() {
     if (!container) {
         container = document.getElementById('productsAdminGrid');
     }
-    
+
     if (!container) {
         console.warn('⚠️ Container de produtos não encontrado em', window.location.pathname);
         return;
@@ -442,7 +399,7 @@ async function loadProducts() {
 
     try {
         console.log('📦 Carregando produtos...');
-        
+
         // Mostrar loading
         container.innerHTML = `
             <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
@@ -469,12 +426,12 @@ async function loadProducts() {
 
     } catch (error) {
         console.error('💥 Erro ao carregar produtos:', error);
-        
+
         if (container) {
             const errorMessage = error.message.includes('HTTP') ? 
                 `Erro ${error.message}` : 
                 'Erro de conexão';
-                
+
             container.innerHTML = `
                 <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
                     <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem; color: var(--danger);"></i>
@@ -501,12 +458,12 @@ async function loadProducts() {
 function displayProducts(products) {
     // Tentar encontrar o container correto dependendo da página
     let container = document.getElementById('productsGrid');
-    
+
     // Se não encontrar, tentar outros possíveis IDs
     if (!container) {
         container = document.getElementById('productsAdminGrid');
     }
-    
+
     if (!container) {
         console.warn('⚠️ Container de produtos não encontrado em', window.location.pathname);
         return;
@@ -540,7 +497,7 @@ function displayProducts(products) {
     try {
         // Verificar se estamos na página de compras ou admin
         const isAdminPage = window.location.pathname.includes('/admin');
-        
+
         if (isAdminPage) {
             // Usar função específica para admin
             displayAdminProducts(products, container);
@@ -573,7 +530,7 @@ function displayAdminProducts(products, container) {
         const statusClass = product.is_active ? 'status-active' : 'status-inactive';
         const statusText = product.is_active ? 'Ativo' : 'Inativo';
         const statusIcon = product.is_active ? 'fas fa-check-circle' : 'fas fa-times-circle';
-        
+
         const priceFormatted = new Intl.NumberFormat('pt-BR', {
             style: 'currency',
             currency: 'BRL'
@@ -594,23 +551,23 @@ function displayAdminProducts(products, container) {
                     </div>
                     <div class="product-id">#${product.id}</div>
                 </div>
-                
+
                 <div class="product-card-image">
                     ${product.image_url ? 
                         `<img src="${product.image_url}" alt="${product.name}" onerror="this.src='/static/hero-bg.jpg'">` :
                         `<div class="no-image"><i class="fas fa-image"></i></div>`
                     }
                 </div>
-                
+
                 <div class="product-card-content">
                     <h3 class="product-card-title">${product.name}</h3>
                     <p class="product-card-description">${product.description || 'Sem descrição'}</p>
-                    
+
                     <div class="product-features">
                         ${featuresHTML}
                         ${featuresArray.length > 3 ? `<span class="feature-more">+${featuresArray.length - 3}</span>` : ''}
                     </div>
-                    
+
                     <div class="product-card-info">
                         <div class="info-item">
                             <span class="label">Preço:</span>
@@ -622,7 +579,7 @@ function displayAdminProducts(products, container) {
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="product-card-actions">
                     <button class="btn-action btn-edit" onclick="editProduct(${product.id})" title="Editar Produto">
                         <i class="fas fa-edit"></i>
