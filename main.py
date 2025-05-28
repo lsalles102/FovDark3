@@ -172,6 +172,43 @@ async def get_all_users(
         for user in users
     ]
 
+# Rotas HTML
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+@app.get("/register", response_class=HTMLResponse)
+async def register_page(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
+
+@app.get("/comprar", response_class=HTMLResponse)
+async def comprar_page(request: Request):
+    return templates.TemplateResponse("comprar.html", {"request": request})
+
+@app.get("/painel", response_class=HTMLResponse)
+async def painel_page(request: Request):
+    return templates.TemplateResponse("painel.html", {"request": request})
+
+@app.get("/terms", response_class=HTMLResponse)
+async def terms_page(request: Request):
+    return templates.TemplateResponse("terms.html", {"request": request})
+
+@app.get("/privacy", response_class=HTMLResponse)
+async def privacy_page(request: Request):
+    return templates.TemplateResponse("privacy.html", {"request": request})
+
+@app.get("/recover", response_class=HTMLResponse)
+async def recover_page(request: Request):
+    return templates.TemplateResponse("recover.html", {"request": request})
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_page(request: Request):
+    return templates.TemplateResponse("admin.html", {"request": request})
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     uvicorn.run(app, host="0.0.0.0", port=port)
