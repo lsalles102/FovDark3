@@ -2643,10 +2643,17 @@ function removeProductImage() {
 async function submitProduct(event) {
     event.preventDefault();
 
+    console.log('📤 Iniciando submissão do produto...');
+
     const form = event.target;
     const formData = new FormData(form);
     const token = localStorage.getItem('access_token');
     
+    if (!token) {
+        showToast('Token de acesso não encontrado', 'error');
+        return;
+    }
+
     const editingId = document.getElementById('editingProductId').value;
     const isEditing = editingId !== '';
 
@@ -2654,8 +2661,13 @@ async function submitProduct(event) {
     const isActive = document.getElementById('is_active').checked;
     const isFeatured = document.getElementById('is_featured').checked;
 
-    formData.set('is_active', isActive);
-    formData.set('is_featured', isFeatured);
+    formData.set('is_active', isActive.toString());
+    formData.set('is_featured', isFeatured.toString());
+
+    console.log('📋 Dados do formulário:');
+    for (let [key, value] of formData.entries()) {
+        console.log(`  ${key}: ${value}`);
+    }
 
     const submitButton = form.querySelector('button[type="submit"]');
     const originalText = submitButton.innerHTML;
@@ -2666,6 +2678,8 @@ async function submitProduct(event) {
         const url = isEditing ? `/api/admin/products/${editingId}` : '/api/admin/products';
         const method = isEditing ? 'PUT' : 'POST';
         
+        console.log(`🌐 Fazendo ${method} para ${url}`);
+
         const response = await fetch(url, {
             method: method,
             headers: {
@@ -2674,69 +2688,28 @@ async function submitProduct(event) {
             body: formData
         });
 
-        const data = await response.json();
+        console.log(`📡 Resposta: ${response.status} ${response.statusText}`);
 
         if (response.ok) {
+            const data = await response.json();
+            console.log('✅ Produto salvo:', data);
             showToast(`Produto ${isEditing ? 'atualizado' : 'criado'} com sucesso!`, 'success');
             closeModal(submitButton);
-            loadProducts(); // Recarregar lista de produtos
+            await loadProducts(); // Recarregar lista de produtos
         } else {
-            showToast(data.detail || `Erro ao ${isEditing ? 'atualizar' : 'criar'} produto`, 'error');
+            const errorData = await response.json();
+            console.error('❌ Erro na resposta:', errorData);
+            showToast(errorData.detail || `Erro ao ${isEditing ? 'atualizar' : 'criar'} produto`, 'error');
         }
     } catch (error) {
-        console.error('Erro:', error);
-        showToast('Erro de conexão', 'error');
+        console.error('❌ Erro na requisição:', error);
+        showToast('Erro de conexão com o servidor', 'error');
     } finally {
         submitButton.innerHTML = originalText;
         submitButton.disabled = false;
     }
 }
-async function saveProduct() {
-    const form = document.getElementById('productForm');
-    const formData = new FormData(form);
-
-    // Adicionar valores booleanos corretamente
-    const isActive = document.getElementById('is_active').checked;
-    const isFeatured = document.getElementById('is_featured').checked;
-
-    formData.set('is_active', isActive);
-    formData.set('is_featured', isFeatured);
-
-    // Log dos dados que estão sendo enviados
-    console.log('Dados do produto:');
-    for (let [key, value] of formData.entries()) {
-        console.log(key, value);
-    }
-
-    const editingId = document.getElementById('editingProductId').value;
-    const url = editingId ? `/api/admin/products/${editingId}` : '/api/admin/products';
-    const method = editingId ? 'PUT' : 'POST';
-
-    try {
-        const response = await fetch(url, {
-            method: method,
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-            },
-            body: formData
-        });
-
-        if (response.ok) {
-            const result = await response.json();
-            showToast(result.message, 'success');
-            closeModal(form.querySelector('button[type="submit"]'));
-            loadProducts();
-            // Também recarregar a página de compras se estiver aberta
-            console.log('Produto salvo com sucesso:', result.product);
-        } else {
-            const error = await response.json();
-            throw new Error(error.detail || 'Erro ao salvar produto');
-        }
-    } catch (error) {
-        console.error('Erro ao salvar produto:', error);
-        showToast('Erro ao salvar produto: ' + error.message, 'error');
-    }
-}
+// Função removida - agora usando apenas submitProduct
 function editUser(id, email) { showToast('Funcionalidade em desenvolvimento', 'info'); }
 function viewUserDetails(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
 function deleteUser(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }

@@ -252,40 +252,64 @@ async def create_product(
     duration_days: int = Form(...),
     image_url: str = Form(""),
     features: str = Form(""),
-    is_active: bool = Form(True),
-    is_featured: bool = Form(False),
+    is_active: str = Form("true"),
+    is_featured: str = Form("false"),
     admin_user: User = Depends(get_admin_user),
     db: Session = Depends(get_db)
 ):
     try:
+        print(f"📝 Criando produto: {name}")
+        print(f"💰 Preço: {price}")
+        print(f"📅 Duração: {duration_days} dias")
+        print(f"🔗 Imagem URL: {image_url}")
+        print(f"✅ Ativo: {is_active}")
+        print(f"⭐ Destaque: {is_featured}")
+
+        # Converter strings para boolean
+        is_active_bool = is_active.lower() in ('true', '1', 'on', 'yes')
+        is_featured_bool = is_featured.lower() in ('true', '1', 'on', 'yes')
+
         new_product = Product(
-            name=name,
-            description=description,
-            price=price,
-            duration_days=duration_days,
-            image_url=image_url if image_url else None,
-            features=features if features else None,
-            is_active=is_active,
-            is_featured=is_featured
+            name=name.strip(),
+            description=description.strip() if description else None,
+            price=float(price),
+            duration_days=int(duration_days),
+            image_url=image_url.strip() if image_url else None,
+            features=features.strip() if features else None,
+            is_active=is_active_bool,
+            is_featured=is_featured_bool
         )
 
         db.add(new_product)
         db.commit()
         db.refresh(new_product)
 
+        print(f"✅ Produto criado com ID: {new_product.id}")
+
         return {
             "message": "Produto criado com sucesso",
             "product": {
                 "id": new_product.id,
                 "name": new_product.name,
+                "description": new_product.description,
                 "price": new_product.price,
                 "duration_days": new_product.duration_days,
-                "is_active": new_product.is_active
+                "image_url": new_product.image_url,
+                "is_active": new_product.is_active,
+                "is_featured": new_product.is_featured,
+                "features": new_product.features
             }
         }
-    except Exception as e:
+    except ValueError as ve:
+        print(f"❌ Erro de valor: {ve}")
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Erro ao criar produto: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Erro nos dados fornecidos: {str(ve)}")
+    except Exception as e:
+        print(f"❌ Erro ao criar produto: {e}")
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erro interno do servidor: {str(e)}")
 
 @app.put("/api/admin/products/{product_id}")
 async def update_product(
@@ -296,40 +320,70 @@ async def update_product(
     duration_days: int = Form(...),
     image_url: str = Form(""),
     features: str = Form(""),
-    is_active: bool = Form(True),
-    is_featured: bool = Form(False),
+    is_active: str = Form("true"),
+    is_featured: str = Form("false"),
     admin_user: User = Depends(get_admin_user),
     db: Session = Depends(get_db)
 ):
+    print(f"🔄 Atualizando produto ID: {product_id}")
+    
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
+        print(f"❌ Produto {product_id} não encontrado")
         raise HTTPException(status_code=404, detail="Produto não encontrado")
 
     try:
-        product.name = name
-        product.description = description
-        product.price = price
-        product.duration_days = duration_days
-        product.image_url = image_url if image_url else None
-        product.features = features if features else None
-        product.is_active = is_active
-        product.is_featured = is_featured
+        print(f"📝 Dados recebidos:")
+        print(f"  Nome: {name}")
+        print(f"  Preço: {price}")
+        print(f"  Duração: {duration_days}")
+        print(f"  Ativo: {is_active}")
+        print(f"  Destaque: {is_featured}")
+
+        # Converter strings para boolean
+        is_active_bool = is_active.lower() in ('true', '1', 'on', 'yes')
+        is_featured_bool = is_featured.lower() in ('true', '1', 'on', 'yes')
+
+        # Atualizar campos
+        product.name = name.strip()
+        product.description = description.strip() if description else None
+        product.price = float(price)
+        product.duration_days = int(duration_days)
+        product.image_url = image_url.strip() if image_url else None
+        product.features = features.strip() if features else None
+        product.is_active = is_active_bool
+        product.is_featured = is_featured_bool
+        product.updated_at = datetime.utcnow()
 
         db.commit()
+        db.refresh(product)
+
+        print(f"✅ Produto {product_id} atualizado com sucesso")
 
         return {
             "message": "Produto atualizado com sucesso",
             "product": {
                 "id": product.id,
                 "name": product.name,
+                "description": product.description,
                 "price": product.price,
                 "duration_days": product.duration_days,
-                "is_active": product.is_active
+                "image_url": product.image_url,
+                "is_active": product.is_active,
+                "is_featured": product.is_featured,
+                "features": product.features
             }
         }
-    except Exception as e:
+    except ValueError as ve:
+        print(f"❌ Erro de valor: {ve}")
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Erro ao atualizar produto: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Erro nos dados fornecidos: {str(ve)}")
+    except Exception as e:
+        print(f"❌ Erro ao atualizar produto: {e}")
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erro interno do servidor: {str(e)}")
 
 @app.delete("/api/admin/products/{product_id}")
 async def delete_product(
