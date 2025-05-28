@@ -2662,12 +2662,34 @@ async function submitProduct(event) {
         console.log(`📝 ID do produto sendo editado: ${editingId}`);
     }
 
-    // Adicionar valores booleanos corretamente
+    // Garantir que todos os campos necessários estão no FormData
+    const name = form.querySelector('[name="name"]').value;
+    const description = form.querySelector('[name="description"]').value || '';
+    const price = form.querySelector('[name="price"]').value;
+    const duration_days = form.querySelector('[name="duration_days"]').value;
+    const image_url = form.querySelector('[name="image_url"]').value || '';
+    const features = form.querySelector('[name="features"]').value || '';
     const isActive = document.getElementById('is_active').checked;
     const isFeatured = document.getElementById('is_featured').checked;
 
-    formData.set('is_active', isActive.toString());
-    formData.set('is_featured', isFeatured.toString());
+    // Limpar FormData e recriar com dados corretos
+    formData.delete('name');
+    formData.delete('description');
+    formData.delete('price');
+    formData.delete('duration_days');
+    formData.delete('image_url');
+    formData.delete('features');
+    formData.delete('is_active');
+    formData.delete('is_featured');
+
+    formData.append('name', name);
+    formData.append('description', description);
+    formData.append('price', price);
+    formData.append('duration_days', duration_days);
+    formData.append('image_url', image_url);
+    formData.append('features', features);
+    formData.append('is_active', isActive.toString());
+    formData.append('is_featured', isFeatured.toString());
 
     console.log('📋 Dados do formulário:');
     for (let [key, value] of formData.entries()) {

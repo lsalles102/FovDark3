@@ -327,51 +327,83 @@ async def update_product(
 ):
     print(f"🔄 Recebendo atualização para produto ID: {product_id}")
     print(f"📝 Dados recebidos para atualização:")
-    print(f"  Nome: {name}")
-    print(f"  Descrição: {description}")
+    print(f"  Nome: '{name}'")
+    print(f"  Descrição: '{description}'")
     print(f"  Preço: {price}")
     print(f"  Duração: {duration_days} dias")
-    print(f"  URL da imagem: {image_url}")
-    print(f"  Recursos: {features}")
-    print(f"  Ativo: {is_active}")
-    print(f"  Destaque: {is_featured}")
+    print(f"  URL da imagem: '{image_url}'")
+    print(f"  Recursos: '{features}'")
+    print(f"  Ativo: '{is_active}'")
+    print(f"  Destaque: '{is_featured}'")
     
+    # Verificar se o produto existe
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         print(f"❌ Produto {product_id} não encontrado no banco de dados")
         raise HTTPException(status_code=404, detail="Produto não encontrado")
     
-    print(f"✅ Produto encontrado: {product.name} (ID: {product.id})")
+    print(f"✅ Produto encontrado: '{product.name}' (ID: {product.id})")
+    print(f"📊 Estado atual do produto:")
+    print(f"  Nome atual: '{product.name}'")
+    print(f"  Preço atual: {product.price}")
+    print(f"  Ativo atual: {product.is_active}")
 
     try:
-        print(f"📝 Dados recebidos:")
-        print(f"  Nome: {name}")
-        print(f"  Preço: {price}")
-        print(f"  Duração: {duration_days}")
-        print(f"  Ativo: {is_active}")
-        print(f"  Destaque: {is_featured}")
+        # Validar dados de entrada
+        if not name or not name.strip():
+            raise HTTPException(status_code=400, detail="Nome do produto é obrigatório")
+        
+        if price < 0:
+            raise HTTPException(status_code=400, detail="Preço deve ser maior ou igual a zero")
+            
+        if duration_days <= 0:
+            raise HTTPException(status_code=400, detail="Duração deve ser maior que zero")
 
-        # Converter strings para boolean
-        is_active_bool = is_active.lower() in ('true', '1', 'on', 'yes')
-        is_featured_bool = is_featured.lower() in ('true', '1', 'on', 'yes')
+        # Converter strings para boolean de forma mais robusta
+        is_active_bool = str(is_active).lower() in ('true', '1', 'on', 'yes', 'active')
+        is_featured_bool = str(is_featured).lower() in ('true', '1', 'on', 'yes', 'featured')
 
-        # Atualizar campos
+        print(f"🔄 Convertendo valores:")
+        print(f"  is_active '{is_active}' -> {is_active_bool}")
+        print(f"  is_featured '{is_featured}' -> {is_featured_bool}")
+
+        # Salvar valores antigos para log
+        old_values = {
+            "name": product.name,
+            "price": product.price,
+            "is_active": product.is_active,
+            "is_featured": product.is_featured
+        }
+
+        # Atualizar campos do produto
         product.name = name.strip()
-        product.description = description.strip() if description else None
+        product.description = description.strip() if description and description.strip() else None
         product.price = float(price)
         product.duration_days = int(duration_days)
-        product.image_url = image_url.strip() if image_url else None
-        product.features = features.strip() if features else None
+        product.image_url = image_url.strip() if image_url and image_url.strip() else None
+        product.features = features.strip() if features and features.strip() else None
         product.is_active = is_active_bool
         product.is_featured = is_featured_bool
         product.updated_at = datetime.utcnow()
 
+        print(f"🔄 Atualizando produto no banco de dados...")
+        print(f"📊 Mudanças:")
+        print(f"  Nome: '{old_values['name']}' -> '{product.name}'")
+        print(f"  Preço: {old_values['price']} -> {product.price}")
+        print(f"  Ativo: {old_values['is_active']} -> {product.is_active}")
+        print(f"  Destaque: {old_values['is_featured']} -> {product.is_featured}")
+
+        # Commit das mudanças
         db.commit()
         db.refresh(product)
 
-        print(f"✅ Produto {product_id} atualizado com sucesso")
+        print(f"✅ Produto {product_id} atualizado com sucesso no banco!")
+        print(f"📊 Estado final:")
+        print(f"  Nome: '{product.name}'")
+        print(f"  Preço: {product.price}")
+        print(f"  Ativo: {product.is_active}")
 
-        return {
+        response_data = {
             "message": "Produto atualizado com sucesso",
             "product": {
                 "id": product.id,
@@ -382,13 +414,22 @@ async def update_product(
                 "image_url": product.image_url,
                 "is_active": product.is_active,
                 "is_featured": product.is_featured,
-                "features": product.features
+                "features": product.features,
+                "updated_at": product.updated_at.isoformat() if product.updated_at else None
             }
         }
+        
+        print(f"📤 Retornando resposta: {response_data}")
+        return response_data
+
     except ValueError as ve:
         print(f"❌ Erro de valor: {ve}")
         db.rollback()
         raise HTTPException(status_code=400, detail=f"Erro nos dados fornecidos: {str(ve)}")
+    except HTTPException as he:
+        print(f"❌ HTTP Exception: {he.detail}")
+        db.rollback()
+        raise he
     except Exception as e:
         print(f"❌ Erro ao atualizar produto: {e}")
         import traceback
