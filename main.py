@@ -138,7 +138,7 @@ async def reset_password(
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
     
     user.senha_hash = get_password_hash(new_password)
-    db.commit()
+            db.commit()
     
     return {"message": "Senha alterada com sucesso"}
 
@@ -229,7 +229,7 @@ async def register_user(
     )
     
     db.add(new_user)
-    db.commit()
+            db.commit()
     db.refresh(new_user)
     
     # Enviar email de confirmação
@@ -259,9 +259,6 @@ async def login_user(
             print(f"❌ Usuário não encontrado: {email}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                if user_check:
-    user_check.tentativas_login = (user_check.tentativas_login or 0) + 1
-    db.commit()
                 detail="Email ou senha incorretos"
             )
         
@@ -279,10 +276,10 @@ async def login_user(
         
         print(f"✅ Autenticação bem-sucedida para: {email}")
 
-        user.tentativas_login = 0
-    user.ultimo_login = datetime.utcnow()
-    user.ip_ultimo_login = request.client.host
-    db.commit()
+                user.tentativas_login = 0
+            user.ultimo_login = datetime.utcnow()
+            user.ip_ultimo_login = request.client.host
+            db.commit()
         
         # Lista de emails autorizados como admin (case-insensitive)
         AUTHORIZED_ADMIN_EMAILS = [
@@ -298,13 +295,13 @@ async def login_user(
             # Garantir que usuários autorizados sejam admin
             if not user.is_admin:
                 user.is_admin = True
-                db.commit()
+                        db.commit()
                 print(f"👑 Usuário {email} promovido a admin")
         else:
             # Garantir que usuários não autorizados NÃO sejam admin
             if user.is_admin:
                 user.is_admin = False
-                db.commit()
+                        db.commit()
                 print(f"👤 Privilégios de admin removidos de {email}")
         
         # Criar token de acesso
@@ -440,7 +437,7 @@ async def create_payment_preference(
         )
         
         db.add(payment)
-        db.commit()
+                db.commit()
         db.refresh(payment)
         
         # Configurar preferência de pagamento
@@ -541,47 +538,6 @@ def main():
     # Aqui seria implementada a lógica do aim assist
     # IMPORTANTE: Este é apenas um exemplo educacional
     
-# ========================
-# HWID LOCK ENDPOINTS
-# ========================
-from fastapi import Form
-
-@app.post("/api/hwid/save")
-async def save_hwid(
-    hwid: str = Form(...),
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    if not hwid:
-        raise HTTPException(status_code=400, detail="HWID ausente.")
-
-    if current_user.hwid and current_user.hwid != hwid:
-        raise HTTPException(status_code=403, detail="Este login já está vinculado a outro dispositivo.")
-
-    if not current_user.hwid:
-        current_user.hwid = hwid
-        db.commit()
-
-    return {"message": "HWID salvo", "hwid": current_user.hwid}
-
-@app.post("/api/license/check")
-async def check_license_with_hwid(
-    hwid: str = Form(...),
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    if not current_user.data_expiracao or current_user.data_expiracao < datetime.utcnow():
-        raise HTTPException(status_code=403, detail="Licença expirada.")
-
-    if current_user.hwid and current_user.hwid != hwid:
-        raise HTTPException(status_code=403, detail="HWID não autorizado para este usuário.")
-
-    dias_restantes = (current_user.data_expiracao - datetime.utcnow()).days
-    return {
-        "valid": True,
-        "days_remaining": dias_restantes
-    }
-
 if __name__ == "__main__":
     main()
 """
@@ -732,7 +688,7 @@ async def create_product(
         )
         
         db.add(new_product)
-        db.commit()
+                db.commit()
         db.refresh(new_product)
         
         return {
@@ -784,7 +740,7 @@ async def update_product(
     product.is_active = is_active
     product.is_featured = is_featured
     
-    db.commit()
+            db.commit()
     
     return {"message": "Produto atualizado com sucesso"}
 
@@ -803,7 +759,7 @@ async def delete_product(
         )
     
     db.delete(product)
-    db.commit()
+            db.commit()
     
     return {"message": "Produto deletado com sucesso"}
 
@@ -900,7 +856,7 @@ async def update_user_license(
     else:
         user.data_expiracao = None
     
-    db.commit()
+            db.commit()
     
     return {"message": "Licença atualizada com sucesso"}
 
@@ -925,7 +881,7 @@ async def delete_user(
         )
     
     db.delete(user)
-    db.commit()
+            db.commit()
     
     return {"message": "Usuário deletado com sucesso"}
 
@@ -973,7 +929,7 @@ async def update_site_settings(
                     )
                     db.add(new_setting)
         
-        db.commit()
+                db.commit()
         return {"message": "Configurações atualizadas com sucesso"}
     except Exception as e:
         db.rollback()
@@ -1063,7 +1019,7 @@ async def save_general_settings(
                     )
                     db.add(new_setting)
         
-        db.commit()
+                db.commit()
         return {"message": "Configurações gerais salvas com sucesso"}
         
     except Exception as e:
@@ -1097,7 +1053,7 @@ async def toggle_maintenance_mode(
         )
         db.add(new_setting)
     
-    db.commit()
+            db.commit()
     
     status_text = "ativado" if enabled else "desativado"
     return {"message": f"Modo manutenção {status_text} com sucesso", "enabled": enabled}
@@ -1132,47 +1088,6 @@ async def get_public_settings(db: Session = Depends(get_db)):
     
     return settings_dict
 
-
-# ========================
-# HWID LOCK ENDPOINTS
-# ========================
-from fastapi import Form
-
-@app.post("/api/hwid/save")
-async def save_hwid(
-    hwid: str = Form(...),
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    if not hwid:
-        raise HTTPException(status_code=400, detail="HWID ausente.")
-
-    if current_user.hwid and current_user.hwid != hwid:
-        raise HTTPException(status_code=403, detail="Este login já está vinculado a outro dispositivo.")
-
-    if not current_user.hwid:
-        current_user.hwid = hwid
-        db.commit()
-
-    return {"message": "HWID salvo", "hwid": current_user.hwid}
-
-@app.post("/api/license/check")
-async def check_license_with_hwid(
-    hwid: str = Form(...),
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    if not current_user.data_expiracao or current_user.data_expiracao < datetime.utcnow():
-        raise HTTPException(status_code=403, detail="Licença expirada.")
-
-    if current_user.hwid and current_user.hwid != hwid:
-        raise HTTPException(status_code=403, detail="HWID não autorizado para este usuário.")
-
-    dias_restantes = (current_user.data_expiracao - datetime.utcnow()).days
-    return {
-        "valid": True,
-        "days_remaining": dias_restantes
-    }
 
 if __name__ == "__main__":
     import os
