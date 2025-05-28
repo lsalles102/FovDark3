@@ -1261,7 +1261,7 @@
         </div>
 
         <!-- Products Grid -->
-        <div class="products-admin-grid" id="productsAdminGrid">
+        <div class="products-admin-grid" id="productsGrid">
             <div class="loading-card">
                 <i class="fas fa-spinner fa-spin"></i>
                 <p>Carregando produtos...</p>
@@ -1892,21 +1892,19 @@ function displayUsers(users) {
 
 async function loadProducts() {
     const token = localStorage.getItem('access_token');
-    const tbody = document.getElementById('productsTableBody');
+    const grid = document.getElementById('productsGrid');
 
-    if (!tbody) {
-        console.error('Elemento productsTableBody não encontrado');
+    if (!grid) {
+        console.error('Container de produtos não encontrado');
         return;
     }
 
     // Mostrar loading
-    tbody.innerHTML = `
-        <tr>
-            <td colspan="6" class="loading-row">
-                <i class="fas fa-spinner fa-spin"></i>
-                Carregando produtos...
-            </td>
-        </tr>
+    grid.innerHTML = `
+        <div class="loading-card">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Carregando produtos...</p>
+        </div>
     `;
 
     try {
@@ -1922,13 +1920,12 @@ async function loadProducts() {
             console.log('Produtos carregados:', data);
             displayProducts(data);
         } else if (response.status === 401) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="error-row">
-                        <i class="fas fa-lock"></i>
-                        Sessão expirada. Faça login novamente.
-                    </td>
-                </tr>
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-lock"></i>
+                    <h3>Sessão expirada</h3>
+                    <p>Faça login novamente.</p>
+                </div>
             `;
             setTimeout(() => {
                 localStorage.clear();
@@ -1940,13 +1937,12 @@ async function loadProducts() {
         }
     } catch (error) {
         console.error('Erro ao carregar produtos:', error);
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="error-row">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    Erro ao carregar produtos: ${error.message}
-                </td>
-            </tr>
+        grid.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Erro ao carregar produtos</h3>
+                <p>${error.message}</p>
+            </div>
         `;
     }
 }

@@ -442,7 +442,7 @@ async function loadProducts() {
         if (response.ok) {
             const products = await response.json();
             console.log('✅ Produtos carregados:', products);
-            
+
             // Verificar se products é um array
             if (Array.isArray(products)) {
                 displayProducts(products);
@@ -481,14 +481,15 @@ async function loadProducts() {
 }
 
 function displayProducts(products) {
-    const container = document.getElementById('productsGrid');
-    if (!container) {
-        console.warn('⚠️ Container de produtos não encontrado');
+    const grid = document.getElementById('productsGrid');
+
+    if (!grid) {
+        console.error('Grid de produtos não encontrado');
         return;
     }
 
     if (products.length === 0) {
-        container.innerHTML = `
+        grid.innerHTML = `
             <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-secondary);">
                 <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
                 <h3>Nenhum produto disponível</h3>
@@ -498,10 +499,10 @@ function displayProducts(products) {
         return;
     }
 
-    container.innerHTML = '';
+    grid.innerHTML = '';
     products.forEach(product => {
         const productCard = createProductCard(product);
-        container.appendChild(productCard);
+        grid.appendChild(productCard);
     });
 }
 
