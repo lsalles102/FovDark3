@@ -14,62 +14,74 @@ if not MERCADOPAGO_ACCESS_TOKEN:
 
 mp = mercadopago.SDK(MERCADOPAGO_ACCESS_TOKEN)
 
-def create_test_user():
-    """Criar usuário de teste para o Mercado Pago"""
+def create_test_users():
+    """Criar usuários de teste para o Mercado Pago"""
     try:
-        print("🔄 Criando usuário de teste...")
+        print("🔄 Criando usuários de teste...")
         
-        # Dados para criar usuário de teste
-        test_user_data = {
-            "json_data": {
-                "site_id": "MLB"  # Brasil
-            }
-        }
+        # Dados para criar usuários de teste (vendedor e comprador)
+        users_data = [
+            {"site_id": "MLB"},  # Comprador
+            {"site_id": "MLB"}   # Vendedor
+        ]
         
-        # Criar usuário de teste
-        response = mp.test_user().create(test_user_data)
+        created_users = []
         
-        if response["status"] == 201:
-            user = response["response"]
-            print("✅ Usuário de teste criado com sucesso!")
-            print(f"📧 Email: {user['email']}")
-            print(f"🔑 User ID: {user['id']}")
-            print(f"🏦 Access Token: {user['access_token']}")
-            print(f"🏛️ Public Key: {user['public_key']}")
-            
-            # Criar cartões de teste
-            create_test_cards(user)
-            
-            return user
-        else:
-            print(f"❌ Erro ao criar usuário: {response}")
-            return None
+        for i, user_data in enumerate(users_data):
+            try:
+                # Usar a API correta para criar usuários de teste
+                response = mp.test_user().create(user_data)
+                
+                if response["status"] == 201:
+                    user = response["response"]
+                    user_type = "Comprador" if i == 0 else "Vendedor"
+                    print(f"\n✅ {user_type} de teste criado com sucesso!")
+                    print(f"📧 Email: {user['email']}")
+                    print(f"🔑 User ID: {user['id']}")
+                    print(f"🏦 Access Token: {user['access_token']}")
+                    print(f"🏛️ Public Key: {user['public_key']}")
+                    
+                    created_users.append({
+                        "type": user_type,
+                        "email": user['email'],
+                        "user_id": user['id'],
+                        "access_token": user['access_token'],
+                        "public_key": user['public_key']
+                    })
+                else:
+                    print(f"❌ Erro ao criar {user_type}: {response}")
+                    
+            except Exception as e:
+                print(f"❌ Erro ao criar usuário {i+1}: {e}")
+                continue
+        
+        return created_users
             
     except Exception as e:
-        print(f"❌ Erro: {e}")
-        return None
+        print(f"❌ Erro geral: {e}")
+        return []
 
-def create_test_cards(user):
-    """Criar cartões de teste para o usuário"""
-    print("\n💳 Cartões de teste disponíveis:")
+def show_test_cards():
+    """Mostrar cartões de teste disponíveis"""
+    print("\n💳 CARTÕES DE TESTE PARA USAR:")
     
     test_cards = [
         {
-            "name": "Visa Aprovado",
+            "name": "✅ Visa Aprovado",
             "number": "4235647728025682",
             "security_code": "123",
             "expiration_month": "11",
             "expiration_year": "2025"
         },
         {
-            "name": "Mastercard Aprovado", 
+            "name": "✅ Mastercard Aprovado", 
             "number": "5031433215406351",
             "security_code": "123",
             "expiration_month": "11",
             "expiration_year": "2025"
         },
         {
-            "name": "Visa Rejeitado",
+            "name": "❌ Visa Rejeitado (para testes)",
             "number": "4000000000000002",
             "security_code": "123", 
             "expiration_month": "11",
@@ -83,43 +95,63 @@ def create_test_cards(user):
         print(f"   CVV: {card['security_code']}")
         print(f"   Validade: {card['expiration_month']}/{card['expiration_year']}")
 
-def show_test_credentials():
-    """Mostrar credenciais de teste"""
-    print("\n🔧 CONFIGURAÇÃO NECESSÁRIA:")
-    print("Para testar pagamentos, você precisa:")
-    print("1. Usar o email do usuário de teste criado acima")
-    print("2. Configurar o Access Token de teste nos Secrets")
-    print("3. Usar os cartões de teste para realizar pagamentos")
+def show_solution_steps():
+    """Mostrar passos para resolver o problema"""
+    print("\n" + "="*60)
+    print("🔧 COMO RESOLVER O ERRO 'NÃO É POSSÍVEL PAGAR PARA VOCÊ MESMO':")
+    print("="*60)
     
-    print("\n⚙️ VARIÁVEIS DE AMBIENTE:")
-    print("No painel de Secrets, configure:")
-    print("- MERCADOPAGO_ACCESS_TOKEN: (token do usuário vendedor)")
-    print("- MERCADOPAGO_PUBLIC_KEY: (chave pública)")
+    print("\n📋 OPÇÃO 1 - USAR EMAIL DIFERENTE (MAIS SIMPLES):")
+    print("1️⃣ Registre uma nova conta no seu site com um email diferente")
+    print("2️⃣ Faça login com essa nova conta")
+    print("3️⃣ Tente fazer o pagamento novamente")
+    print("4️⃣ Use os cartões de teste mostrados acima")
+    
+    print("\n📋 OPÇÃO 2 - CONFIGURAR USUÁRIOS DE TESTE:")
+    print("1️⃣ Execute este script para criar usuários de teste")
+    print("2️⃣ Configure as credenciais de teste nos Secrets")
+    print("3️⃣ Use o email do usuário comprador para testes")
+    
+    print("\n⚙️ CREDENCIAIS ATUAIS:")
+    print(f"🔑 Access Token: {'***CONFIGURADO***' if MERCADOPAGO_ACCESS_TOKEN else '❌ NÃO CONFIGURADO'}")
+    print(f"🏛️ Ambiente: {'🧪 TESTE' if 'TEST' in MERCADOPAGO_ACCESS_TOKEN else '🏭 PRODUÇÃO'}")
 
 def main():
-    print("🚀 Configurando ambiente de teste do Mercado Pago...")
-    print("=" * 50)
+    print("🚀 SOLUCIONADOR DE PROBLEMAS - MERCADO PAGO")
+    print("=" * 60)
     
-    # Verificar se está em modo sandbox
+    # Verificar ambiente
     if "TEST" in MERCADOPAGO_ACCESS_TOKEN:
-        print("✅ Modo sandbox detectado")
+        print("✅ Detectado modo TESTE - OK para desenvolvimento")
     else:
-        print("⚠️ Usando credenciais de produção - cuidado!")
+        print("⚠️  Detectado modo PRODUÇÃO - Cuidado com testes!")
     
-    # Criar usuário de teste
-    test_user = create_test_user()
+    # Mostrar solução
+    show_solution_steps()
     
-    if test_user:
-        show_test_credentials()
-        
-        print("\n📝 PRÓXIMOS PASSOS:")
-        print("1. Salve as credenciais do usuário de teste")
-        print("2. Use um email diferente do vendedor para testar")
-        print("3. Use os cartões de teste para pagamentos")
-        print("4. Verifique os webhooks no painel do Mercado Pago")
+    # Mostrar cartões de teste
+    show_test_cards()
     
-    print("\n" + "=" * 50)
-    print("✅ Configuração concluída!")
+    # Tentar criar usuários de teste (pode falhar com credenciais de produção)
+    print("\n🔄 Tentando criar usuários de teste...")
+    users = create_test_users()
+    
+    if users:
+        print(f"\n✅ {len(users)} usuários de teste criados!")
+        for user in users:
+            print(f"\n👤 {user['type']}:")
+            print(f"   📧 Email: {user['email']}")
+            print(f"   🔑 Access Token: {user['access_token'][:20]}...")
+    else:
+        print("\n❌ Não foi possível criar usuários de teste")
+        print("💡 Use a OPÇÃO 1 (email diferente) que é mais simples!")
+    
+    print("\n" + "="*60)
+    print("✅ RESUMO DA SOLUÇÃO:")
+    print("📧 Use um EMAIL DIFERENTE para fazer o teste de pagamento")
+    print("💳 Use os cartões de teste mostrados acima")
+    print("🔒 Certifique-se de estar em modo TESTE se possível")
+    print("="*60)
 
 if __name__ == "__main__":
     main()
