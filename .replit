@@ -5,7 +5,7 @@ run = "Run command"
 channel = "stable-24_05"
 
 [workflows]
-runButton = "FovDark Server"
+runButton = "Test FovDark"
 
 [[workflows.workflow]]
 name = "Project"
@@ -41,6 +41,15 @@ args = "python main.py"
 [[workflows.workflow]]
 name = "FovDark Server Fixed"
 author = 43165487
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py"
+
+[[workflows.workflow]]
+name = "Test FovDark"
+author = 43280668
 mode = "sequential"
 
 [[workflows.workflow.tasks]]
