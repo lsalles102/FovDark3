@@ -245,6 +245,32 @@ function showToast(message, type = 'info') {
     }, 5000);
 }
 
+// Função para validar email
+function validateEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+// Função para validar senha
+function validatePassword(password) {
+    return password && password.length >= 8;
+}
+
+// Função para sanitizar entrada
+function sanitizeInput(input) {
+    if (typeof input !== 'string') return '';
+    return input.trim().replace(/[<>&"']/g, function(match) {
+        const entities = {
+            '<': '&lt;',
+            '>': '&gt;',
+            '&': '&amp;',
+            '"': '&quot;',
+            "'": '&#x27;'
+        };
+        return entities[match];
+    });
+}
+
 function checkAuthenticationStatus() {
     const token = localStorage.getItem('access_token');
     const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
@@ -297,6 +323,65 @@ function updateAuthenticationUI() {
         // Verificar se é admin autorizado
         const userEmailLower = userData.email.toLowerCase().trim();
         const isAuthorizedAdmin = AUTHORIZED_ADMIN_EMAILS.some(email => 
+            email.toLowerCase() === userEmailLower
+        );
+
+        // Mostrar/ocultar link admin
+        if (adminLink) {
+            adminLink.style.display = isAuthorizedAdmin ? 'flex' : 'none';
+        }
+    } else {
+        // Usuário não logado
+        if (loginLink) loginLink.style.display = 'flex';
+        if (logoutLink) logoutLink.style.display = 'none';
+        if (painelLink) painelLink.style.display = 'none';
+        if (adminLink) adminLink.style.display = 'none';
+    }
+}
+
+// Função para fazer requisições com timeout
+async function fetchWithTimeout(url, options = {}, timeout = 10000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    
+    try {
+        const response = await fetch(url, {
+            ...options,
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        return response;
+    } catch (error) {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+            throw new Error('Timeout: A requisição demorou muito para responder');
+        }
+        throw error;
+    }
+}
+
+// Função para mostrar loading
+function showLoading(element, text = 'Carregando...') {
+    if (!element) return;
+    
+    const originalContent = element.innerHTML;
+    element.innerHTML = `
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <span>${text}</span>
+        </div>
+    `;
+    element.disabled = true;
+    element.dataset.originalContent = originalContent;
+}
+
+// Função para esconder loading
+function hideLoading(element) {
+    if (!element || !element.dataset.originalContent) return;
+    
+    element.innerHTML = element.dataset.originalContent;
+    element.disabled = false;
+    delete element.dataset.originalContent; 
             email.toLowerCase() === userEmailLower
         );
 

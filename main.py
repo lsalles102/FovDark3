@@ -11,6 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from starlette.middleware.base import BaseHTTPMiddleware
 import uvicorn
+from collections import defaultdict
+import time
 
 from database import get_db, engine, Base
 from models import User, Payment, Product, SiteSettings
@@ -73,6 +75,39 @@ async def save_hwid(
         raise HTTPException(status_code=500, detail="Erro interno ao salvar HWID")
 
 
+class RateLimitingMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app, calls: int = 60, period: int = 60):
+        super().__init__(app)
+        self.calls = calls
+        self.period = period
+        self.requests = defaultdict(list)
+    
+    async def dispatch(self, request: Request, call_next):
+        # Pular rate limiting para arquivos estáticos e admin
+        if request.url.path.startswith("/static") or request.url.path.startswith("/admin"):
+            return await call_next(request)
+            
+        client_ip = request.client.host if request.client else "unknown"
+        now = time.time()
+        
+        # Limpar requisições antigas
+        self.requests[client_ip] = [
+            req_time for req_time in self.requests[client_ip] 
+            if now - req_time < self.period
+        ]
+        
+        # Verificar se excedeu o limite
+        if len(self.requests[client_ip]) >= self.calls:
+            raise HTTPException(
+                status_code=429, 
+                detail="Muitas requisições. Tente novamente em alguns minutos."
+            )
+        
+        # Adicionar requisição atual
+        self.requests[client_ip].append(now)
+        
+        return await call_next(request)
+
 class MaintenanceMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         if request.url.path.startswith("/static") or request.url.path.startswith("/admin") or request.url.path.startswith("/api/admin"):
@@ -93,6 +128,7 @@ class MaintenanceMiddleware(BaseHTTPMiddleware):
 
         return await call_next(request)
 
+app.add_middleware(RateLimitingMiddleware, calls=100, period=60)  # 100 req/min
 app.add_middleware(MaintenanceMiddleware)
 
 async def verify_token_middleware(credentials: HTTPAuthorizationCredentials = Depends(security)):
@@ -671,9 +707,13 @@ async def upload_image(
         if not file.content_type or not file.content_type.startswith('image/'):
             raise HTTPException(status_code=400, detail="Arquivo deve ser uma imagem")
 
-        # Verificar tamanho do arquivo (máximo 10MB)
-        if not file.size or file.size > 10 * 1024 * 1024:
-            raise HTTPException(status_code=400, detail="Arquivo muito grande. Máximo 10MB")
+        # Verificar tamanho do arquivo (máximo 5MB para melhor performance)
+        if not file.size or file.size > 5 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="Arquivo muito grande. Máximo 5MB")
+        
+        # Verificar se o arquivo tem nome válido
+        if not file.filename or len(file.filename.strip()) == 0:
+            raise HTTPException(status_code=400, detail="Nome do arquivo inválido")
 
         # Criar diretório se não existir
         import os

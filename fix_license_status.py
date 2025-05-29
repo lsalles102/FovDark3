@@ -56,37 +56,33 @@ def fix_license_status():
                     print(f"   ✓ Status correto: {old_status}")
                     
             elif user.data_expiracao > now:
-                # Data de expiração válida - licença ativa
-                days_remaining = (user.data_expiracao - now).days
+                # Licença válida - status deve ser ativa
                 if user.status_licenca != "ativa":
                     user.status_licenca = "ativa"
                     updated_count += 1
-                    print(f"   ✅ Alterado: {old_status} → ativa (expira em {days_remaining} dias)")
+                    print(f"   ✅ Alterado: {old_status} → ativa (licença válida)")
                 else:
-                    print(f"   ✓ Status correto: ativa (expira em {days_remaining} dias)")
+                    print(f"   ✓ Status correto: {old_status}")
                     
             else:
-                # Data de expiração passou - licença expirada
-                days_expired = (now - user.data_expiracao).days
+                # Licença expirada - status deve ser expirada
                 if user.status_licenca != "expirada":
                     user.status_licenca = "expirada"
                     updated_count += 1
-                    print(f"   ✅ Alterado: {old_status} → expirada (há {days_expired} dias)")
+                    print(f"   ✅ Alterado: {old_status} → expirada (licença vencida)")
                 else:
-                    print(f"   ✓ Status correto: expirada (há {days_expired} dias)")
-        
-        # Salvar alterações
+                    print(f"   ✓ Status correto: {old_status}")
+
+        # Salvar mudanças
         if updated_count > 0:
             db.commit()
-            print(f"\n💾 Alterações salvas no banco de dados")
+            print(f"\n✅ Correção concluída! {updated_count} usuários atualizados.")
         else:
-            print(f"\n📝 Nenhuma alteração necessária")
-            
-        print(f"\n🎯 Processo concluído! {updated_count} usuários tiveram o status corrigido.")
-        
-        # Mostrar resumo
+            print(f"\n✓ Todos os status já estavam corretos.")
+
+        # Estatísticas finais
         print("\n" + "="*60)
-        print("📊 RESUMO ATUAL:")
+        print("📊 ESTATÍSTICAS FINAIS:")
         
         active_count = db.query(User).filter(User.status_licenca == "ativa").count()
         expired_count = db.query(User).filter(User.status_licenca == "expirada").count()
@@ -129,7 +125,5 @@ if __name__ == "__main__":
     
     if success:
         print("\n✅ Script executado com sucesso!")
-        sys.exit(0)
     else:
-        print("\n❌ Script falhou durante a execução!")
-        sys.exit(1)
+        print("\n❌ Script falhou. Verifique os logs acima.")
