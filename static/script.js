@@ -381,26 +381,7 @@ function hideLoading(element) {
     
     element.innerHTML = element.dataset.originalContent;
     element.disabled = false;
-    delete element.dataset.originalContent; 
-            email.toLowerCase() === userEmailLower
-        );
-
-        // Mostrar menu admin apenas se for autorizado E se is_admin for true
-        const adminMenuLink = document.querySelector('.nav-link[href="/admin"]');
-        if (adminMenuLink) {
-            if (isAuthorizedAdmin && userData.is_admin) {
-                adminMenuLink.style.display = 'flex';
-            } else {
-                adminMenuLink.style.display = 'none';
-            }
-        }
-    } else {
-        // Usuário não logado
-        if (loginLink) loginLink.style.display = 'flex';
-        if (logoutLink) logoutLink.style.display = 'none';
-        if (painelLink) painelLink.style.display = 'none';
-        if (adminLink) adminLink.style.display = 'none';
-    }
+    delete element.dataset.originalContent;
 }
 
 function logout() {
