@@ -1206,9 +1206,15 @@ block content %}
 
             const data = await response.json();
 
-            if (response.ok && data.init_point) {
-                // Redirecionar para o checkout do Mercado Pago
-                window.location.href = data.init_point;
+            if (response.ok && data.success) {
+                // Mostrar mensagem de sucesso
+                showToast("Redirecionando para o pagamento...", "success");
+                
+                // Aguardar um momento e redirecionar
+                setTimeout(() => {
+                    // Redirecionar para o checkout do Mercado Pago
+                    window.location.href = data.init_point || data.sandbox_init_point;
+                }, 1500);
             } else {
                 if (response.status === 401) {
                     showToast(

@@ -801,6 +801,21 @@ async def terms_page(request: Request):
     """Página de termos de uso"""
     return templates.TemplateResponse("terms.html", {"request": request})
 
+@app.get("/success", response_class=HTMLResponse)
+async def success_page(request: Request):
+    """Página de pagamento bem-sucedido"""
+    return templates.TemplateResponse("success.html", {"request": request})
+
+@app.get("/cancelled", response_class=HTMLResponse)
+async def cancelled_page(request: Request):
+    """Página de pagamento cancelado"""
+    return templates.TemplateResponse("cancelled.html", {"request": request})
+
+@app.get("/pending", response_class=HTMLResponse)
+async def pending_page(request: Request):
+    """Página de pagamento pendente"""
+    return templates.TemplateResponse("pending.html", {"request": request})
+
 @app.get("/recover", response_class=HTMLResponse)
 async def recover_page(request: Request):
     return templates.TemplateResponse("recover.html", {"request": request})

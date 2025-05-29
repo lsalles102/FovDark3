@@ -9,103 +9,146 @@ from models import User, Payment
 from auth import get_current_user
 from pydantic import BaseModel
 from typing import Optional
-# Configurações temporárias do Mercado Pago
-PRODUCTS = {
-    "mensal": {
-        "name": "Plano Mensal",
-        "price": 79.90,
-        "duration_days": 30
-    },
-    "trimestral": {
-        "name": "Plano Trimestral", 
-        "price": 199.90,
-        "duration_days": 90
-    },
-    "anual": {
-        "name": "Plano Anual",
-        "price": 299.90,
-        "duration_days": 365
-    }
-}
-
-def create_payment_preference(plan_id, user_id, user_email):
-    # Simulação temporária - em produção usar SDK do Mercado Pago
-    return {
-        "id": f"fake_pref_{user_id}_{plan_id}",
-        "init_point": f"/sucesso?plan={plan_id}",
-        "sandbox_init_point": f"/sucesso?plan={plan_id}"
-    }
-
-def handle_payment_notification(data):
-    return True, "Payment processed"
-
-def get_plan_details(plan_id):
-    return PRODUCTS.get(plan_id)
+from mercadopago_integration import (
+    create_payment_preference, 
+    handle_payment_notification, 
+    get_plan_details,
+    PRODUCTS
+)
 
 router = APIRouter()
 
-@router.post("/mercadopago/create-preference")
-async def create_preference(
-    request: Request,
+class CheckoutRequest(BaseModel):
+    plano: str
+    product_id: Optional[int] = None
+
+@router.post("/criar-checkout")
+async def criar_checkout(
+    request: CheckoutRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """Criar checkout no Mercado Pago"""
     try:
-        data = await request.json()
-        plan_id = data.get("plan_id")
+        print(f"🛒 Criando checkout para usuário: {current_user.email}")
+        print(f"📦 Plano: {request.plano}, Product ID: {request.product_id}")
 
-        if not plan_id or plan_id not in PRODUCTS:
-            raise HTTPException(status_code=400, detail="Plano inválido")
+        # Buscar produto no banco de dados se product_id fornecido
+        if request.product_id:
+            from models import Product
+            produto_db = db.query(Product).filter(
+                Product.id == request.product_id,
+                Product.is_active == True
+            ).first()
+
+            if not produto_db:
+                raise HTTPException(status_code=404, detail="Produto não encontrado ou inativo")
+
+            produto_info = {
+                "id": produto_db.id,
+                "nome": produto_db.name,
+                "preco": float(produto_db.price),
+                "duracao": produto_db.duration_days
+            }
+            plan_id = f"product_{produto_db.id}"
+        else:
+            # Usar produtos legados para compatibilidade
+            if request.plano not in PRODUCTS:
+                raise HTTPException(status_code=400, detail="Plano não encontrado")
+
+            legacy_plan = PRODUCTS[request.plano]
+            produto_info = {
+                "id": None,
+                "nome": legacy_plan["name"],
+                "preco": legacy_plan["price"],
+                "duracao": legacy_plan["days"]
+            }
+            plan_id = request.plano
 
         # Criar preferência no Mercado Pago
-        preference = create_payment_preference(
+        preference_result = create_payment_preference(
             plan_id=plan_id,
             user_id=current_user.id,
-            user_email=current_user.email
+            user_email=current_user.email,
+            product_id=request.product_id
         )
 
-        if "error" in preference:
-            raise HTTPException(status_code=400, detail=preference["error"])
+        if "error" in preference_result:
+            print(f"❌ Erro ao criar preferência: {preference_result['error']}")
+            raise HTTPException(status_code=400, detail=preference_result["error"])
 
-        # Criar registro de pagamento pendente
-        new_payment = Payment(
+        # Registrar pagamento pendente no banco
+        pagamento = Payment(
             user_id=current_user.id,
-            valor=PRODUCTS[plan_id]["price"],
-            plano=plan_id,
-            status="pendente",
-            gateway_id=preference["id"]
+            product_id=request.product_id,
+            valor=produto_info["preco"],
+            plano=produto_info["nome"],
+            gateway_id=preference_result["id"],
+            status="pending"
         )
-        db.add(new_payment)
+
+        db.add(pagamento)
         db.commit()
+        db.refresh(pagamento)
+
+        print(f"✅ Checkout criado com sucesso - Preference ID: {preference_result['id']}")
 
         return {
             "success": True,
-            "preference_id": preference["id"],
-            "init_point": preference["init_point"],
-            "sandbox_init_point": preference.get("sandbox_init_point"),
-            "message": "Preferência criada com sucesso"
+            "message": "Checkout criado com sucesso",
+            "preference_id": preference_result["id"],
+            "init_point": preference_result["init_point"],
+            "sandbox_init_point": preference_result.get("sandbox_init_point", preference_result["init_point"])
         }
 
+    except HTTPException as he:
+        raise he
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"❌ Erro ao criar checkout: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
 
 @router.post("/webhook/mercadopago")
 async def mercadopago_webhook(request: Request, db: Session = Depends(get_db)):
+    """Webhook para receber notificações do Mercado Pago"""
     try:
         # Obter dados do webhook
         body = await request.body()
-        data = json.loads(body)
 
-        # Processar notificação
-        success, message = handle_payment_notification(data)
+        # Log do webhook recebido
+        print(f"🔔 Webhook recebido do Mercado Pago")
+        print(f"📋 Headers: {dict(request.headers)}")
 
-        if success:
-            return {"status": "ok", "message": message}
+        # Tentar decodificar como JSON
+        try:
+            data = json.loads(body) if body else {}
+        except json.JSONDecodeError:
+            # Se não for JSON válido, tentar como form data
+            form_data = await request.form()
+            data = dict(form_data)
+
+        print(f"📊 Dados recebidos: {data}")
+
+        # Verificar se é uma notificação de pagamento
+        if data.get("type") == "payment":
+            success, message = handle_payment_notification(data)
+
+            if success:
+                print(f"✅ Webhook processado: {message}")
+                return {"status": "ok", "message": message}
+            else:
+                print(f"❌ Erro no webhook: {message}")
+                return {"status": "error", "message": message}
         else:
-            raise HTTPException(status_code=400, detail=message)
+            print(f"ℹ️ Tipo de notificação ignorado: {data.get('type', 'unknown')}")
+            return {"status": "ok", "message": "Tipo de notificação não processado"}
 
     except Exception as e:
-        print(f"Erro no webhook: {e}")
+        print(f"💥 Erro crítico no webhook: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return {"status": "error", "message": str(e)}
 
 @router.get("/payment/status/{payment_id}")
@@ -114,6 +157,7 @@ async def check_payment_status(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """Verificar status de um pagamento específico"""
     try:
         # Buscar pagamento no banco
         payment = db.query(Payment).filter(
@@ -126,13 +170,18 @@ async def check_payment_status(
 
         return {
             "payment_id": payment.id,
+            "gateway_id": payment.gateway_id,
             "status": payment.status,
-            "amount": payment.valor,
+            "amount": float(payment.valor),
             "plan": payment.plano,
-            "date": payment.data_pagamento.isoformat()
+            "date": payment.data_pagamento.isoformat() if payment.data_pagamento else None,
+            "product_id": payment.product_id
         }
 
+    except HTTPException as he:
+        raise he
     except Exception as e:
+        print(f"❌ Erro ao verificar status: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/plans")
@@ -140,103 +189,22 @@ async def get_available_plans():
     """Retorna os planos disponíveis"""
     return PRODUCTS
 
-class CheckoutRequest(BaseModel):
-    plano: str
-    product_id: Optional[int] = None
-
-@router.post("/criar-checkout")
-async def criar_checkout(
-    request: CheckoutRequest,
+@router.post("/test-payment/{plan_id}")
+async def test_payment_activation(
+    plan_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    from models import Product
-    
-    # Buscar produto no banco de dados
-    if request.product_id:
-        produto_db = db.query(Product).filter(
-            Product.id == request.product_id,
-            Product.is_active == True
-        ).first()
-        
-        if not produto_db:
-            raise HTTPException(status_code=404, detail="Produto não encontrado ou inativo")
+    """Endpoint para testar ativação de pagamento (apenas para desenvolvimento)"""
+    try:
+        from mercadopago_integration import activate_user_license
 
-        produto = {
-            "id": produto_db.id,
-            "preco": produto_db.price,
-            "duracao": produto_db.duration_days,
-            "nome": produto_db.name
-        }
-    else:
-        # Fallback para compatibilidade com planos antigos
-        produtos_legacy = {
-            "basico": {"preco": 19.90, "duracao": 7, "nome": "Plano Básico"},
-            "premium": {"preco": 49.90, "duracao": 30, "nome": "Plano Premium"},
-            "vip": {"preco": 89.90, "duracao": 60, "nome": "Plano VIP"}
-        }
+        success, message = activate_user_license(current_user.id, plan_id)
 
-        if request.plano in produtos_legacy:
-            legacy_produto = produtos_legacy[request.plano]
-            produto = {
-                "id": None,
-                "preco": legacy_produto["preco"],
-                "duracao": legacy_produto["duracao"],
-                "nome": legacy_produto["nome"]
-            }
+        if success:
+            return {"success": True, "message": message}
         else:
-            raise HTTPException(status_code=400, detail="Produto não encontrado")
+            raise HTTPException(status_code=400, detail=message)
 
-    # Criar preferência no Mercado Pago
-    preference_data = {
-        "items": [
-            {
-                "title": produto["nome"],
-                "quantity": 1,
-                "unit_price": float(produto["preco"]),
-                "description": f"Acesso por {produto['duracao']} dias"
-            }
-        ],
-        "payer": {
-            "email": current_user.email
-        },
-        "back_urls": {
-            "success": "/sucesso",
-            "failure": "/falha", 
-            "pending": "/pendente"
-        },
-        "auto_return": "approved",
-        "external_reference": f"user_{current_user.id}_product_{produto.get('id', 'legacy')}",
-        "notification_url": "/webhook/mercadopago"
-    }
-
-    # Simulação de resposta do Mercado Pago - em produção usar SDK real
-    import uuid
-    preference_id = f"fake_pref_{uuid.uuid4().hex[:8]}"
-    preference_response = {
-        "id": preference_id,
-        "init_point": f"https://sandbox.mercadopago.com.br/checkout/v1/redirect?pref_id={preference_id}",
-        "sandbox_init_point": f"https://sandbox.mercadopago.com.br/checkout/v1/redirect?pref_id={preference_id}"
-    }
-
-    # Registrar pagamento no banco
-    pagamento = Payment(
-        user_id=current_user.id,
-        product_id=produto.get("id"),
-        valor=produto["preco"],
-        plano=produto["nome"],
-        gateway_id=preference_response["id"],
-        status="pending"
-    )
-
-    db.add(pagamento)
-    db.commit()
-    db.refresh(pagamento)
-
-    return {
-        "success": True,
-        "message": "Checkout criado com sucesso",
-        "preference_id": preference_response["id"],
-        "init_point": preference_response["init_point"],
-        "sandbox_init_point": preference_response["sandbox_init_point"]
-    }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
