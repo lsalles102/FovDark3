@@ -92,14 +92,27 @@ async def criar_checkout(
         db.refresh(pagamento)
 
         print(f"✅ Checkout criado com sucesso - Preference ID: {preference_result['id']}")
+        print(f"🔗 Init Point: {preference_result.get('init_point')}")
+        print(f"🔗 Sandbox Init Point: {preference_result.get('sandbox_init_point')}")
 
-        return {
+        # Garantir que temos pelo menos um dos links
+        init_point = preference_result.get("init_point")
+        sandbox_init_point = preference_result.get("sandbox_init_point")
+        
+        if not init_point and not sandbox_init_point:
+            print("❌ Nenhuma URL de checkout encontrada na resposta do Mercado Pago")
+            raise HTTPException(status_code=500, detail="Erro: URL de pagamento não gerada pelo Mercado Pago")
+
+        response_data = {
             "success": True,
             "message": "Checkout criado com sucesso",
             "preference_id": preference_result["id"],
-            "init_point": preference_result["init_point"],
-            "sandbox_init_point": preference_result.get("sandbox_init_point", preference_result["init_point"])
+            "init_point": init_point,
+            "sandbox_init_point": sandbox_init_point
         }
+        
+        print(f"📤 Enviando resposta: {response_data}")
+        return response_data
 
     except HTTPException as he:
         raise he

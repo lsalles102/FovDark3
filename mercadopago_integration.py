@@ -43,8 +43,19 @@ PRODUCTS = {
 
 def get_domain():
     """Obtém o domínio para redirecionamento"""
-    # Para Replit, usar o domínio da aplicação
-    return "https://fovdark.replit.app"
+    # Para Replit, detectar o domínio automaticamente
+    import os
+    
+    # Tentar obter o domínio do ambiente
+    replit_url = os.getenv("REPL_URL")
+    if replit_url:
+        return replit_url.rstrip('/')
+    
+    # Fallback para domínio genérico do Replit
+    repl_slug = os.getenv("REPL_SLUG", "fovdark")
+    repl_owner = os.getenv("REPL_OWNER", "default")
+    
+    return f"https://{repl_slug}.{repl_owner}.repl.co"
 
 def create_payment_preference(plan_id, user_id, user_email, product_id=None):
     """Cria uma preferência de pagamento no Mercado Pago"""
@@ -118,12 +129,19 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
 
         print(f"🔄 Criando preferência no Mercado Pago para usuário {user_id}")
         print(f"💰 Produto: {product_info['name']} - R$ {product_info['price']}")
+        print(f"🌐 Domínio configurado: {domain_url}")
+        print(f"📋 Dados da preferência: {preference_data}")
 
         preference_response = mp.preference().create(preference_data)
+        print(f"📊 Resposta completa do Mercado Pago: {preference_response}")
 
         if preference_response["status"] == 201:
             print("✅ Preferência criada com sucesso no Mercado Pago")
-            return preference_response["response"]
+            response_data = preference_response["response"]
+            print(f"🔗 URLs de checkout retornadas:")
+            print(f"  - Init Point: {response_data.get('init_point')}")
+            print(f"  - Sandbox Init Point: {response_data.get('sandbox_init_point')}")
+            return response_data
         else:
             print(f"❌ Erro ao criar preferência: {preference_response}")
             return {'error': 'Erro ao criar preferência de pagamento'}

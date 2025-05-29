@@ -1192,6 +1192,9 @@ block content %}
         document.getElementById("loadingPayment").style.display = "block";
 
         try {
+            console.log("🔄 Iniciando processo de pagamento...");
+            console.log("📦 Product ID:", selectedProduct);
+            
             const response = await fetch("/api/criar-checkout", {
                 method: "POST",
                 headers: {
@@ -1205,39 +1208,48 @@ block content %}
             });
 
             const data = await response.json();
+            console.log("📊 Resposta do servidor:", data);
 
             if (response.ok && data.success) {
-                // Mostrar mensagem de sucesso
-                showToast("Redirecionando para o pagamento...", "success");
+                console.log("✅ Checkout criado com sucesso!");
+                console.log("🔗 Init Point:", data.init_point);
+                console.log("🔗 Sandbox Init Point:", data.sandbox_init_point);
                 
-                // Aguardar um momento e redirecionar
-                setTimeout(() => {
-                    // Redirecionar para o checkout do Mercado Pago
-                    window.location.href = data.init_point || data.sandbox_init_point;
-                }, 1500);
+                // Determinar qual URL usar
+                const checkoutUrl = data.init_point || data.sandbox_init_point;
+                
+                if (checkoutUrl) {
+                    showToast("Redirecionando para o pagamento...", "success");
+                    console.log("🚀 Redirecionando para:", checkoutUrl);
+                    
+                    // Redirecionar imediatamente
+                    window.location.href = checkoutUrl;
+                } else {
+                    console.error("❌ Nenhuma URL de checkout encontrada");
+                    showToast("Erro: URL de pagamento não encontrada", "error");
+                    document.getElementById("checkoutForm").style.display = "block";
+                    document.getElementById("loadingPayment").style.display = "none";
+                }
             } else {
+                console.error("❌ Erro na resposta:", data);
+                
                 if (response.status === 401) {
-                    showToast(
-                        "Sessão expirada. Faça login novamente.",
-                        "error",
-                    );
+                    showToast("Sessão expirada. Faça login novamente.", "error");
                     localStorage.clear();
                     setTimeout(() => {
                         window.location.href = "/login";
                     }, 2000);
                 } else {
                     showToast(
-                        data.detail || "Erro ao processar pagamento",
+                        data.detail || data.message || "Erro ao processar pagamento",
                         "error",
                     );
-                    document.getElementById("checkoutForm").style.display =
-                        "block";
-                    document.getElementById("loadingPayment").style.display =
-                        "none";
+                    document.getElementById("checkoutForm").style.display = "block";
+                    document.getElementById("loadingPayment").style.display = "none";
                 }
             }
         } catch (error) {
-            console.error("Erro:", error);
+            console.error("💥 Erro crítico:", error);
             showToast("Erro ao processar pagamento", "error");
             document.getElementById("checkoutForm").style.display = "block";
             document.getElementById("loadingPayment").style.display = "none";
