@@ -108,19 +108,52 @@ function setupToastContainer() {
 }
 
 // ===== AUTHENTICATION FUNCTIONS =====
+function updateAuthenticationUI() {
+    console.log('🎨 Atualizando UI de autenticação...');
+    
+    // Verificar tokens em ambos os formatos para compatibilidade
+    const authToken = localStorage.getItem('authToken') || localStorage.getItem('access_token');
+    const userData = localStorage.getItem('userData') || localStorage.getItem('user_data');
+    
+    if (authToken && userData) {
+        try {
+            const user = JSON.parse(userData);
+            currentUser = user;
+            isAuthenticated = true;
+            
+            console.log('✅ Usuário autenticado na UI:', user.email || user.id);
+            updateNavigationForAuthenticatedUser();
+        } catch (error) {
+            console.error('❌ Erro ao processar dados do usuário na UI:', error);
+            updateNavigationForUnauthenticatedUser();
+        }
+    } else {
+        console.log('❌ Usuário não autenticado na UI');
+        updateNavigationForUnauthenticatedUser();
+    }
+}
+
 function checkAuthenticationStatus() {
     console.log('🔐 Verificando status de autenticação...');
 
-    const token = localStorage.getItem('authToken');
-    const userData = localStorage.getItem('userData');
+    // Verificar ambos os formatos de token para compatibilidade
+    const authToken = localStorage.getItem('authToken') || localStorage.getItem('access_token');
+    const userData = localStorage.getItem('userData') || localStorage.getItem('user_data');
 
-    if (token && userData) {
+    if (authToken && userData) {
         try {
             currentUser = JSON.parse(userData);
             isAuthenticated = true;
-            authToken = token;
+            
+            // Normalizar o token no formato correto
+            if (!localStorage.getItem('authToken') && localStorage.getItem('access_token')) {
+                localStorage.setItem('authToken', localStorage.getItem('access_token'));
+            }
+            if (!localStorage.getItem('userData') && localStorage.getItem('user_data')) {
+                localStorage.setItem('userData', localStorage.getItem('user_data'));
+            }
 
-            console.log('✅ Usuário autenticado:', currentUser.email);
+            console.log('✅ Usuário autenticado:', currentUser.email || currentUser.id);
             updateNavigationForAuthenticatedUser();
 
             // Verificar se o token ainda é válido
@@ -223,13 +256,18 @@ function updateNavigationForUnauthenticatedUser() {
 }
 
 async function validateToken() {
-    if (!authToken) return false;
+    const token = authToken || localStorage.getItem('authToken') || localStorage.getItem('access_token');
+    
+    if (!token) {
+        console.log('❌ Nenhum token encontrado para validação');
+        return false;
+    }
 
     try {
         const response = await fetch('/api/license/check', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${authToken}`,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -237,13 +275,17 @@ async function validateToken() {
         if (response.ok) {
             console.log('✅ Token válido');
             return true;
-        } else {
-            console.log('❌ Token inválido, fazendo logout');
+        } else if (response.status === 401 || response.status === 403) {
+            console.log('❌ Token inválido ou expirado, fazendo logout');
             logout();
+            return false;
+        } else {
+            console.log(`⚠️ Erro na validação do token: ${response.status}`);
             return false;
         }
     } catch (error) {
-        console.error('❌ Erro ao validar token:', error);
+        console.error('❌ Erro de rede ao validar token:', error);
+        // Não fazer logout em caso de erro de rede
         return false;
     }
 }
@@ -251,8 +293,11 @@ async function validateToken() {
 function logout() {
     console.log('🚪 Fazendo logout...');
 
+    // Limpar todos os formatos de token para garantir logout completo
     localStorage.removeItem('authToken');
     localStorage.removeItem('userData');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user_data');
 
     currentUser = null;
     isAuthenticated = false;

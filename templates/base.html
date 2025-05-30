@@ -370,11 +370,14 @@
 
             // Verificar mudanças no localStorage (múltiplas abas)
             window.addEventListener('storage', function(e) {
-                if (e.key === 'access_token' || e.key === 'user_data') {
+                if (e.key === 'access_token' || e.key === 'user_data' || e.key === 'authToken' || e.key === 'userData') {
                     console.log('💾 Dados de autenticação mudaram em outra aba');
                     setTimeout(function() {
                         if (typeof updateAuthenticationUI === 'function') {
                             updateAuthenticationUI();
+                        }
+                        if (typeof checkAuthenticationStatus === 'function') {
+                            checkAuthenticationStatus();
                         }
                     }, 100);
                 }
@@ -382,7 +385,8 @@
 
             // Verificação periódica inicial
             window.addEventListener('load', function() {
-                if (localStorage.getItem('access_token')) {
+                const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
+                if (token) {
                     authCheckInterval = setInterval(function() {
                         if (typeof checkAuthenticationStatus === 'function') {
                             checkAuthenticationStatus();
