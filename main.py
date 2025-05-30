@@ -1008,25 +1008,41 @@ async def health_check():
 async def mercadopago_status():
     """Verificar status da integração do MercadoPago"""
     try:
-        from mercadopago_integration import mp
+        from mercadopago_integration import MERCADOPAGO_ACCESS_TOKEN, mp
+
+        if not MERCADOPAGO_ACCESS_TOKEN:
+            return {
+                "status": "not_configured",
+                "message": "❌ MercadoPago NÃO configurado",
+                "instructions": "Configure MERCADOPAGO_ACCESS_TOKEN nos Secrets do Replit",
+                "environment": "none",
+                "can_process_payments": False
+            }
 
         if mp:
+            is_production = "TEST" not in MERCADOPAGO_ACCESS_TOKEN
+            
             return {
                 "status": "configured",
-                "message": "MercadoPago configurado e pronto para uso",
-                "environment": "production" if "ACCESS_TOKEN" in str(mp._access_token) else "sandbox"
+                "message": f"✅ MercadoPago configurado em modo {'PRODUÇÃO' if is_production else 'TESTE'}",
+                "environment": "production" if is_production else "test",
+                "can_process_payments": True,
+                "payments_real": is_production,
+                "token_prefix": MERCADOPAGO_ACCESS_TOKEN[:20] + "..." if len(MERCADOPAGO_ACCESS_TOKEN) > 20 else "***"
             }
         else:
             return {
-                "status": "not_configured", 
-                "message": "MercadoPago não configurado. Configure o MERCADOPAGO_ACCESS_TOKEN nos Secrets.",
-                "environment": "test_mode"
+                "status": "error",
+                "message": "❌ Erro na inicialização do MercadoPago",
+                "environment": "error",
+                "can_process_payments": False
             }
     except Exception as e:
         return {
             "status": "error",
-            "message": f"Erro ao verificar MercadoPago: {str(e)}",
-            "environment": "unknown"
+            "message": f"❌ Erro ao verificar MercadoPago: {str(e)}",
+            "environment": "unknown",
+            "can_process_payments": False
         }
 
 @app.get("/admin", response_class=HTMLResponse)

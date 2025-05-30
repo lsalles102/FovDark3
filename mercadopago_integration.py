@@ -11,9 +11,17 @@ MERCADOPAGO_ACCESS_TOKEN = os.getenv("MERCADOPAGO_ACCESS_TOKEN")
 
 if MERCADOPAGO_ACCESS_TOKEN:
     mp = mercadopago.SDK(MERCADOPAGO_ACCESS_TOKEN)
-    print("✅ MercadoPago SDK inicializado com sucesso")
+    
+    # Verificar se é ambiente de produção ou teste
+    if "TEST" in MERCADOPAGO_ACCESS_TOKEN:
+        print("🧪 MercadoPago inicializado em MODO TESTE")
+        print("⚠️  Para pagamentos reais, configure o Access Token de PRODUÇÃO")
+    else:
+        print("🏭 ✅ MercadoPago inicializado em MODO PRODUÇÃO")
+        print("💰 Pronto para receber pagamentos reais!")
 else:
-    print("⚠️ MercadoPago token não configurado - usando modo de teste")
+    print("❌ MercadoPago token NÃO CONFIGURADO")
+    print("📝 Configure MERCADOPAGO_ACCESS_TOKEN nos Secrets do Replit")
     mp = None
 
 # Definição dos produtos
@@ -43,19 +51,22 @@ PRODUCTS = {
 
 def get_domain():
     """Obtém o domínio para redirecionamento"""
-    # Para Replit, detectar o domínio automaticamente
     import os
     
-    # Tentar obter o domínio do ambiente
+    # Para produção no Replit
     replit_url = os.getenv("REPL_URL")
     if replit_url:
         return replit_url.rstrip('/')
     
-    # Fallback para domínio genérico do Replit
-    repl_slug = os.getenv("REPL_SLUG", "fovdark")
-    repl_owner = os.getenv("REPL_OWNER", "default")
+    # Detectar domínio do Replit automaticamente
+    repl_slug = os.getenv("REPL_SLUG")
+    repl_owner = os.getenv("REPL_OWNER")
     
-    return f"https://{repl_slug}.{repl_owner}.repl.co"
+    if repl_slug and repl_owner:
+        return f"https://{repl_slug}-{repl_owner}.replit.dev"
+    
+    # Fallback
+    return "https://fovdark.replit.dev"
 
 def create_payment_preference(plan_id, user_id, user_email, product_id=None):
     """Cria uma preferência de pagamento no Mercado Pago"""
@@ -102,7 +113,9 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
                 }
             ],
             "payer": {
-                "email": user_email
+                "email": user_email,
+                "name": user_email.split("@")[0],
+                "surname": "Cliente"
             },
             "back_urls": {
                 "success": f"{domain_url}/success",
@@ -116,7 +129,8 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
                 "product_id": str(product_id) if product_id else "",
                 "days": str(product_info['days']),
                 "user_id": str(user_id),
-                "user_email": user_email
+                "user_email": user_email,
+                "environment": "production" if "TEST" not in MERCADOPAGO_ACCESS_TOKEN else "test"
             },
             "notification_url": f"{domain_url}/api/webhook/mercadopago",
             "statement_descriptor": "FOVDARK",
@@ -124,7 +138,10 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
                 "excluded_payment_methods": [],
                 "excluded_payment_types": [],
                 "installments": 12
-            }
+            },
+            "expires": True,
+            "expiration_date_from": datetime.utcnow().isoformat(),
+            "expiration_date_to": (datetime.utcnow() + timedelta(hours=24)).isoformat()
         }
 
         print(f"🔄 Criando preferência no Mercado Pago para usuário {user_id}")
