@@ -21,11 +21,8 @@ document.addEventListener('DOMContentLoaded', function() {
         setupToastContainer();
         setupGlobalEventListeners();
 
-        // Verificar autenticação após um pequeno delay
-        setTimeout(() => {
-            updateAuthenticationUI();
-            checkAuthenticationStatus();
-        }, 100);
+        // A verificação de autenticação será feita pelo base.html
+        console.log('🎯 Inicialização completa, aguardando verificação de autenticação');
 
     } catch (error) {
         console.error('❌ Erro na inicialização:', error);
@@ -787,8 +784,12 @@ function setupGlobalEventListeners() {
         if (e.key === 'access_token' || e.key === 'user_data' || e.key === 'authToken' || e.key === 'userData') {
             console.log('🔄 Dados de autenticação mudaram, atualizando UI');
             setTimeout(() => {
-                updateAuthenticationUI();
-                checkAuthenticationStatus();
+                if (typeof updateAuthenticationUI === 'function') {
+                    updateAuthenticationUI();
+                    checkAuthenticationStatus();
+                } else {
+                    console.warn('⚠️ updateAuthenticationUI não disponível no storage event');
+                }
             }, 100);
         }
     });
@@ -797,8 +798,10 @@ function setupGlobalEventListeners() {
     window.addEventListener('focus', function() {
         console.log('👁️ Página ganhou foco, verificando autenticação');
         setTimeout(() => {
-            updateAuthenticationUI();
-            checkAuthenticationStatus();
+            if (typeof updateAuthenticationUI === 'function') {
+                updateAuthenticationUI();
+                checkAuthenticationStatus();
+            }
         }, 200);
     });
 
@@ -807,8 +810,10 @@ function setupGlobalEventListeners() {
         if (!document.hidden) {
             console.log('👁️ Página se tornou visível, verificando autenticação');
             setTimeout(() => {
-                updateAuthenticationUI();
-                checkAuthenticationStatus();
+                if (typeof updateAuthenticationUI === 'function') {
+                    updateAuthenticationUI();
+                    checkAuthenticationStatus();
+                }
             }, 200);
         }
     });
@@ -816,7 +821,7 @@ function setupGlobalEventListeners() {
     // Verificação periódica de autenticação (a cada 60 segundos)
     setInterval(function() {
         const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
-        if (token) {
+        if (token && typeof checkAuthenticationStatus === 'function') {
             console.log('⏰ Verificação periódica de autenticação');
             checkAuthenticationStatus();
         }

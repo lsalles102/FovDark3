@@ -264,8 +264,21 @@
                     if (typeof updateAuthenticationUI === 'function') {
                         console.log('🔄 Executando verificação de autenticação do base.html');
                         updateAuthenticationUI();
+                        checkAuthenticationStatus();
+                    } else {
+                        console.log('⚠️ Função updateAuthenticationUI ainda não disponível, tentando novamente...');
+                        // Tentar novamente após mais tempo
+                        setTimeout(function() {
+                            if (typeof updateAuthenticationUI === 'function') {
+                                console.log('🔄 Segunda tentativa - executando verificação de autenticação');
+                                updateAuthenticationUI();
+                                checkAuthenticationStatus();
+                            } else {
+                                console.error('❌ Função updateAuthenticationUI não foi carregada');
+                            }
+                        }, 500);
                     }
-                }, 200);
+                }, 300);
             });
         </script>
         
