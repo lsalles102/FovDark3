@@ -1,5 +1,6 @@
-
 import os
+print(f"🚀 DEBUG ENV VAR: MERCADOPAGO_ACCESS_TOKEN = {os.getenv('MERCADOPAGO_ACCESS_TOKEN')}")
+print(f"🔍 TODAS AS VARIÁVEIS: {dict(os.environ)}")
 import mercadopago
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
