@@ -680,7 +680,7 @@ async def download_executable(
             raise HTTPException(status_code=403, detail="Licença inválida ou expirada")
 
         # Caminho para o arquivo executável
-        executable_path = "attached_assets/Script_Dark.exe"
+        executable_path = "FovDarkloader.exe"
 
         if not os.path.exists(executable_path):
             raise HTTPException(status_code=404, detail="Arquivo não encontrado")
@@ -688,7 +688,7 @@ async def download_executable(
         return FileResponse(
             executable_path,
             media_type='application/octet-stream',
-            filename="Script_Dark.exe"
+            filename="FovDarkloader.exe"
         )
 
     except HTTPException as he:

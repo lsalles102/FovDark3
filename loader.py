@@ -14,7 +14,7 @@ LOGIN_URL = f"{API_URL}/api/login"
 LICENSE_URL = f"{API_URL}/api/license/check"
 DOWNLOAD_URL = f"{API_URL}/api/download/executable"
 RECOVER_URL = f"{API_URL}/recover-password"
-EXECUTAVEL = "Script_Dark.exe"
+EXECUTAVEL = "FovDarkloader.exe"
 CONFIG_FILE = "darkfov_config.json"
 
 def carregar_credenciais():
