@@ -294,12 +294,7 @@ async def login_user(
     print(f"🔄 Tentativa de login - IP: {client_ip}")
 
     try:
-        # Verificar rate limiting
-        #if not check_rate_limit(email):
-        #    raise HTTPException(
-        #        status_code=429, 
-        #        detail="Muitas tentativas de login. Tente novamente em 5 minutos."
-        #    )
+        # Rate limiting removido para melhor debugging
 
         user_check = db.query(User).filter(User.email.ilike(email.strip())).first()
         if not user_check:
@@ -329,8 +324,7 @@ async def login_user(
                 user.is_admin = False
                 db.commit()
 
-        # Reset rate limit após login bem-sucedido
-        #reset_rate_limit(email)
+        # Rate limit reset removido
 
         access_token = create_access_token(data={"sub": user.email})
 
@@ -1003,6 +997,31 @@ async def verify_token(
 
 @app.get("/health")
 async def health_check():
+
+
+@app.get("/api/debug/payment-config")
+async def debug_payment_config():
+    """Debug da configuração de pagamentos"""
+    try:
+        import os
+        from mercadopago_integration import MERCADOPAGO_ACCESS_TOKEN, mp
+        
+        config_info = {
+            "mercadopago_configured": bool(MERCADOPAGO_ACCESS_TOKEN),
+            "token_type": "TEST" if MERCADOPAGO_ACCESS_TOKEN and "TEST" in MERCADOPAGO_ACCESS_TOKEN else "PRODUCTION" if MERCADOPAGO_ACCESS_TOKEN else "NONE",
+            "sdk_initialized": bool(mp),
+            "environment_vars": {
+                "MERCADOPAGO_ACCESS_TOKEN": "CONFIGURADO" if MERCADOPAGO_ACCESS_TOKEN else "NÃO CONFIGURADO",
+                "PORT": os.getenv("PORT", "5000"),
+                "DATABASE_URL": "CONFIGURADO" if os.getenv("DATABASE_URL") else "NÃO CONFIGURADO"
+            }
+        }
+        
+        return config_info
+        
+    except Exception as e:
+        return {"error": str(e)}
+
     """Health check endpoint"""
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 

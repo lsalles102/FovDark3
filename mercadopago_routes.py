@@ -33,12 +33,7 @@ async def create_checkout(
         print(f"🛒 Criando checkout para usuário: {current_user.email}")
         print(f"📦 Dados recebidos: {request}")
 
-        # Validar se não é admin tentando comprar para si mesmo
-        #if current_user.is_admin:
-        #    raise HTTPException(
-        #        status_code=400, 
-        #        detail="Não é possível pagar para você mesmo."
-        #    )
+        # Remover validação que impedia admins de comprar
 
         # Buscar produto no banco de dados se product_id fornecido
         if request.product_id:
@@ -106,8 +101,12 @@ async def create_checkout(
         init_point = preference_result.get("init_point")
         sandbox_init_point = preference_result.get("sandbox_init_point")
 
-        if not init_point and not sandbox_init_point:
+        # Para ambiente de teste, usar sandbox_init_point, para produção usar init_point
+        checkout_url = init_point or sandbox_init_point
+
+        if not checkout_url:
             print("❌ Nenhuma URL de checkout encontrada na resposta do Mercado Pago")
+            print(f"❌ Resposta completa: {preference_result}")
             raise HTTPException(status_code=500, detail="Erro: URL de pagamento não gerada pelo Mercado Pago")
 
         response_data = {

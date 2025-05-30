@@ -64,9 +64,10 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
     """Cria uma preferência de pagamento no Mercado Pago"""
     try:
         if not mp:
-            # Modo de teste sem token
+            print("❌ MercadoPago SDK não inicializado")
+            print(f"❌ Token configurado: {bool(MERCADOPAGO_ACCESS_TOKEN)}")
             return {
-                "error": "Integração do Mercado Pago não configurada. Configure o MERCADOPAGO_ACCESS_TOKEN nos Secrets."
+                "error": "Integração do Mercado Pago não configurada. Configure o MERCADOPAGO_ACCESS_TOKEN nas variáveis de ambiente."
             }
 
         # Se product_id for fornecido, buscar produto do banco
@@ -139,10 +140,15 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
         print(f"🔄 Criando preferência no Mercado Pago para usuário {user_id}")
         print(f"💰 Produto: {product_info['name']} - R$ {product_info['price']}")
         print(f"🌐 Domínio configurado: {domain_url}")
-        print(f"📋 Dados da preferência: {preference_data}")
+        print(f"🔑 Token tipo: {'TESTE' if 'TEST' in MERCADOPAGO_ACCESS_TOKEN else 'PRODUÇÃO'}")
 
-        preference_response = mp.preference().create(preference_data)
-        print(f"📊 Resposta completa do Mercado Pago: {preference_response}")
+        try:
+            preference_response = mp.preference().create(preference_data)
+            print(f"📊 Status da resposta: {preference_response.get('status')}")
+            print(f"📊 Resposta: {preference_response}")
+        except Exception as api_error:
+            print(f"❌ Erro na API do MercadoPago: {api_error}")
+            return {"error": f"Erro na API do MercadoPago: {str(api_error)}"}
 
         if preference_response["status"] == 201:
             print("✅ Preferência criada com sucesso no Mercado Pago")
