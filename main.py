@@ -14,6 +14,7 @@ from starlette.responses import Response
 import uvicorn
 from collections import defaultdict
 import time
+import re
 
 from database import get_db, engine, Base
 from models import User, Payment, Product, SiteSettings
@@ -21,6 +22,24 @@ from auth import (
     authenticate_user, create_access_token, get_current_user,
     get_password_hash, verify_password, decode_access_token
 )
+
+def sanitize_input(text: str, max_length: int = 255) -> str:
+    """Sanitizar entrada de texto"""
+    if not text:
+        return ""
+    
+    # Remover caracteres perigosos
+    text = re.sub(r'[<>"\';\\]', '', str(text))
+    
+    # Limitar tamanho
+    return text.strip()[:max_length]
+
+def validate_email(email: str) -> bool:
+    """Validar formato de email"""
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return bool(re.match(pattern, email)) and len(email) <= 255
+
+
 from mercadopago_routes import router as mercadopago_router
 from license import create_payment_record, get_license_status
 from admin import get_admin_user
@@ -30,13 +49,22 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="FovDark - Sistema de Vendas", version="1.0.0")
 
-# Configurar CORS
+# Configurar CORS com restrições de segurança
+allowed_origins = [
+    "http://localhost:5000",
+    "http://127.0.0.1:5000",
+    "https://*.replit.dev",
+    "https://*.repl.co"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+    expose_headers=["Content-Length", "X-Total-Count"],
+    max_age=600,  # 10 minutos
 )
 
 app.include_router(mercadopago_router, prefix="/api")
@@ -102,22 +130,40 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
         self.calls = calls
         self.period = period
         self.requests = defaultdict(list)
+        self.login_attempts = defaultdict(list)
 
     async def dispatch(self, request: Request, call_next):
-        # Pular rate limiting para arquivos estáticos e admin
-        if request.url.path.startswith("/static") or request.url.path.startswith("/admin"):
+        # Pular rate limiting para arquivos estáticos
+        if request.url.path.startswith("/static"):
             return await call_next(request)
 
         client_ip = request.client.host if request.client else "unknown"
         now = time.time()
 
-        # Limpar requisições antigas
+        # Rate limiting específico para login (mais restritivo)
+        if request.url.path == "/api/login":
+            # Limpar tentativas antigas de login
+            self.login_attempts[client_ip] = [
+                req_time for req_time in self.login_attempts[client_ip] 
+                if now - req_time < 300  # 5 minutos
+            ]
+
+            # Máximo 5 tentativas de login por 5 minutos
+            if len(self.login_attempts[client_ip]) >= 5:
+                raise HTTPException(
+                    status_code=429, 
+                    detail="Muitas tentativas de login. Tente novamente em 5 minutos."
+                )
+
+            self.login_attempts[client_ip].append(now)
+
+        # Rate limiting geral
         self.requests[client_ip] = [
             req_time for req_time in self.requests[client_ip] 
             if now - req_time < self.period
         ]
 
-        # Verificar se excedeu o limite
+        # Verificar se excedeu o limite geral
         if len(self.requests[client_ip]) >= self.calls:
             raise HTTPException(
                 status_code=429, 
@@ -129,9 +175,28 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
 
         return await call_next(request)
 
-class StaticFileMiddleware(BaseHTTPMiddleware):
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
+        
+        # Headers de segurança
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
+        
+        # Content Security Policy
+        if request.url.path.endswith('.html') or 'text/html' in response.headers.get('content-type', ''):
+            response.headers['Content-Security-Policy'] = (
+                "default-src 'self'; "
+                "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "
+                "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "
+                "img-src 'self' data: https:; "
+                "font-src 'self' https://cdnjs.cloudflare.com; "
+                "connect-src 'self' https://api.mercadopago.com; "
+                "frame-ancestors 'none';"
+            )
         
         # Set proper content type and headers for static files
         if request.url.path.endswith('.js'):
@@ -145,8 +210,8 @@ class StaticFileMiddleware(BaseHTTPMiddleware):
             
         return response
 
-app.add_middleware(StaticFileMiddleware)
-app.add_middleware(RateLimitingMiddleware, calls=100, period=60)  # 100 req/min
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RateLimitingMiddleware, calls=50, period=60)  # 50 req/min (mais restritivo)
 
 async def verify_token_middleware(credentials: HTTPAuthorizationCredentials = Depends(security)):
     token = credentials.credentials
@@ -163,6 +228,24 @@ async def register_user(
     confirm_password: str = Form(...),
     db: Session = Depends(get_db)
 ):
+    # Validação e sanitização do email
+    email = email.strip().lower()
+    if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email inválido")
+    
+    if len(email) > 255:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email muito longo")
+
+    # Validação da senha
+    if len(password) < 8:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Senha deve ter pelo menos 8 caracteres")
+    
+    if len(password) > 128:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Senha muito longa")
+    
+    if not re.search(r'[A-Za-z]', password) or not re.search(r'[0-9]', password):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Senha deve conter letras e números")
+
     if password != confirm_password:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Senhas não coincidem")
 
@@ -196,10 +279,17 @@ async def login_user(
     password: str = Form(...),
     db: Session = Depends(get_db)
 ):
-    print(f"🔄 Tentativa de login recebida:")
-    print(f"  📧 Email: {email}")
-    print(f"  🌐 IP: {request.client.host if request.client else 'unknown'}")
-    print(f"  📋 Headers: {dict(request.headers)}")
+    # Validação e sanitização básica
+    email = email.strip().lower()
+    if not email or not password:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email e senha são obrigatórios")
+    
+    if len(email) > 255 or len(password) > 128:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Dados inválidos")
+    
+    # Log de segurança (sem expor dados sensíveis)
+    client_ip = request.client.host if request.client else 'unknown'
+    print(f"🔄 Tentativa de login - IP: {client_ip}")
 
     try:
         user_check = db.query(User).filter(User.email.ilike(email.strip())).first()

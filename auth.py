@@ -14,7 +14,7 @@ from models import User
 # Configurações JWT
 SECRET_KEY = os.getenv("SECRET_KEY", "darkfov-super-secret-key-2024")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 120  # 2 horas para evitar desconexões frequentes
+ACCESS_TOKEN_EXPIRE_MINUTES = 30  # 30 minutos para melhor segurança
 
 # Configuração bcrypt com versão específica para evitar erro de compatibilidade
 try:
@@ -65,33 +65,32 @@ def get_password_hash(password: str) -> str:
 def authenticate_user(db: Session, email: str, password: str) -> Optional[User]:
     """Autenticar usuário"""
     try:
-        print(f"🔍 Buscando usuário no banco: {email}")
+        # Log sem expor email completo
+        email_masked = email[:3] + "***" + email[email.find('@'):]
+        print(f"🔍 Tentativa de autenticação para: {email_masked}")
+        
         user = db.query(User).filter(User.email.ilike(email.strip())).first()
         if not user:
-            print(f"❌ Usuário não encontrado no banco: {email}")
+            print(f"❌ Usuário não encontrado")
             return None
         
         # Verificar se há muitas tentativas de login
         if user.tentativas_login >= 5:
-            print(f"🚫 Muitas tentativas de login para: {email}")
+            print(f"🚫 Conta bloqueada por muitas tentativas")
             return None
         
-        print(f"✅ Usuário encontrado no banco: {user.email}")
-        print(f"🔐 Verificando senha...")
+        print(f"✅ Usuário encontrado")
         
         password_valid = verify_password(password, user.senha_hash)
-        print(f"🔐 Resultado da verificação da senha: {password_valid}")
         
         if not password_valid:
-            print(f"❌ Senha incorreta para: {email}")
+            print(f"❌ Falha na autenticação")
             return None
         
-        print(f"✅ Autenticação bem-sucedida para: {email}")
+        print(f"✅ Autenticação bem-sucedida")
         return user
     except Exception as e:
-        print(f"💥 Erro na autenticação: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        print(f"💥 Erro na autenticação: erro interno")
         return None
 
 
