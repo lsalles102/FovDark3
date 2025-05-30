@@ -53,6 +53,11 @@ def get_domain():
     """Obtém o domínio para redirecionamento"""
     import os
     
+    # Usar domínio personalizado em produção
+    custom_domain = os.getenv("CUSTOM_DOMAIN")
+    if custom_domain:
+        return custom_domain.rstrip('/')
+    
     # Para produção no Replit
     replit_url = os.getenv("REPL_URL")
     if replit_url:
@@ -65,8 +70,8 @@ def get_domain():
     if repl_slug and repl_owner:
         return f"https://{repl_slug}-{repl_owner}.replit.dev"
     
-    # Fallback
-    return "https://fovdark.replit.dev"
+    # Fallback para domínio personalizado
+    return "https://www.fovdark.shop"
 
 def create_payment_preference(plan_id, user_id, user_email, product_id=None):
     """Cria uma preferência de pagamento no Mercado Pago"""

@@ -1008,7 +1008,16 @@ async def health_check():
 async def mercadopago_status():
     """Verificar status da integração do MercadoPago"""
     try:
-        from mercadopago_integration import MERCADOPAGO_ACCESS_TOKEN, mp
+        from mercadopago_integration import MERCADOPAGO_ACCESS_TOKEN, mp, get_domain
+
+        # Debug das variáveis de ambiente
+        import os
+        debug_info = {
+            "custom_domain": os.getenv("CUSTOM_DOMAIN"),
+            "repl_url": os.getenv("REPL_URL"), 
+            "mercadopago_token_exists": bool(MERCADOPAGO_ACCESS_TOKEN),
+            "calculated_domain": get_domain()
+        }
 
         if not MERCADOPAGO_ACCESS_TOKEN:
             return {
@@ -1016,7 +1025,8 @@ async def mercadopago_status():
                 "message": "❌ MercadoPago NÃO configurado",
                 "instructions": "Configure MERCADOPAGO_ACCESS_TOKEN nos Secrets do Replit",
                 "environment": "none",
-                "can_process_payments": False
+                "can_process_payments": False,
+                "debug": debug_info
             }
 
         if mp:
@@ -1028,21 +1038,25 @@ async def mercadopago_status():
                 "environment": "production" if is_production else "test",
                 "can_process_payments": True,
                 "payments_real": is_production,
-                "token_prefix": MERCADOPAGO_ACCESS_TOKEN[:20] + "..." if len(MERCADOPAGO_ACCESS_TOKEN) > 20 else "***"
+                "token_prefix": MERCADOPAGO_ACCESS_TOKEN[:20] + "..." if len(MERCADOPAGO_ACCESS_TOKEN) > 20 else "***",
+                "webhook_url": f"{get_domain()}/api/webhook/mercadopago",
+                "debug": debug_info
             }
         else:
             return {
                 "status": "error",
                 "message": "❌ Erro na inicialização do MercadoPago",
                 "environment": "error",
-                "can_process_payments": False
+                "can_process_payments": False,
+                "debug": debug_info
             }
     except Exception as e:
         return {
             "status": "error",
             "message": f"❌ Erro ao verificar MercadoPago: {str(e)}",
             "environment": "unknown",
-            "can_process_payments": False
+            "can_process_payments": False,
+            "debug": {"error": str(e)}
         }
 
 @app.get("/admin", response_class=HTMLResponse)
