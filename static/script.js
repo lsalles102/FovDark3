@@ -689,6 +689,33 @@
         }
     }
 
+    // ===== FAQ FUNCTIONALITY =====
+    function toggleFaq(element) {
+        const faqItem = element.closest('.faq-item');
+        const faqAnswer = faqItem.querySelector('.faq-answer');
+        const isActive = faqItem.classList.contains('active');
+
+        // Fechar todos os outros FAQs
+        document.querySelectorAll('.faq-item').forEach(item => {
+            if (item !== faqItem) {
+                item.classList.remove('active');
+                const answer = item.querySelector('.faq-answer');
+                if (answer) {
+                    answer.style.maxHeight = '0';
+                }
+            }
+        });
+
+        // Toggle do FAQ atual
+        if (isActive) {
+            faqItem.classList.remove('active');
+            faqAnswer.style.maxHeight = '0';
+        } else {
+            faqItem.classList.add('active');
+            faqAnswer.style.maxHeight = faqAnswer.scrollHeight + 'px';
+        }
+    }
+
     // ===== FUNÇÕES GLOBAIS EXPOSTAS =====
     window.checkAuthentication = checkAuthentication;
     window.handleLogout = handleLogout;
@@ -699,6 +726,7 @@
     window.saveToken = saveToken; // Expose the new saveToken function
     window.authenticatedFetch = authenticatedFetch; // Expose the new authenticatedFetch function
     window.validateToken = validateToken; // Expose the new validateToken function
+    window.toggleFaq = toggleFaq; // Expose the FAQ toggle function
 
 })();
 
