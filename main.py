@@ -1021,14 +1021,14 @@ async def mercadopago_status():
             "repl_url": os.getenv("REPL_URL"), 
             "mercadopago_token_exists": bool(MERCADOPAGO_ACCESS_TOKEN),
             "calculated_domain": get_domain(),
-            "platform": "Railway" if os.getenv("RAILWAY_ENVIRONMENT") else "Replit"
+            "platform": "Railway"
         }
 
         if not MERCADOPAGO_ACCESS_TOKEN:
             return {
                 "status": "not_configured",
                 "message": "❌ MercadoPago NÃO configurado",
-                "instructions": "Configure MERCADOPAGO_ACCESS_TOKEN nos Secrets do Replit",
+                "instructions": "Configure MERCADOPAGO_ACCESS_TOKEN nas variáveis do Railway",
                 "environment": "none",
                 "can_process_payments": False,
                 "debug": debug_info
