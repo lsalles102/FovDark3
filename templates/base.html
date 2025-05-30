@@ -183,7 +183,7 @@
                         <span>FovDark</span>
                     </a>
                 </div>
-                
+
                 <div class="nav-menu">
                     <a href="/" class="nav-link">
                         <i class="fas fa-home"></i>
@@ -202,7 +202,7 @@
                         <span>Registrar</span>
                     </a>
                 </div>
-                
+
                 <div class="nav-toggle">
                     <span></span>
                     <span></span>
@@ -275,26 +275,30 @@
             // Aguardar carregamento e executar verificação
             document.addEventListener('DOMContentLoaded', async function() {
                 console.log('🌐 DOM carregado, aguardando script...');
-                
+
                 try {
                     await waitForScript();
-                    
-                    // Aguardar um pouco mais para garantir que qualquer processo de login termine
-                    await new Promise(resolve => setTimeout(resolve, 200));
-                    
+
                     console.log('🔄 Executando verificação de autenticação do base.html');
-                    const authResult = updateAuthenticationUI();
-                    
-                    // Só verificar status se a UI não encontrou autenticação
-                    if (!authResult) {
+
+                    // Verificar se há dados de login salvos
+                    const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
+                    const userData = localStorage.getItem('user_data') || localStorage.getItem('userData');
+
+                    if (token && userData) {
+                        console.log('✅ Dados de autenticação encontrados, atualizando UI');
+                        updateAuthenticationUI();
                         checkAuthenticationStatus();
+                    } else {
+                        console.log('❌ Nenhum dado de autenticação encontrado');
+                        updateNavigationForUnauthenticatedUser();
                     }
                 } catch (error) {
                     console.error('❌ Erro ao carregar funções de autenticação:', error);
                 }
             });
         </script>
-        
+
         {% block scripts %}{% endblock %}
     </body>
 </html>

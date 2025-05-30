@@ -170,10 +170,6 @@ function checkAuthenticationStatus() {
     console.log('🔍 Debug de autenticação:');
     console.log('  authToken existe:', !!authToken);
     console.log('  userData existe:', !!userData);
-    console.log('  localStorage authToken:', localStorage.getItem('authToken'));
-    console.log('  localStorage access_token:', localStorage.getItem('access_token'));
-    console.log('  localStorage userData:', localStorage.getItem('userData'));
-    console.log('  localStorage user_data:', localStorage.getItem('user_data'));
 
     if (authToken && userData) {
         try {
@@ -182,11 +178,9 @@ function checkAuthenticationStatus() {
             isAuthenticated = true;
             
             // Atualizar token global
-            if (authToken) {
-                window.authToken = authToken;
-            }
+            window.authToken = authToken;
             
-            // Normalizar o token no formato correto
+            // Normalizar o token no formato correto (SEM sobrescrever)
             if (!localStorage.getItem('authToken') && localStorage.getItem('access_token')) {
                 localStorage.setItem('authToken', localStorage.getItem('access_token'));
                 console.log('🔄 Token normalizado para authToken');
@@ -200,15 +194,14 @@ function checkAuthenticationStatus() {
             console.log('👑 Admin:', parsedUser.is_admin);
             updateNavigationForAuthenticatedUser();
 
-            // Verificar se o token ainda é válido (não obrigatório para não causar logout)
-            validateToken().catch(error => {
-                console.log('⚠️ Erro na validação do token (não crítico):', error);
-            });
+            // NÃO validar token automaticamente para evitar logout acidental
+            console.log('🔒 Status de autenticação confirmado');
 
         } catch (error) {
             console.error('❌ Erro ao processar dados do usuário:', error);
-            console.error('❌ Dados do usuário corrompidos, fazendo logout');
-            logout();
+            // NÃO fazer logout automático em caso de erro de parsing
+            console.log('⚠️ Mantendo dados de autenticação apesar do erro');
+            updateNavigationForUnauthenticatedUser();
         }
     } else {
         console.log('❌ Usuário não autenticado');
@@ -433,31 +426,38 @@ async function handleLogin(event) {
 
         const data = await response.json();
 
-        if (response.ok) {
-            // Salvar no localStorage primeiro
-            localStorage.setItem('authToken', data.access_token);
-            localStorage.setItem('userData', JSON.stringify(data.user));
-            
-            // Também salvar nos formatos alternativos para compatibilidade
+        if (response.ok && data.access_token) {
+            console.log('✅ Login bem-sucedido! Dados recebidos:', data);
+
+            // Limpar localStorage antes de salvar novos dados
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user_data');
+
+            // Salvar dados no localStorage
             localStorage.setItem('access_token', data.access_token);
             localStorage.setItem('user_data', JSON.stringify(data.user));
+            
+            // Também salvar nos formatos alternativos
+            localStorage.setItem('authToken', data.access_token);
+            localStorage.setItem('userData', JSON.stringify(data.user));
 
             // Atualizar variáveis globais
             currentUser = data.user;
             isAuthenticated = true;
             authToken = data.access_token;
+            window.authToken = data.access_token;
 
-            console.log('✅ Login bem-sucedido!');
-            console.log('💾 Token salvo:', data.access_token.substring(0, 20) + '...');
+            console.log('💾 Dados salvos no localStorage:');
+            console.log('  access_token:', !!localStorage.getItem('access_token'));
+            console.log('  user_data:', !!localStorage.getItem('user_data'));
             console.log('👤 Usuário:', data.user.email);
             console.log('👑 Admin:', data.user.is_admin);
 
-            // Atualizar UI imediatamente
-            updateAuthenticationUI();
-
             showToast('Login realizado com sucesso!', 'success');
 
-            // Redirecionar com base no tipo de usuário
+            // Aguardar um pouco e redirecionar
             setTimeout(() => {
                 if (data.user.is_admin) {
                     console.log('👑 Redirecionando admin para /admin');
@@ -466,14 +466,15 @@ async function handleLogin(event) {
                     console.log('👤 Redirecionando usuário para /painel');
                     window.location.href = '/painel';
                 }
-            }, 1000);
+            }, 1500);
 
         } else {
+            console.error('❌ Erro no login:', data);
             showToast(data.detail || 'Erro no login', 'error');
         }
 
     } catch (error) {
-        console.error('Erro no login:', error);
+        console.error('💥 Erro na requisição de login:', error);
         showToast('Erro de conexão', 'error');
     } finally {
         setButtonLoading(submitBtn, false);
@@ -887,14 +888,14 @@ function setupGlobalEventListeners() {
         }
     });
 
-    // Verificação periódica de autenticação (a cada 60 segundos)
-    setInterval(function() {
-        const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
-        if (token && typeof checkAuthenticationStatus === 'function') {
-            console.log('⏰ Verificação periódica de autenticação');
-            checkAuthenticationStatus();
-        }
-    }, 60000); // 60 segundos
+    // Verificação periódica desabilitada para evitar logout acidental
+    // setInterval(function() {
+    //     const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
+    //     if (token && typeof checkAuthenticationStatus === 'function') {
+    //         console.log('⏰ Verificação periódica de autenticação');
+    //         checkAuthenticationStatus();
+    //     }
+    // }, 60000); // 60 segundos
 
     // Smooth scroll for anchor links
     document.addEventListener('click', function(e) {
