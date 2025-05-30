@@ -382,7 +382,10 @@ function checkAuthenticationStatus() {
                     console.log('⚠️ Não foi possível atualizar dados do usuário:', e);
                 }
                 
-                updateAuthenticationUI();
+                // Forçar atualização da UI
+                setTimeout(() => {
+                    updateAuthenticationUI();
+                }, 100);
                 
             } else {
                 console.log('⚠️ Erro na verificação, mas não é 401:', response.status);
@@ -415,77 +418,96 @@ function updateAuthenticationUI() {
     console.log('🎨 Atualizando UI de autenticação...');
     console.log('📧 Token existe:', !!token);
     console.log('👤 Email do usuário:', userData.email);
+    console.log('👤 Dados completos do usuário:', userData);
 
-    const loginLink = document.getElementById('loginLink');
-    const logoutLink = document.getElementById('logoutLink');
-    const painelLink = document.getElementById('painelLink');
-    const adminLink = document.getElementById('adminLink');
+    // Aguardar um momento para garantir que os elementos existam
+    setTimeout(() => {
+        const loginLink = document.getElementById('loginLink');
+        const logoutLink = document.getElementById('logoutLink');
+        const painelLink = document.getElementById('painelLink');
+        const adminLink = document.getElementById('adminLink');
 
-    // Log dos elementos encontrados
-    console.log('🔗 Elementos encontrados:', {
-        loginLink: !!loginLink,
-        logoutLink: !!logoutLink,
-        painelLink: !!painelLink,
-        adminLink: !!adminLink
-    });
+        // Log dos elementos encontrados
+        console.log('🔗 Elementos encontrados:', {
+            loginLink: !!loginLink,
+            logoutLink: !!logoutLink,
+            painelLink: !!painelLink,
+            adminLink: !!adminLink
+        });
 
-    if (token && userData.email) {
-        console.log('✅ Usuário logado - mostrando elementos de usuário autenticado');
-        
-        // Usuário logado
-        if (loginLink) {
-            loginLink.style.display = 'none';
-            console.log('🚪 Link de login ocultado');
-        }
-        if (logoutLink) {
-            logoutLink.style.display = 'flex';
-            console.log('🚪 Link de logout mostrado');
-        }
-        if (painelLink) {
-            painelLink.style.display = 'flex';
-            console.log('📋 Link do painel mostrado');
-        }
+        if (token && userData.email) {
+            console.log('✅ Usuário logado - mostrando elementos de usuário autenticado');
+            
+            // Usuário logado
+            if (loginLink) {
+                loginLink.style.display = 'none';
+                loginLink.classList.add('hidden');
+                console.log('🚪 Link de login ocultado');
+            }
+            if (logoutLink) {
+                logoutLink.style.display = 'flex';
+                logoutLink.classList.remove('hidden');
+                console.log('🚪 Link de logout mostrado');
+            }
+            if (painelLink) {
+                painelLink.style.display = 'flex';
+                painelLink.classList.remove('hidden');
+                console.log('📋 Link do painel mostrado');
+            }
 
-        // Lista de emails autorizados como admin
-        const AUTHORIZED_ADMIN_EMAILS = [
-            'admin@fovdark.com',
-            'lsalles102@gmail.com'
-        ];
+            // Lista de emails autorizados como admin
+            const AUTHORIZED_ADMIN_EMAILS = [
+                'admin@fovdark.com',
+                'lsalles102@gmail.com'
+            ];
 
-        // Verificar se é admin autorizado
-        const userEmailLower = userData.email.toLowerCase().trim();
-        const isAuthorizedAdmin = AUTHORIZED_ADMIN_EMAILS.some(email => 
-            email.toLowerCase() === userEmailLower
-        );
+            // Verificar se é admin autorizado (múltiplas verificações para robustez)
+            const userEmailLower = userData.email.toLowerCase().trim();
+            const isAuthorizedAdmin = AUTHORIZED_ADMIN_EMAILS.some(email => 
+                email.toLowerCase() === userEmailLower
+            ) || userData.is_admin === true;
 
-        console.log('👑 É admin autorizado:', isAuthorizedAdmin);
+            console.log('👑 É admin autorizado:', isAuthorizedAdmin);
+            console.log('👑 userData.is_admin:', userData.is_admin);
 
-        // Mostrar/ocultar link admin
-        if (adminLink) {
-            adminLink.style.display = isAuthorizedAdmin ? 'flex' : 'none';
-            console.log('⚙️ Link admin:', isAuthorizedAdmin ? 'mostrado' : 'ocultado');
+            // Mostrar/ocultar link admin
+            if (adminLink) {
+                if (isAuthorizedAdmin) {
+                    adminLink.style.display = 'flex';
+                    adminLink.classList.remove('hidden');
+                    console.log('⚙️ Link admin mostrado');
+                } else {
+                    adminLink.style.display = 'none';
+                    adminLink.classList.add('hidden');
+                    console.log('⚙️ Link admin ocultado');
+                }
+            }
+        } else {
+            console.log('❌ Usuário não logado - mostrando elementos de usuário não autenticado');
+            
+            // Usuário não logado
+            if (loginLink) {
+                loginLink.style.display = 'flex';
+                loginLink.classList.remove('hidden');
+                console.log('🚪 Link de login mostrado');
+            }
+            if (logoutLink) {
+                logoutLink.style.display = 'none';
+                logoutLink.classList.add('hidden');
+                console.log('🚪 Link de logout ocultado');
+            }
+            if (painelLink) {
+                painelLink.style.display = 'none';
+                painelLink.classList.add('hidden');
+                console.log('📋 Link do painel ocultado');
+            }
+            if (adminLink) {
+                adminLink.style.display = 'none';
+                adminLink.classList.add('hidden');
+                console.log('⚙️ Link admin ocultado');
+            }
         }
-    } else {
-        console.log('❌ Usuário não logado - mostrando elementos de usuário não autenticado');
-        
-        // Usuário não logado
-        if (loginLink) {
-            loginLink.style.display = 'flex';
-            console.log('🚪 Link de login mostrado');
-        }
-        if (logoutLink) {
-            logoutLink.style.display = 'none';
-            console.log('🚪 Link de logout ocultado');
-        }
-        if (painelLink) {
-            painelLink.style.display = 'none';
-            console.log('📋 Link do painel ocultado');
-        }
-        if (adminLink) {
-            adminLink.style.display = 'none';
-            console.log('⚙️ Link admin ocultado');
-        }
-    }
+    }, 50);
 }
 
 // Função para fazer requisições com timeout
@@ -566,15 +588,15 @@ function logout() {
 
         // Forçar atualização da página após logout para garantir limpeza total
         setTimeout(() => {
-            console.log('🏠 Redirecionando para home e atualizando página');
-            window.location.replace('/');
-        }, 1000);
+            console.log('🏠 Redirecionando para home');
+            window.location.href = '/';
+        }, 500);
         
     } catch (error) {
         console.error('❌ Erro durante logout:', error);
         // Forçar limpeza mesmo com erro
         localStorage.clear();
-        window.location.replace('/');
+        window.location.href = '/';
     }
 }
 
@@ -1070,21 +1092,29 @@ function setupGlobalEventListeners() {
         console.log('💾 Storage mudou:', e.key);
         if (e.key === 'access_token' || e.key === 'user_data') {
             console.log('🔄 Dados de autenticação mudaram, atualizando UI');
-            updateAuthenticationUI();
+            setTimeout(() => {
+                updateAuthenticationUI();
+            }, 100);
         }
     });
 
     // Verificar autenticação quando a página ganha foco
     window.addEventListener('focus', function() {
         console.log('👁️ Página ganhou foco, verificando autenticação');
-        checkAuthenticationStatus();
+        setTimeout(() => {
+            updateAuthenticationUI();
+            checkAuthenticationStatus();
+        }, 200);
     });
 
     // Verificar autenticação quando a página se torna visível
     document.addEventListener('visibilitychange', function() {
         if (!document.hidden) {
             console.log('👁️ Página se tornou visível, verificando autenticação');
-            checkAuthenticationStatus();
+            setTimeout(() => {
+                updateAuthenticationUI();
+                checkAuthenticationStatus();
+            }, 200);
         }
     });
 

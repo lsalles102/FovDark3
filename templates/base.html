@@ -286,23 +286,37 @@
                 // Aguardar um pouco para garantir que o script.js foi carregado
                 setTimeout(function() {
                     try {
-                        if (typeof checkAuthenticationStatus === 'function') {
-                            console.log('🔍 Verificando status de autenticação');
-                            checkAuthenticationStatus();
-                        } else {
-                            console.warn('⚠️ Função checkAuthenticationStatus não encontrada');
-                        }
-                        
+                        // Primeiro atualizar a UI imediatamente
                         if (typeof updateAuthenticationUI === 'function') {
                             console.log('🎨 Atualizando UI de autenticação');
                             updateAuthenticationUI();
                         } else {
                             console.warn('⚠️ Função updateAuthenticationUI não encontrada');
                         }
+                        
+                        // Depois verificar o status de autenticação
+                        if (typeof checkAuthenticationStatus === 'function') {
+                            console.log('🔍 Verificando status de autenticação');
+                            checkAuthenticationStatus();
+                        } else {
+                            console.warn('⚠️ Função checkAuthenticationStatus não encontrada');
+                        }
                     } catch (error) {
                         console.error('❌ Erro na inicialização:', error);
                     }
-                }, 300);
+                }, 100);
+                
+                // Verificação adicional após mais tempo
+                setTimeout(function() {
+                    try {
+                        if (typeof updateAuthenticationUI === 'function') {
+                            console.log('🔄 Verificação adicional da UI');
+                            updateAuthenticationUI();
+                        }
+                    } catch (error) {
+                        console.error('❌ Erro na verificação adicional:', error);
+                    }
+                }, 1000);
             });
 
             // Verificação de visibilidade da página
