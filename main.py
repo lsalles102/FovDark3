@@ -885,6 +885,20 @@ async def change_password(
         db.rollback()
         raise HTTPException(status_code=500, detail="Erro interno do servidor")
 
+@app.post("/api/verify_token")
+async def verify_token(
+    current_user: User = Depends(get_current_user)
+):
+    """Verificar se o token é válido"""
+    return {
+        "valid": True,
+        "user": {
+            "id": current_user.id,
+            "email": current_user.email,
+            "is_admin": current_user.is_admin
+        }
+    }
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""

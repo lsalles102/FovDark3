@@ -52,9 +52,16 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary btn-full">
-                    <i class="fas fa-sign-in-alt"></i>
-                    <span>INICIAR SESSÃO</span>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); cursor: pointer;">
+                        <input type="checkbox" id="rememberMe" style="width: 18px; height: 18px; accent-color: var(--primary);">
+                        <span>Lembrar-me neste dispositivo</span>
+                    </label>
+                </div>
+
+                <button type="submit" id="submitButton" class="btn btn-primary btn-full">
+                    <i class="fas fa-spinner fa-spin" id="spinner" style="display: none;"></i>
+                    <span id="buttonText">INICIAR SESSÃO</span>
                 </button>
             </form>
 

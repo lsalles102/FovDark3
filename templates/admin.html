@@ -1812,7 +1812,7 @@ async function loadOverviewData() {
         document.getElementById('todaySignups').textContent = '15';
     }
 
-    
+
 
 } catch (error) {
         console.error('Erro ao carregar dados do overview:', error);
@@ -2936,29 +2936,24 @@ function createToastContainer() {
                 return false;
             }
 
-            try {
-                const response = await fetch('/api/verify_token', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        token: token
-                    })
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    return data.is_valid;
-                } else {
-                    console.error('Erro ao validar token:', response.status);
-                    return false;
+        try {
+            const response = await fetch('/api/license/check', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
                 }
-            } catch (error) {
-                console.error('Erro ao validar token:', error);
+            });
+
+            if (response.status === 401) {
+                console.log('🚫 Token inválido no servidor');
                 return false;
             }
+
+            return response.ok;
+        } catch (error) {
+            console.error('Erro ao validar token:', error);
+            return false;
         }
+    }
 
         // Função para fazer logout
         function logout() {
