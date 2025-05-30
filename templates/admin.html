@@ -1814,6 +1814,16 @@ async function loadOverviewData() {
 
     
 
+} catch (error) {
+        console.error('Erro ao carregar dados do overview:', error);
+        // Valores padrão em caso de erro
+        document.getElementById('totalUsers').textContent = '0';
+        document.getElementById('activeLicenses').textContent = '0';
+        document.getElementById('totalRevenue').textContent = 'R$ 0,00';
+        document.getElementById('todaySignups').textContent = '0';
+    }
+}
+
 async function loadUsers() {
     const token = localStorage.getItem('access_token');
     const tbody = document.getElementById('usersTableBody');
@@ -2964,18 +2974,23 @@ function createToastContainer() {
         }
 
         // Verificar se o usuário está logado
-        if (!isLoggedIn()) {
-            console.log('❌ Usuário não está logado - redirecionando');
-            window.location.replace('/login');
-            return;
+        async function initializeAdmin() {
+            if (!isLoggedIn()) {
+                console.log('❌ Usuário não está logado - redirecionando');
+                window.location.replace('/login');
+                return;
+            }
+
+            // Validar token no servidor
+            const tokenValid = await validateToken();
+            if (!tokenValid) {
+                console.log('❌ Token inválido - fazendo logout');
+                logout();
+                return;
+            }
         }
 
-        // Validar token no servidor
-        const tokenValid = await validateToken();
-        if (!tokenValid) {
-            console.log('❌ Token inválido - fazendo logout');
-            logout();
-            return;
-        }
+        // Executar inicialização
+        initializeAdmin();
     </script>
 {% endblock %}
