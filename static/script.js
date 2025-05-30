@@ -968,7 +968,8 @@ function copyToClipboard(text) {
         }
     }
 }
-<///The code integrates MercadoPago payment processing, loads product data from an API, and displays products on the page with the option to purchase.
+
+// The code integrates MercadoPago payment processing, loads product data from an API, and displays products on the page with the option to purchase.
 async function selectPlan(productId, productPrice, planName, durationDays) {
     const token = localStorage.getItem('access_token');
 
