@@ -133,6 +133,10 @@ function updateAuthenticationUI() {
     const authToken = localStorage.getItem('authToken') || localStorage.getItem('access_token');
     const userData = localStorage.getItem('userData') || localStorage.getItem('user_data');
     
+    console.log('🔍 Debug UI de autenticação:');
+    console.log('  Token encontrado:', !!authToken);
+    console.log('  UserData encontrado:', !!userData);
+    
     if (authToken && userData) {
         try {
             const user = JSON.parse(userData);
@@ -140,49 +144,75 @@ function updateAuthenticationUI() {
             isAuthenticated = true;
             
             console.log('✅ Usuário autenticado na UI:', user.email || user.id);
+            console.log('👑 Admin na UI:', user.is_admin);
             updateNavigationForAuthenticatedUser();
+            return true;
         } catch (error) {
             console.error('❌ Erro ao processar dados do usuário na UI:', error);
             updateNavigationForUnauthenticatedUser();
+            return false;
         }
     } else {
         console.log('❌ Usuário não autenticado na UI');
+        console.log('❌ Faltando na UI:', !authToken ? 'token' : '', !userData ? 'userData' : '');
         updateNavigationForUnauthenticatedUser();
+        return false;
     }
 }
 
 function checkAuthenticationStatus() {
     console.log('🔐 Verificando status de autenticação...');
 
-    // Verificar ambos os formatos de token para compatibilidade
+    // Verificar todos os formatos de token para compatibilidade
     const authToken = localStorage.getItem('authToken') || localStorage.getItem('access_token');
     const userData = localStorage.getItem('userData') || localStorage.getItem('user_data');
 
+    console.log('🔍 Debug de autenticação:');
+    console.log('  authToken existe:', !!authToken);
+    console.log('  userData existe:', !!userData);
+    console.log('  localStorage authToken:', localStorage.getItem('authToken'));
+    console.log('  localStorage access_token:', localStorage.getItem('access_token'));
+    console.log('  localStorage userData:', localStorage.getItem('userData'));
+    console.log('  localStorage user_data:', localStorage.getItem('user_data'));
+
     if (authToken && userData) {
         try {
-            currentUser = JSON.parse(userData);
+            const parsedUser = JSON.parse(userData);
+            currentUser = parsedUser;
             isAuthenticated = true;
+            
+            // Atualizar token global
+            if (authToken) {
+                window.authToken = authToken;
+            }
             
             // Normalizar o token no formato correto
             if (!localStorage.getItem('authToken') && localStorage.getItem('access_token')) {
                 localStorage.setItem('authToken', localStorage.getItem('access_token'));
+                console.log('🔄 Token normalizado para authToken');
             }
             if (!localStorage.getItem('userData') && localStorage.getItem('user_data')) {
                 localStorage.setItem('userData', localStorage.getItem('user_data'));
+                console.log('🔄 UserData normalizado para userData');
             }
 
-            console.log('✅ Usuário autenticado:', currentUser.email || currentUser.id);
+            console.log('✅ Usuário autenticado:', parsedUser.email || parsedUser.id);
+            console.log('👑 Admin:', parsedUser.is_admin);
             updateNavigationForAuthenticatedUser();
 
-            // Verificar se o token ainda é válido
-            validateToken();
+            // Verificar se o token ainda é válido (não obrigatório para não causar logout)
+            validateToken().catch(error => {
+                console.log('⚠️ Erro na validação do token (não crítico):', error);
+            });
 
         } catch (error) {
             console.error('❌ Erro ao processar dados do usuário:', error);
+            console.error('❌ Dados do usuário corrompidos, fazendo logout');
             logout();
         }
     } else {
         console.log('❌ Usuário não autenticado');
+        console.log('❌ Faltando:', !authToken ? 'token' : '', !userData ? 'userData' : '');
         updateNavigationForUnauthenticatedUser();
     }
 }
@@ -404,17 +434,38 @@ async function handleLogin(event) {
         const data = await response.json();
 
         if (response.ok) {
+            // Salvar no localStorage primeiro
             localStorage.setItem('authToken', data.access_token);
             localStorage.setItem('userData', JSON.stringify(data.user));
+            
+            // Também salvar nos formatos alternativos para compatibilidade
+            localStorage.setItem('access_token', data.access_token);
+            localStorage.setItem('user_data', JSON.stringify(data.user));
 
+            // Atualizar variáveis globais
             currentUser = data.user;
             isAuthenticated = true;
             authToken = data.access_token;
 
+            console.log('✅ Login bem-sucedido!');
+            console.log('💾 Token salvo:', data.access_token.substring(0, 20) + '...');
+            console.log('👤 Usuário:', data.user.email);
+            console.log('👑 Admin:', data.user.is_admin);
+
+            // Atualizar UI imediatamente
+            updateAuthenticationUI();
+
             showToast('Login realizado com sucesso!', 'success');
 
+            // Redirecionar com base no tipo de usuário
             setTimeout(() => {
-                window.location.href = '/painel';
+                if (data.user.is_admin) {
+                    console.log('👑 Redirecionando admin para /admin');
+                    window.location.href = '/admin';
+                } else {
+                    console.log('👤 Redirecionando usuário para /painel');
+                    window.location.href = '/painel';
+                }
             }, 1000);
 
         } else {

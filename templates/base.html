@@ -278,9 +278,17 @@
                 
                 try {
                     await waitForScript();
+                    
+                    // Aguardar um pouco mais para garantir que qualquer processo de login termine
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    
                     console.log('🔄 Executando verificação de autenticação do base.html');
-                    updateAuthenticationUI();
-                    checkAuthenticationStatus();
+                    const authResult = updateAuthenticationUI();
+                    
+                    // Só verificar status se a UI não encontrou autenticação
+                    if (!authResult) {
+                        checkAuthenticationStatus();
+                    }
                 } catch (error) {
                     console.error('❌ Erro ao carregar funções de autenticação:', error);
                 }
