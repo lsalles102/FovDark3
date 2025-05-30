@@ -53,10 +53,19 @@ def get_domain():
     """Obtém o domínio para redirecionamento"""
     import os
     
+    # Verificar se está no Railway
+    railway_static_url = os.getenv("RAILWAY_STATIC_URL")
+    if railway_static_url:
+        return railway_static_url.rstrip('/')
+    
     # Usar domínio personalizado em produção
     custom_domain = os.getenv("CUSTOM_DOMAIN")
     if custom_domain:
         return custom_domain.rstrip('/')
+    
+    # Para Railway, usar domínio personalizado configurado
+    if os.getenv("RAILWAY_ENVIRONMENT"):
+        return "https://www.fovdark.shop"
     
     # Para produção no Replit
     replit_url = os.getenv("REPL_URL")

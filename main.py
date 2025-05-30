@@ -1014,9 +1014,12 @@ async def mercadopago_status():
         import os
         debug_info = {
             "custom_domain": os.getenv("CUSTOM_DOMAIN"),
+            "railway_static_url": os.getenv("RAILWAY_STATIC_URL"),
+            "railway_environment": os.getenv("RAILWAY_ENVIRONMENT"),
             "repl_url": os.getenv("REPL_URL"), 
             "mercadopago_token_exists": bool(MERCADOPAGO_ACCESS_TOKEN),
-            "calculated_domain": get_domain()
+            "calculated_domain": get_domain(),
+            "platform": "Railway" if os.getenv("RAILWAY_ENVIRONMENT") else "Replit"
         }
 
         if not MERCADOPAGO_ACCESS_TOKEN:
