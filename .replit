@@ -6,7 +6,7 @@ channel = "stable-24_05"
 packages = ["libxcrypt"]
 
 [workflows]
-runButton = "FovDark Server Run"
+runButton = "FovDark Start"
 
 [[workflows.workflow]]
 name = "Project"
@@ -69,6 +69,15 @@ args = "pip install fastapi uvicorn sqlalchemy psycopg2-binary python-jose[crypt
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python main.py"
+
+[[workflows.workflow]]
+name = "FovDark Start"
+author = 43307722
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python start.py"
 
 [deployment]
 run = ["sh", "-c", "Run command"]

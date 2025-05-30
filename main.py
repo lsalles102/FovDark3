@@ -727,7 +727,17 @@ async def get_admin_payments(
     payments = db.query(Payment).all()
     return [
         {
-
+            "id": payment.id,
+            "user_id": payment.user_id,
+            "product_id": payment.product_id,
+            "valor": payment.valor,
+            "data_pagamento": payment.data_pagamento.isoformat() if payment.data_pagamento else None,
+            "status": payment.status,
+            "plano": payment.plano,
+            "gateway_id": payment.gateway_id
+        }
+        for payment in payments
+    ]
 
 @app.post("/api/admin/maintenance/toggle")
 async def toggle_maintenance_mode(
