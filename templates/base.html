@@ -18,31 +18,14 @@
         />
         <meta name="author" content="FovDark" />
 
-        <!-- Open Graph -->
-        <meta property="og:title" content="FovDark - Aim Assist Premium" />
-        <meta
-            property="og:description"
-            content="Domine o campo de batalha com o aimbot mais avançado do mercado"
-        />
-        <meta property="og:type" content="website" />
-
         <!-- Favicon -->
         <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
-
-        <!-- Security Headers -->
-        <meta
-            http-equiv="Content-Security-Policy"
-            content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https:; img-src 'self' data: https:;"
-        />
-        <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-        <meta http-equiv="X-Frame-Options" content="DENY" />
-        <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&family=Exo+2:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap"
             rel="stylesheet"
         />
 
@@ -56,122 +39,6 @@
         <link rel="stylesheet" href="/static/style.css" />
 
         {% block extra_head %}{% endblock %}
-
-        <!-- Carregar configurações dinâmicas -->
-        <script>
-            async function loadSiteSettings() {
-                try {
-                    const response = await fetch("/api/settings/public");
-                    if (response.ok) {
-                        const settings = await response.json();
-                        applySiteSettings(settings);
-                    }
-                } catch (error) {
-                    console.log("Configurações padrão carregadas");
-                }
-            }
-
-            function applySiteSettings(settings) {
-                const root = document.documentElement;
-
-                // Aplicar configurações de tema
-                if (settings.theme) {
-                    Object.entries(settings.theme).forEach(([key, value]) => {
-                        if (key.includes("color")) {
-                            const hsl = hexToHSL(value);
-                            const cssVar = key.replace("-color", "");
-                            root.style.setProperty(`--${cssVar}`, hsl);
-                        } else if (key.includes("font")) {
-                            root.style.setProperty(
-                                `--${key}`,
-                                `'${value}', ${key.includes("primary") ? "monospace" : "sans-serif"}`,
-                            );
-                        }
-                    });
-                }
-
-                // Aplicar configurações de conteúdo
-                if (settings.content) {
-                    if (settings.content["site-name"]) {
-                        document.title = document.title.replace(
-                            "FovDark",
-                            settings.content["site-name"],
-                        );
-
-                        // Atualizar brand name se existir
-                        const brandElements = document.querySelectorAll(
-                            ".brand-name, .site-name",
-                        );
-                        brandElements.forEach((el) => {
-                            el.textContent = settings.content["site-name"];
-                        });
-                    }
-                }
-
-                // Aplicar imagens
-                if (settings.images) {
-                    if (settings.images["favicon"]) {
-                        const favicon =
-                            document.querySelector('link[rel="icon"]');
-                        if (favicon) favicon.href = settings.images["favicon"];
-                    }
-
-                    if (settings.images["main-logo"]) {
-                        const logos = document.querySelectorAll(
-                            ".main-logo, .site-logo",
-                        );
-                        logos.forEach((logo) => {
-                            if (logo.tagName === "IMG") {
-                                logo.src = settings.images["main-logo"];
-                            }
-                        });
-                    }
-                }
-            }
-
-            function hexToHSL(hex) {
-                if (!hex || !hex.startsWith("#")) return hex;
-
-                const r = parseInt(hex.slice(1, 3), 16) / 255;
-                const g = parseInt(hex.slice(3, 5), 16) / 255;
-                const b = parseInt(hex.slice(5, 7), 16) / 255;
-
-                const max = Math.max(r, g, b);
-                const min = Math.min(r, g, b);
-                let h,
-                    s,
-                    l = (max + min) / 2;
-
-                if (max === min) {
-                    h = s = 0;
-                } else {
-                    const d = max - min;
-                    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-
-                    switch (max) {
-                        case r:
-                            h = (g - b) / d + (g < b ? 6 : 0);
-                            break;
-                        case g:
-                            h = (b - r) / d + 2;
-                            break;
-                        case b:
-                            h = (r - g) / d + 4;
-                            break;
-                    }
-                    h /= 6;
-                }
-
-                h = Math.round(h * 360);
-                s = Math.round(s * 100);
-                l = Math.round(l * 100);
-
-                return `${h} ${s}% ${l}%`;
-            }
-
-            // Carregar configurações quando a página carregar
-            document.addEventListener("DOMContentLoaded", loadSiteSettings);
-        </script>
     </head>
     <body>
         <!-- Navigation -->
@@ -249,56 +116,8 @@
             </div>
         </footer>
 
-        <!-- Toast Notifications -->
-        <div id="toast-container" class="toast-container"></div>
-
         <!-- Scripts -->
         <script src="/static/script.js"></script>
-        <script>
-            // Função para verificar se o script foi carregado
-            function waitForScript() {
-                return new Promise((resolve) => {
-                    function checkFunctions() {
-                        if (typeof updateAuthenticationUI === 'function' && 
-                            typeof checkAuthenticationStatus === 'function') {
-                            console.log('✅ Funções de autenticação carregadas com sucesso');
-                            resolve();
-                        } else {
-                            console.log('⏳ Aguardando carregamento das funções...');
-                            setTimeout(checkFunctions, 100);
-                        }
-                    }
-                    checkFunctions();
-                });
-            }
-
-            // Aguardar carregamento e executar verificação
-            document.addEventListener('DOMContentLoaded', async function() {
-                console.log('🌐 DOM carregado, aguardando script...');
-
-                try {
-                    await waitForScript();
-
-                    console.log('🔄 Executando verificação de autenticação do base.html');
-
-                    // Verificar se há dados de login salvos
-                    const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
-                    const userData = localStorage.getItem('user_data') || localStorage.getItem('userData');
-
-                    if (token && userData) {
-                        console.log('✅ Dados de autenticação encontrados, atualizando UI');
-                        updateAuthenticationUI();
-                        checkAuthenticationStatus();
-                    } else {
-                        console.log('❌ Nenhum dado de autenticação encontrado');
-                        updateNavigationForUnauthenticatedUser();
-                    }
-                } catch (error) {
-                    console.error('❌ Erro ao carregar funções de autenticação:', error);
-                }
-            });
-        </script>
-
         {% block scripts %}{% endblock %}
     </body>
 </html>
