@@ -119,5 +119,77 @@
             toggle.className = 'fas fa-eye';
         }
     }
+
+    // Função para salvar o token no localStorage ou sessionStorage
+    function saveToken(token, rememberMe) {
+        if (rememberMe) {
+            localStorage.setItem('access_token', token);
+            sessionStorage.removeItem('access_token'); // Clear session storage if it exists
+        } else {
+            sessionStorage.setItem('access_token', token);
+            localStorage.removeItem('access_token'); // Clear local storage if it exists
+        }
+        console.log('Token salvo com sucesso:', rememberMe ? 'localStorage' : 'sessionStorage');
+    }
+
+    // Função para remover o token (logout)
+    function removeToken() {
+        localStorage.removeItem('access_token');
+        sessionStorage.removeItem('access_token');
+        console.log('Token removido (logout).');
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const submitButton = document.getElementById('submitButton');
+                const buttonText = document.getElementById('buttonText');
+                const spinner = document.getElementById('spinner');
+
+                // Mostrar loading
+                submitButton.disabled = true;
+                buttonText.textContent = 'Entrando...';
+                spinner.style.display = 'inline-block';
+
+                try {
+                    console.log('🔄 Iniciando processo de login...');
+
+                    const response = await fetch('/api/login', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        console.log('✅ Login bem-sucedido');
+
+                        // Usar nova função para salvar token
+                        const rememberMe = document.getElementById('rememberMe').checked;
+                        saveToken(data.access_token, rememberMe);
+
+                        console.log('🔄 Redirecionando usuário...');
+
+                        // Redirecionar baseado no tipo de usuário
+                        if (data.user && data.user.is_admin) {
+                            window.location.replace('/admin');
+                        } else {
+                            window.location.replace('/painel');
+                        }
+                    } else {
+                        console.log('❌ Erro no login:', data.detail);
+                        showError(data.detail || 'Erro ao fazer login');
+                    }
+                } catch (error) {
+                    console.error('❌ Erro:', error);
+                    showError('Erro de conexão. Tente novamente.');
+                } finally {
+                    // Restaurar botão
+                    submitButton.disabled = false;
+                    buttonText.textContent = 'Entrar';
+                    spinner.style.display = 'none';
+                }
+            });
 </script>
 {% endblock %}

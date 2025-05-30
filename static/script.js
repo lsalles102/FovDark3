@@ -36,20 +36,20 @@
         if (token && userData) {
             try {
                 const newUserData = JSON.parse(userData);
-                
+
                 // Verificar se é um usuário diferente do atual
                 if (currentUser && currentUser.email !== newUserData.email) {
                     console.log('🔄 Usuário diferente detectado, atualizando...');
                     console.log(`   Anterior: ${currentUser.email}`);
                     console.log(`   Novo: ${newUserData.email}`);
                 }
-                
+
                 currentUser = newUserData;
                 isAuthenticated = true;
                 updateNavigation(true);
                 console.log('✅ Usuário autenticado:', currentUser.email);
                 console.log('👑 É admin:', currentUser.is_admin);
-                
+
             } catch (error) {
                 console.error('❌ Erro ao processar dados do usuário:', error);
                 clearAuthData();
@@ -141,19 +141,19 @@
 
     function clearAuthData() {
         console.log('🧹 Limpando todos os dados de autenticação...');
-        
+
         // Limpar localStorage
         localStorage.removeItem('access_token');
         localStorage.removeItem('user_data');
-        
+
         // Limpar sessionStorage também (caso tenha dados lá)
         sessionStorage.removeItem('access_token');
         sessionStorage.removeItem('user_data');
-        
+
         // Limpar variáveis globais
         currentUser = null;
         isAuthenticated = false;
-        
+
         console.log('✅ Dados de autenticação limpos');
     }
 
@@ -196,7 +196,7 @@
         setInterval(() => {
             const token = localStorage.getItem('access_token');
             const userData = localStorage.getItem('user_data');
-            
+
             if (userData) {
                 try {
                     const parsedData = JSON.parse(userData);
@@ -284,7 +284,7 @@
 
             if (response.ok && data.access_token) {
                 console.log('✅ Login bem-sucedido para:', data.user.email);
-                
+
                 // Salvar novos dados
                 localStorage.setItem('access_token', data.access_token);
                 localStorage.setItem('user_data', JSON.stringify(data.user));
@@ -491,10 +491,10 @@
         console.log('🧭 Redirecionando usuário...');
         console.log('👤 Usuário atual:', currentUser?.email);
         console.log('👑 É admin:', currentUser?.is_admin);
-        
+
         // Forçar atualização da navegação antes de redirecionar
         updateNavigation(true);
-        
+
         if (currentUser?.is_admin) {
             console.log('🚀 Redirecionando admin para /admin');
             window.location.href = '/admin';
@@ -571,9 +571,133 @@
         }, 5000);
     }
 
+    // Função para limpar completamente a sessão
+    function clearSession() {
+        // Remover todos os tokens possíveis
+        localStorage.removeItem('access_token');
+        sessionStorage.removeItem('access_token');
+        localStorage.removeItem('user_data');
+        sessionStorage.removeItem('user_data');
+
+        // Limpar cookies relacionados à autenticação
+        document.cookie.split(";").forEach(function(c) { 
+            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        });
+
+        console.log('🧹 Sessão completamente limpa');
+    }
+
+    // Função para fazer logout
+    function logout() {
+        console.log('🚪 Fazendo logout...');
+        clearSession();
+
+        // Forçar recarregamento completo da página
+        window.location.replace('/login');
+    }
+
+    // Função para verificar se o usuário está logado
+    function isLoggedIn() {
+        const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+        const isValid = token !== null && token !== 'undefined' && token !== '';
+        console.log('🔍 Verificando login:', isValid ? 'Logado' : 'Não logado');
+        return isValid;
+    }
+
+    // Função para obter o token
+    function getToken() {
+        const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+        console.log('🔑 Token obtido:', token ? 'Token presente' : 'Sem token');
+        return token;
+    }
+
+    // Função para salvar token
+    function saveToken(token, rememberMe = false) {
+        console.log('💾 Salvando token...');
+
+        // Limpar sessão anterior primeiro
+        clearSession();
+
+        // Salvar novo token
+        if (rememberMe) {
+            localStorage.setItem('access_token', token);
+            console.log('💾 Token salvo no localStorage');
+        } else {
+            sessionStorage.setItem('access_token', token);
+            console.log('💾 Token salvo no sessionStorage');
+        }
+    }
+
+    // Função para fazer requisições autenticadas
+    async function authenticatedFetch(url, options = {}) {
+        const token = getToken();
+        if (!token) {
+            console.log('❌ Sem token - redirecionando para login');
+            window.location.replace('/login');
+            return;
+        }
+
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            ...options.headers
+        };
+
+        try {
+            const response = await fetch(url, {
+                ...options,
+                headers
+            });
+
+            if (response.status === 401) {
+                console.log('🚫 Token inválido - fazendo logout');
+                logout();
+                return;
+            }
+
+            return response;
+        } catch (error) {
+            console.error('❌ Erro na requisição autenticada:', error);
+            throw error;
+        }
+    }
+
+    // Função para validar token no servidor
+    async function validateToken() {
+        const token = getToken();
+        if (!token) {
+            return false;
+        }
+
+        try {
+            const response = await fetch('/api/license/check', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.status === 401) {
+                console.log('🚫 Token inválido no servidor');
+                logout();
+                return false;
+            }
+
+            return response.ok;
+        } catch (error) {
+            console.error('❌ Erro ao validar token:', error);
+            return false;
+        }
+    }
+
     // ===== FUNÇÕES GLOBAIS EXPOSTAS =====
     window.checkAuthentication = checkAuthentication;
     window.handleLogout = handleLogout;
     window.showToast = showToast;
+    window.logout = logout; // Expose the new logout function
+    window.isLoggedIn = isLoggedIn; // Expose the new isLoggedIn function
+    window.getToken = getToken; // Expose the new getToken function
+    window.saveToken = saveToken; // Expose the new saveToken function
+    window.authenticatedFetch = authenticatedFetch; // Expose the new authenticatedFetch function
+    window.validateToken = validateToken; // Expose the new validateToken function
 
 })();

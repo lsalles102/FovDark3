@@ -1875,7 +1875,7 @@ function displayUsers(users) {
         const cadastroDate = user.created_at ? 
             new Date(user.created_at).toLocaleDateString('pt-BR') : 
             '-';
-        
+
         const ultimoLogin = user.ultimo_login ? 
             new Date(user.ultimo_login).toLocaleDateString('pt-BR') : 
             'Nunca';
@@ -1986,7 +1986,7 @@ async function loadProducts() {
 
 function displayProducts(products) {
     const grid = document.getElementById('productsGrid');
-    
+
     if (!grid) {
         console.error('Grid de produtos não encontrado');
         return;
@@ -2011,7 +2011,7 @@ function displayProducts(products) {
         const statusClass = product.is_active ? 'status-active' : 'status-inactive';
         const statusText = product.is_active ? 'Ativo' : 'Inativo';
         const statusIcon = product.is_active ? 'fas fa-check-circle' : 'fas fa-times-circle';
-        
+
         const priceFormatted = new Intl.NumberFormat('pt-BR', {
             style: 'currency',
             currency: 'BRL'
@@ -2031,23 +2031,23 @@ function displayProducts(products) {
                     </div>
                     <div class="product-id">#${product.id}</div>
                 </div>
-                
+
                 <div class="product-card-image">
                     ${product.image_url ? 
                         `<img src="${product.image_url}" alt="${product.name}" onerror="this.src='/static/hero-bg.jpg'">` :
                         `<div class="no-image"><i class="fas fa-image"></i></div>`
                     }
                 </div>
-                
+
                 <div class="product-card-content">
                     <h3 class="product-card-title">${product.name}</h3>
                     <p class="product-card-description">${product.description || 'Sem descrição'}</p>
-                    
+
                     <div class="product-features">
                         ${featuresHTML}
                         ${featuresArray.length > 3 ? `<span class="feature-more">+${featuresArray.length - 3}</span>` : ''}
                     </div>
-                    
+
                     <div class="product-card-info">
                         <div class="info-item">
                             <span class="label">Preço:</span>
@@ -2059,7 +2059,7 @@ function displayProducts(products) {
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="product-card-actions">
                     <button class="btn-action btn-edit" onclick="editProduct(${product.id})" title="Editar Produto">
                         <i class="fas fa-edit"></i>
@@ -2240,7 +2240,7 @@ function createProductModal(product = null) {
 
                 <div style="margin-bottom: 1rem;">
                     <label style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Imagem do Produto:</label>
-                    
+
                     <!-- Tabs para escolher método -->
                     <div style="display: flex; margin-bottom: 0.5rem; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
                         <button type="button" id="urlTab" onclick="switchImageMethod('url')" style="
@@ -2464,17 +2464,17 @@ function switchImageMethod(method) {
 function testImageUrl() {
     const urlInput = document.getElementById('imageUrlInput');
     const url = urlInput.value.trim();
-    
+
     if (!url) {
         showToast('Digite uma URL primeiro', 'warning');
         return;
     }
-    
+
     if (!isValidImageUrl(url)) {
         showToast('URL deve terminar com .jpg, .jpeg, .png, .gif ou .webp', 'warning');
         return;
     }
-    
+
     previewImageFromUrl(url);
 }
 
@@ -2486,16 +2486,16 @@ function isValidImageUrl(url) {
 
 function previewImageFromUrl(url) {
     if (!url) return;
-    
+
     const preview = document.getElementById('imagePreview');
     const previewImg = document.getElementById('previewImg');
     const imageError = document.getElementById('imageError');
-    
+
     if (preview && previewImg) {
         // Reset error state
         previewImg.style.display = 'block';
         imageError.style.display = 'none';
-        
+
         // Test image loading
         const testImg = new Image();
         testImg.onload = function() {
@@ -2547,7 +2547,7 @@ async function uploadProductImage(input) {
     const progressDiv = document.getElementById('uploadProgress');
     const progressBar = document.getElementById('progressBar');
     const progressText = document.getElementById('progressText');
-    
+
     progressDiv.style.display = 'block';
     progressBar.style.width = '10%';
     progressText.textContent = 'Preparando upload...';
@@ -2598,7 +2598,7 @@ async function uploadProductImage(input) {
             const preview = document.getElementById('imagePreview');
             const previewImg = document.getElementById('previewImg');
             const imageError = document.getElementById('imageError');
-            
+
             if (preview && previewImg) {
                 previewImg.style.display = 'block';
                 imageError.style.display = 'none';
@@ -2633,10 +2633,10 @@ async function uploadProductImage(input) {
 function removeProductImage() {
     const imageUrlInput = document.getElementById('imageUrlInput');
     const preview = document.getElementById('imagePreview');
-    
+
     if (imageUrlInput) imageUrlInput.value = '';
     if (preview) preview.style.display = 'none';
-    
+
     showToast('Imagem removida', 'info');
 }
 
@@ -2648,7 +2648,7 @@ async function submitProduct(event) {
     const form = event.target;
     const formData = new FormData(form);
     const token = localStorage.getItem('access_token');
-    
+
     if (!token) {
         showToast('Token de acesso não encontrado', 'error');
         return;
@@ -2704,7 +2704,7 @@ async function submitProduct(event) {
     try {
         const url = isEditing ? `/api/admin/products/${editingId}` : '/api/admin/products';
         const method = isEditing ? 'PUT' : 'POST';
-        
+
         console.log(`🌐 Fazendo ${method} para ${url}`);
 
         const response = await fetch(url, {
@@ -2743,19 +2743,19 @@ function deleteUser(id) { showToast('Funcionalidade em desenvolvimento', 'info')
 
 async function editProduct(id) {
     const token = localStorage.getItem('access_token');
-    
+
     try {
         console.log(`🔍 Carregando produto ${id} para edição...`);
         const response = await fetch(`/api/admin/products`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        
+
         if (response.ok) {
             const products = await response.json();
             console.log('📦 Produtos carregados:', products.length);
-            
+
             const product = products.find(p => p.id === id);
-            
+
             if (product) {
                 console.log('✅ Produto encontrado para edição:', product);
                 openProductModal(product);
@@ -2781,13 +2781,13 @@ async function confirmDeleteProduct(id) {
 
 async function deleteProduct(id) {
     const token = localStorage.getItem('access_token');
-    
+
     try {
         const response = await fetch(`/api/admin/products/${id}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        
+
         if (response.ok) {
             showToast('Produto deletado com sucesso', 'success');
             loadProducts();
@@ -2922,4 +2922,69 @@ function createToastContainer() {
     cursor: not-allowed;
 }
 </style>
+<script>
+        // Função para verificar se o usuário está logado
+        function isLoggedIn() {
+            return localStorage.getItem('access_token') !== null;
+        }
+
+        // Função para validar o token no servidor
+        async function validateToken() {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                return false;
+            }
+
+            try {
+                const response = await fetch('/api/verify_token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        token: token
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.is_valid;
+                } else {
+                    console.error('Erro ao validar token:', response.status);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Erro ao validar token:', error);
+                return false;
+            }
+        }
+
+        // Função para fazer logout
+        function logout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user_data');
+            window.location.href = '/login';
+        }
+
+        // Função para salvar o token após o login
+        function saveToken(token, userData) {
+            localStorage.setItem('access_token', token);
+            localStorage.setItem('user_data', JSON.stringify(userData));
+        }
+
+        // Verificar se o usuário está logado
+        if (!isLoggedIn()) {
+            console.log('❌ Usuário não está logado - redirecionando');
+            window.location.replace('/login');
+            return;
+        }
+
+        // Validar token no servidor
+        const tokenValid = await validateToken();
+        if (!tokenValid) {
+            console.log('❌ Token inválido - fazendo logout');
+            logout();
+            return;
+        }
+    </script>
 {% endblock %}
