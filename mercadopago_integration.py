@@ -7,23 +7,22 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models import User, Payment
 
-# Inicializar SDK do MercadoPago
+# Configuração do MercadoPago
 MERCADOPAGO_ACCESS_TOKEN = os.getenv("MERCADOPAGO_ACCESS_TOKEN")
 
-if MERCADOPAGO_ACCESS_TOKEN:
-    mp = mercadopago.SDK(MERCADOPAGO_ACCESS_TOKEN)
-    
-    # Verificar se é ambiente de produção ou teste
-    if "TEST" in MERCADOPAGO_ACCESS_TOKEN:
-        print("🧪 MercadoPago inicializado em MODO TESTE")
-        print("⚠️  Para pagamentos reais, configure o Access Token de PRODUÇÃO")
-    else:
-        print("🏭 ✅ MercadoPago inicializado em MODO PRODUÇÃO")
-        print("💰 Pronto para receber pagamentos reais!")
-else:
-    print("❌ MercadoPago Access Token NÃO CONFIGURADO")
-    print("📝 Configure a variável MERCADOPAGO_ACCESS_TOKEN nas variáveis de ambiente do Railway")
+# Verificar se o token existe
+if not MERCADOPAGO_ACCESS_TOKEN:
+    print("⚠️ AVISO: MERCADOPAGO_ACCESS_TOKEN não encontrado!")
+    print("⚠️ Configure a variável de ambiente para processar pagamentos")
     mp = None
+else:
+    try:
+        mp = mercadopago.SDK(MERCADOPAGO_ACCESS_TOKEN)
+        token_type = "TESTE" if "TEST" in MERCADOPAGO_ACCESS_TOKEN else "PRODUÇÃO"
+        print(f"✅ MercadoPago inicializado em modo {token_type}")
+    except Exception as e:
+        print(f"❌ Erro ao inicializar MercadoPago: {e}")
+        mp = None
 
 # Definição dos produtos
 PRODUCTS = {
@@ -51,12 +50,12 @@ PRODUCTS = {
 }
 
 def get_domain():
-    """Obtém o domínio para redirecionamento no Railway"""
+    """Retorna o domínio base da aplicação"""
     from railway_config import get_railway_domain, is_railway_environment
-    
+
     if is_railway_environment():
         return get_railway_domain()
-    
+
     # Fallback para desenvolvimento local
     return "http://localhost:5000"
 
@@ -76,10 +75,10 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
             db = next(get_db())
             produto_db = db.query(Product).filter(Product.id == product_id).first()
             db.close()
-            
+
             if not produto_db:
                 return {"error": "Produto não encontrado"}
-            
+
             product_info = {
                 'name': produto_db.name,
                 'description': produto_db.description or f"Acesso por {produto_db.duration_days} dias",
@@ -292,16 +291,16 @@ def activate_user_license(user_id, plan_id):
     try:
         db = next(get_db())
         user = db.query(User).filter(User.id == user_id).first()
-        
+
         if not user:
             db.close()
             return False, "Usuário não encontrado"
-        
+
         plan = PRODUCTS.get(plan_id)
         if not plan:
             db.close()
             return False, "Plano inválido"
-        
+
         # Calcular nova data de expiração
         if user.data_expiracao and user.data_expiracao > datetime.utcnow():
             # Estender licença existente
@@ -309,10 +308,10 @@ def activate_user_license(user_id, plan_id):
         else:
             # Nova licença
             new_expiration = datetime.utcnow() + timedelta(days=plan["days"])
-        
+
         user.data_expiracao = new_expiration
         user.status_licenca = "ativa"
-        
+
         # Criar registro de pagamento
         payment = Payment(
             user_id=user_id,
@@ -322,13 +321,13 @@ def activate_user_license(user_id, plan_id):
             gateway_id=f"test_payment_{user_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}",
             data_pagamento=datetime.utcnow()
         )
-        
+
         db.add(payment)
         db.commit()
         db.close()
-        
+
         return True, f"Licença ativada até {new_expiration.strftime('%d/%m/%Y')}"
-        
+
     except Exception as e:
         if 'db' in locals():
             db.rollback()

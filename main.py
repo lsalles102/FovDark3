@@ -997,7 +997,8 @@ async def verify_token(
 
 @app.get("/health")
 async def health_check():
-
+    """Health check endpoint"""
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
 @app.get("/api/debug/payment-config")
 async def debug_payment_config():
