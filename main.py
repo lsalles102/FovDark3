@@ -10,6 +10,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
 import uvicorn
 from collections import defaultdict
 import time
@@ -42,6 +43,13 @@ app.include_router(mercadopago_router, prefix="/api")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
+
+# Error handler for static files
+@app.exception_handler(404)
+async def not_found_handler(request: Request, exc):
+    if request.url.path.startswith("/static/"):
+        return HTMLResponse("File not found", status_code=404)
+    return templates.TemplateResponse("error.html", {"request": request, "error": "Page not found"}, status_code=404)
 
 security = HTTPBearer()
 
@@ -108,6 +116,18 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
 
         return await call_next(request)
 
+class StaticFileMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        
+        # Set proper content type for JavaScript files
+        if request.url.path.endswith('.js'):
+            response.headers['content-type'] = 'application/javascript; charset=utf-8'
+        elif request.url.path.endswith('.css'):
+            response.headers['content-type'] = 'text/css; charset=utf-8'
+            
+        return response
+
 class MaintenanceMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         if request.url.path.startswith("/static") or request.url.path.startswith("/admin") or request.url.path.startswith("/api/admin"):
@@ -128,6 +148,7 @@ class MaintenanceMiddleware(BaseHTTPMiddleware):
 
         return await call_next(request)
 
+app.add_middleware(StaticFileMiddleware)
 app.add_middleware(RateLimitingMiddleware, calls=100, period=60)  # 100 req/min
 app.add_middleware(MaintenanceMiddleware)
 
