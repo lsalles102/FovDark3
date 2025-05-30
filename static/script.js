@@ -1,38 +1,56 @@
 // ===== INITIALIZATION =====
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ DOM carregado, inicializando sistema');
-    console.log('🚀 FovDark System Initialized');
+(function() {
+    console.log('📜 Script.js carregado');
 
-    try {
-        // Verificar se estamos em uma página válida
-        if (!document.body) {
-            console.error('❌ Body não encontrado, aguardando...');
-            setTimeout(() => {
-                if (document.body) {
-                    document.dispatchEvent(new Event('DOMContentLoaded'));
-                }
-            }, 100);
-            return;
+    // Aguardar DOM estar pronto
+    function initializeWhenReady() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initialize);
+        } else {
+            initialize();
         }
-
-        // Inicializar componentes em ordem
-        initializeApp();
-        setupNavigation();
-        setupToastContainer();
-        setupGlobalEventListeners();
-
-        // A verificação de autenticação será feita pelo base.html
-        console.log('🎯 Inicialização completa, aguardando verificação de autenticação');
-
-    } catch (error) {
-        console.error('❌ Erro na inicialização:', error);
     }
-});
+
+    function initialize() {
+        console.log('✅ DOM carregado, inicializando sistema');
+        console.log('🚀 FovDark System Initialized');
+
+        try {
+            // Verificar se estamos em uma página válida
+            if (!document.body) {
+                console.error('❌ Body não encontrado, aguardando...');
+                setTimeout(() => {
+                    if (document.body) {
+                        initialize();
+                    }
+                }, 100);
+                return;
+            }
+
+            // Inicializar componentes em ordem
+            initializeApp();
+            setupNavigation();
+            setupToastContainer();
+            setupGlobalEventListeners();
+
+            // Marcar como carregado
+            scriptsLoaded = true;
+            console.log('🎯 Inicialização completa, funções disponíveis');
+
+        } catch (error) {
+            console.error('❌ Erro na inicialização:', error);
+        }
+    }
+
+    // Inicializar
+    initializeWhenReady();
+})();
 
 // ===== GLOBAL VARIABLES =====
 let currentUser = null;
 let isAuthenticated = false;
 let authToken = null;
+let scriptsLoaded = false;
 
 // ===== UTILITY FUNCTIONS =====
 function initializeApp() {

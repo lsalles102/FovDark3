@@ -253,32 +253,37 @@
         <div id="toast-container" class="toast-container"></div>
 
         <!-- Scripts -->
-        <script src="/static/script.js" defer></script>
+        <script src="/static/script.js"></script>
         <script>
-            // Aguardar carregamento completo do script.js
-            window.addEventListener('load', function() {
-                console.log('🌐 Página totalmente carregada');
-                
-                // Aguardar um pouco para garantir que script.js está disponível
-                setTimeout(function() {
-                    if (typeof updateAuthenticationUI === 'function') {
-                        console.log('🔄 Executando verificação de autenticação do base.html');
-                        updateAuthenticationUI();
-                        checkAuthenticationStatus();
-                    } else {
-                        console.log('⚠️ Função updateAuthenticationUI ainda não disponível, tentando novamente...');
-                        // Tentar novamente após mais tempo
-                        setTimeout(function() {
-                            if (typeof updateAuthenticationUI === 'function') {
-                                console.log('🔄 Segunda tentativa - executando verificação de autenticação');
-                                updateAuthenticationUI();
-                                checkAuthenticationStatus();
-                            } else {
-                                console.error('❌ Função updateAuthenticationUI não foi carregada');
-                            }
-                        }, 500);
+            // Função para verificar se o script foi carregado
+            function waitForScript() {
+                return new Promise((resolve) => {
+                    function checkFunctions() {
+                        if (typeof updateAuthenticationUI === 'function' && 
+                            typeof checkAuthenticationStatus === 'function') {
+                            console.log('✅ Funções de autenticação carregadas com sucesso');
+                            resolve();
+                        } else {
+                            console.log('⏳ Aguardando carregamento das funções...');
+                            setTimeout(checkFunctions, 100);
+                        }
                     }
-                }, 300);
+                    checkFunctions();
+                });
+            }
+
+            // Aguardar carregamento e executar verificação
+            document.addEventListener('DOMContentLoaded', async function() {
+                console.log('🌐 DOM carregado, aguardando script...');
+                
+                try {
+                    await waitForScript();
+                    console.log('🔄 Executando verificação de autenticação do base.html');
+                    updateAuthenticationUI();
+                    checkAuthenticationStatus();
+                } catch (error) {
+                    console.error('❌ Erro ao carregar funções de autenticação:', error);
+                }
             });
         </script>
         
