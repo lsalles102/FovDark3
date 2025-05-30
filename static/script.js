@@ -29,17 +29,35 @@
         const token = localStorage.getItem('access_token');
         const userData = localStorage.getItem('user_data');
 
+        console.log('🔍 Verificando autenticação...');
+        console.log('🎫 Token encontrado:', !!token);
+        console.log('👤 Dados do usuário encontrados:', !!userData);
+
         if (token && userData) {
             try {
-                currentUser = JSON.parse(userData);
+                const newUserData = JSON.parse(userData);
+                
+                // Verificar se é um usuário diferente do atual
+                if (currentUser && currentUser.email !== newUserData.email) {
+                    console.log('🔄 Usuário diferente detectado, atualizando...');
+                    console.log(`   Anterior: ${currentUser.email}`);
+                    console.log(`   Novo: ${newUserData.email}`);
+                }
+                
+                currentUser = newUserData;
                 isAuthenticated = true;
                 updateNavigation(true);
                 console.log('✅ Usuário autenticado:', currentUser.email);
+                console.log('👑 É admin:', currentUser.is_admin);
+                
             } catch (error) {
                 console.error('❌ Erro ao processar dados do usuário:', error);
                 clearAuthData();
+                updateNavigation(false);
             }
         } else {
+            currentUser = null;
+            isAuthenticated = false;
             updateNavigation(false);
             console.log('❌ Usuário não autenticado');
         }
@@ -122,10 +140,21 @@
     }
 
     function clearAuthData() {
+        console.log('🧹 Limpando todos os dados de autenticação...');
+        
+        // Limpar localStorage
         localStorage.removeItem('access_token');
         localStorage.removeItem('user_data');
+        
+        // Limpar sessionStorage também (caso tenha dados lá)
+        sessionStorage.removeItem('access_token');
+        sessionStorage.removeItem('user_data');
+        
+        // Limpar variáveis globais
         currentUser = null;
         isAuthenticated = false;
+        
+        console.log('✅ Dados de autenticação limpos');
     }
 
     // ===== NAVEGAÇÃO MOBILE =====
@@ -158,10 +187,28 @@
         // Verificar mudanças no localStorage
         window.addEventListener('storage', function(e) {
             if (e.key === 'access_token' || e.key === 'user_data') {
-                console.log('🔄 Dados de autenticação alterados');
+                console.log('🔄 Dados de autenticação alterados externamente');
                 checkAuthentication();
             }
         });
+
+        // Verificação periódica para detectar mudanças
+        setInterval(() => {
+            const token = localStorage.getItem('access_token');
+            const userData = localStorage.getItem('user_data');
+            
+            if (userData) {
+                try {
+                    const parsedData = JSON.parse(userData);
+                    if (currentUser && currentUser.email !== parsedData.email) {
+                        console.log('🔄 Mudança de usuário detectada na verificação periódica');
+                        checkAuthentication();
+                    }
+                } catch (error) {
+                    console.error('❌ Erro na verificação periódica:', error);
+                }
+            }
+        }, 2000); // Verificar a cada 2 segundos
     }
 
     // ===== INICIALIZAÇÃO POR PÁGINA =====
@@ -220,6 +267,10 @@
         setLoading(submitBtn, true);
 
         try {
+            // LIMPAR DADOS ANTIGOS ANTES DE FAZER O LOGIN
+            console.log('🧹 Limpando dados de autenticação anteriores...');
+            clearAuthData();
+
             const formData = new FormData();
             formData.append('email', email);
             formData.append('password', password);
@@ -232,20 +283,28 @@
             const data = await response.json();
 
             if (response.ok && data.access_token) {
-                // Salvar dados
+                console.log('✅ Login bem-sucedido para:', data.user.email);
+                
+                // Salvar novos dados
                 localStorage.setItem('access_token', data.access_token);
                 localStorage.setItem('user_data', JSON.stringify(data.user));
 
                 currentUser = data.user;
                 isAuthenticated = true;
 
-                showToast('Login realizado com sucesso!', 'success');
+                console.log('💾 Dados salvos no localStorage:', {
+                    email: currentUser.email,
+                    is_admin: currentUser.is_admin
+                });
+
+                showToast(`Bem-vindo, ${data.user.email}!`, 'success');
 
                 setTimeout(() => {
                     redirectUser();
                 }, 1000);
 
             } else {
+                console.log('❌ Erro no login:', data.detail);
                 showToast(data.detail || 'Erro no login', 'error');
             }
 
@@ -429,9 +488,18 @@
 
     // ===== UTILITÁRIOS =====
     function redirectUser() {
+        console.log('🧭 Redirecionando usuário...');
+        console.log('👤 Usuário atual:', currentUser?.email);
+        console.log('👑 É admin:', currentUser?.is_admin);
+        
+        // Forçar atualização da navegação antes de redirecionar
+        updateNavigation(true);
+        
         if (currentUser?.is_admin) {
+            console.log('🚀 Redirecionando admin para /admin');
             window.location.href = '/admin';
         } else {
+            console.log('🚀 Redirecionando usuário para /painel');
             window.location.href = '/painel';
         }
     }
