@@ -1640,27 +1640,17 @@
             <div class="admin-card">
                 <div class="card-header">
                     <i class="fas fa-tools card-icon"></i>
-                    <h2 class="card-title">MANUTENÇÃO</h2>
+                    <h2 class="card-title">FERRAMENTAS</h2>
                 </div>
                 <div class="card-content">
-                    <div id="maintenanceStatus" style="text-align: center; margin-bottom: 1.5rem;">
-                        <div id="statusIcon" style="color: var(--success); margin-bottom: 1rem;">
-                            <i class="fas fa-check-circle" style="font-size: 2rem;"></i>
-                        </div>
-                        <p id="statusText" style="color: var(--success); font-weight: 600; margin: 0;">CARREGANDO...</p>
-                    </div>
-                    <button id="maintenanceToggleBtn" class="btn btn-danger" style="width: 100%; margin-bottom: 1rem;" onclick="toggleMaintenance()">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        CARREGANDO...
-                    </button>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                        <button class="btn btn-secondary btn-small" onclick="clearCache()">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <button class="btn btn-secondary" onclick="clearCache()">
                             <i class="fas fa-broom"></i>
-                            CACHE
+                            LIMPAR CACHE
                         </button>
-                        <button class="btn btn-secondary btn-small" onclick="backupDatabase()">
+                        <button class="btn btn-secondary" onclick="backupDatabase()">
                             <i class="fas fa-download"></i>
-                            BACKUP
+                            BACKUP DB
                         </button>
                     </div>
                 </div>
@@ -1822,94 +1812,7 @@ async function loadOverviewData() {
         document.getElementById('todaySignups').textContent = '15';
     }
 
-    // Carregar status de manutenção
-    await loadMaintenanceStatus();
-}
-
-async function loadMaintenanceStatus() {
-    const token = localStorage.getItem('access_token');
-
-    try {
-        const response = await fetch('/api/admin/maintenance/status', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            updateMaintenanceUI(data.maintenance_mode);
-        } else {
-            console.error('Erro ao carregar status de manutenção');
-            updateMaintenanceUI(false);
-        }
-    } catch (error) {
-        console.error('Erro ao verificar manutenção:', error);
-        updateMaintenanceUI(false);
-    }
-}
-
-function updateMaintenanceUI(isMaintenanceMode) {
-    const statusIcon = document.getElementById('statusIcon');
-    const statusText = document.getElementById('statusText');
-    const toggleBtn = document.getElementById('maintenanceToggleBtn');
-
-    if (isMaintenanceMode) {
-        statusIcon.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size: 2rem;"></i>';
-        statusIcon.style.color = 'var(--warning)';
-        statusText.textContent = 'SITE EM MANUTENÇÃO';
-        statusText.style.color = 'var(--warning)';
-        
-        toggleBtn.className = 'btn btn-success';
-        toggleBtn.innerHTML = '<i class="fas fa-power-off"></i> DESATIVAR MANUTENÇÃO';
-    } else {
-        statusIcon.innerHTML = '<i class="fas fa-check-circle" style="font-size: 2rem;"></i>';
-        statusIcon.style.color = 'var(--success)';
-        statusText.textContent = 'SITE ONLINE';
-        statusText.style.color = 'var(--success)';
-        
-        toggleBtn.className = 'btn btn-danger';
-        toggleBtn.innerHTML = '<i class="fas fa-power-off"></i> ATIVAR MANUTENÇÃO';
-    }
-}
-
-async function toggleMaintenance() {
-    const token = localStorage.getItem('access_token');
-    const toggleBtn = document.getElementById('maintenanceToggleBtn');
-    const originalContent = toggleBtn.innerHTML;
-
-    // Verificar estado atual
-    const currentIsMaintenanceMode = toggleBtn.textContent.includes('DESATIVAR');
-    const newMaintenanceMode = !currentIsMaintenanceMode;
-
-    toggleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSANDO...';
-    toggleBtn.disabled = true;
-
-    try {
-        const formData = new FormData();
-        formData.append('enable', newMaintenanceMode.toString());
-
-        const response = await fetch('/api/admin/maintenance/toggle', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` },
-            body: formData
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            updateMaintenanceUI(data.maintenance_mode);
-            showToast(data.message, 'success');
-        } else {
-            const error = await response.json();
-            showToast(error.detail || 'Erro ao alterar modo manutenção', 'error');
-            toggleBtn.innerHTML = originalContent;
-        }
-    } catch (error) {
-        console.error('Erro ao alterar manutenção:', error);
-        showToast('Erro de conexão com o servidor', 'error');
-        toggleBtn.innerHTML = originalContent;
-    } finally {
-        toggleBtn.disabled = false;
-    }
-}
+    
 
 async function loadUsers() {
     const token = localStorage.getItem('access_token');

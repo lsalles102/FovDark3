@@ -145,53 +145,8 @@ class StaticFileMiddleware(BaseHTTPMiddleware):
             
         return response
 
-class MaintenanceMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        # Sempre permitir acesso a arquivos estáticos e APIs admin
-        if (request.url.path.startswith("/static") or 
-            request.url.path.startswith("/admin") or 
-            request.url.path.startswith("/api/admin") or
-            request.url.path.startswith("/api/verify_token")):
-            return await call_next(request)
-
-        try:
-            from database import SessionLocal
-            db = SessionLocal()
-            maintenance_setting = db.query(SiteSettings).filter(
-                SiteSettings.key == "maintenance_mode",
-                SiteSettings.category == "system"
-            ).first()
-            
-            if maintenance_setting and maintenance_setting.value == "true":
-                # Verificar se o usuário é admin através do token
-                try:
-                    authorization = request.headers.get("Authorization")
-                    if authorization and authorization.startswith("Bearer "):
-                        token = authorization.split(" ")[1]
-                        payload = decode_access_token(token)
-                        if payload:
-                            email = payload.get("sub")
-                            user = db.query(User).filter(User.email == email).first()
-                            if user and user.is_admin:
-                                # Admin pode acessar durante manutenção
-                                db.close()
-                                return await call_next(request)
-                except Exception:
-                    pass
-                
-                # Para usuários não-admin, mostrar página de manutenção
-                db.close()
-                return templates.TemplateResponse("maintenance.html", {"request": request}, status_code=503)
-            
-            db.close()
-        except Exception:
-            pass
-
-        return await call_next(request)
-
 app.add_middleware(StaticFileMiddleware)
 app.add_middleware(RateLimitingMiddleware, calls=100, period=60)  # 100 req/min
-app.add_middleware(MaintenanceMiddleware)
 
 async def verify_token_middleware(credentials: HTTPAuthorizationCredentials = Depends(security)):
     token = credentials.credentials
@@ -739,66 +694,7 @@ async def get_admin_payments(
         for payment in payments
     ]
 
-@app.post("/api/admin/maintenance/toggle")
-async def toggle_maintenance_mode(
-    enable: bool = Form(...),
-    admin_user: User = Depends(get_admin_user),
-    db: Session = Depends(get_db)
-):
-    """Ativar ou desativar modo manutenção"""
-    try:
-        # Buscar ou criar configuração de manutenção
-        maintenance_setting = db.query(SiteSettings).filter(
-            SiteSettings.key == "maintenance_mode",
-            SiteSettings.category == "system"
-        ).first()
-        
-        if not maintenance_setting:
-            maintenance_setting = SiteSettings(
-                key="maintenance_mode",
-                value="false",
-                category="system"
-            )
-            db.add(maintenance_setting)
-        
-        # Atualizar valor
-        maintenance_setting.value = "true" if enable else "false"
-        maintenance_setting.updated_at = datetime.utcnow()
-        db.commit()
-        
-        status = "ativado" if enable else "desativado"
-        return {
-            "message": f"Modo manutenção {status} com sucesso",
-            "maintenance_mode": enable
-        }
-        
-    except Exception as e:
-        print(f"❌ Erro ao alterar modo manutenção: {e}")
-        db.rollback()
-        raise HTTPException(status_code=500, detail="Erro interno do servidor")
 
-@app.get("/api/admin/maintenance/status")
-async def get_maintenance_status(
-    admin_user: User = Depends(get_admin_user),
-    db: Session = Depends(get_db)
-):
-    """Verificar status do modo manutenção"""
-    try:
-        maintenance_setting = db.query(SiteSettings).filter(
-            SiteSettings.key == "maintenance_mode",
-            SiteSettings.category == "system"
-        ).first()
-        
-        is_maintenance = maintenance_setting and maintenance_setting.value == "true"
-        
-        return {
-            "maintenance_mode": is_maintenance,
-            "last_updated": maintenance_setting.updated_at.isoformat() if maintenance_setting and maintenance_setting.updated_at else None
-        }
-        
-    except Exception as e:
-        print(f"❌ Erro ao verificar status de manutenção: {e}")
-        raise HTTPException(status_code=500, detail="Erro interno do servidor")
 
 @app.get("/api/download/loader")
 async def download_loader(
