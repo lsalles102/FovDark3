@@ -48,7 +48,14 @@ templates = Jinja2Templates(directory="templates")
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc):
     if request.url.path.startswith("/static/"):
-        return HTMLResponse("File not found", status_code=404)
+        # Para arquivos JavaScript, retornar resposta JavaScript válida em caso de erro
+        if request.url.path.endswith('.js'):
+            return Response(
+                content="console.error('Arquivo JavaScript não encontrado');",
+                media_type="application/javascript",
+                status_code=404
+            )
+        return Response("File not found", status_code=404)
     return templates.TemplateResponse("error.html", {"request": request, "error": "Page not found"}, status_code=404)
 
 security = HTTPBearer()

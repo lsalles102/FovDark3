@@ -6,11 +6,41 @@ let navMenu;
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 FovDark System Initialized');
-    initializeApp();
-    setupNavigation();
-    setupToastContainer();
-    checkAuthenticationStatus();
-    setupGlobalEventListeners();
+    
+    try {
+        // Verificar se estamos em uma página válida
+        if (!document.body) {
+            console.error('❌ Body não encontrado, aguardando...');
+            setTimeout(() => document.dispatchEvent(new Event('DOMContentLoaded')), 100);
+            return;
+        }
+        
+        // Inicializar componentes em ordem
+        initializeApp();
+        setupNavigation();
+        setupToastContainer();
+        
+        // Verificar autenticação após um pequeno delay
+        setTimeout(() => {
+            checkAuthenticationStatus();
+        }, 100);
+        
+        setupGlobalEventListeners();
+        
+        console.log('✅ Sistema inicializado com sucesso');
+        
+    } catch (error) {
+        console.error('❌ Erro na inicialização:', error);
+        
+        // Fallback: tentar novamente após um delay
+        setTimeout(() => {
+            try {
+                updateAuthenticationUI();
+            } catch (e) {
+                console.error('❌ Fallback também falhou:', e);
+            }
+        }, 1000);
+    }
 });
 
 // ===== APP INITIALIZATION =====
@@ -285,22 +315,51 @@ function checkAuthenticationStatus() {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
-        }).then(response => {
+        }).then(async response => {
             console.log('📡 Resposta da verificação de token:', response.status);
             
             if (response.status === 401) {
                 // Token expirado ou inválido
                 console.log('❌ Token expirado/inválido, fazendo logout automático');
+                
+                // Mostrar toast de expiração
+                if (typeof showToast === 'function') {
+                    showToast('Sua sessão expirou. Faça login novamente.', 'warning');
+                }
+                
                 clearAuthenticationData();
                 updateAuthenticationUI();
                 
                 // Redirecionar para login se estiver em página protegida
-                if (window.location.pathname === '/painel' || window.location.pathname === '/admin') {
-                    window.location.href = '/login';
-                }
+                setTimeout(() => {
+                    if (window.location.pathname === '/painel' || window.location.pathname === '/admin') {
+                        window.location.href = '/login';
+                    }
+                }, 1500);
+                
             } else if (response.ok) {
                 console.log('✅ Token válido, atualizando UI');
+                
+                // Verificar se houve mudanças nos dados do usuário
+                try {
+                    const currentData = await response.json();
+                    const storedData = JSON.parse(localStorage.getItem('user_data') || '{}');
+                    
+                    // Atualizar dados se necessário
+                    if (currentData.email !== storedData.email || currentData.is_admin !== storedData.is_admin) {
+                        console.log('🔄 Atualizando dados do usuário no localStorage');
+                        localStorage.setItem('user_data', JSON.stringify({
+                            id: currentData.id || storedData.id,
+                            email: currentData.email,
+                            is_admin: currentData.is_admin
+                        }));
+                    }
+                } catch (e) {
+                    console.log('⚠️ Não foi possível atualizar dados do usuário:', e);
+                }
+                
                 updateAuthenticationUI();
+                
             } else {
                 console.log('⚠️ Erro na verificação, mas não é 401:', response.status);
                 // Em caso de erro de servidor, manter o usuário logado mas atualizar UI
@@ -453,19 +512,46 @@ function hideLoading(element) {
 function logout() {
     console.log('🚪 Iniciando processo de logout');
     
-    // Limpar todos os dados de autenticação
-    clearAuthenticationData();
-    
-    // Atualizar UI imediatamente
-    updateAuthenticationUI();
-    
-    showToast('Logout realizado com sucesso', 'success');
+    try {
+        // Limpar intervalos de verificação
+        if (window.authCheckInterval) {
+            clearInterval(window.authCheckInterval);
+            window.authCheckInterval = null;
+        }
+        
+        // Limpar todos os dados de autenticação
+        clearAuthenticationData();
+        
+        // Limpar todos os dados do localStorage relacionados
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.includes('access_') || key.includes('user_') || key.includes('auth_'))) {
+                keysToRemove.push(key);
+            }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        
+        // Atualizar UI imediatamente
+        updateAuthenticationUI();
+        
+        // Mostrar confirmação
+        if (typeof showToast === 'function') {
+            showToast('Logout realizado com sucesso', 'success');
+        }
 
-    // Redirecionar para home após 1 segundo
-    setTimeout(() => {
-        console.log('🏠 Redirecionando para home');
-        window.location.href = '/';
-    }, 1000);
+        // Forçar atualização da página após logout para garantir limpeza total
+        setTimeout(() => {
+            console.log('🏠 Redirecionando para home e atualizando página');
+            window.location.replace('/');
+        }, 1000);
+        
+    } catch (error) {
+        console.error('❌ Erro durante logout:', error);
+        // Forçar limpeza mesmo com erro
+        localStorage.clear();
+        window.location.replace('/');
+    }
 }
 
 // ===== TOAST NOTIFICATIONS =====

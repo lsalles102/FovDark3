@@ -277,30 +277,58 @@
         <div id="toast-container" class="toast-container"></div>
 
         <!-- Scripts -->
-        <script src="/static/script.js" defer></script>
-        
-        <!-- Script para verificação de autenticação em todas as páginas -->
         <script>
-            // Verificar autenticação quando a página carrega
-            window.addEventListener('load', function() {
-                console.log('📄 Página carregada, verificando autenticação');
-                
-                // Aguardar um pouco para garantir que o script principal foi carregado
-                setTimeout(function() {
-                    if (typeof checkAuthenticationStatus === 'function') {
-                        checkAuthenticationStatus();
-                    }
-                }, 100);
+            // Verificar se o script principal foi carregado corretamente
+            function loadMainScript() {
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = '/static/script.js';
+                    script.defer = true;
+                    script.onload = () => {
+                        console.log('✅ Script principal carregado com sucesso');
+                        resolve();
+                    };
+                    script.onerror = (error) => {
+                        console.error('❌ Erro ao carregar script principal:', error);
+                        reject(error);
+                    };
+                    document.head.appendChild(script);
+                });
+            }
+
+            // Carregar script e inicializar
+            document.addEventListener('DOMContentLoaded', async function() {
+                try {
+                    await loadMainScript();
+                    
+                    // Aguardar um pouco para garantir inicialização
+                    setTimeout(function() {
+                        if (typeof checkAuthenticationStatus === 'function') {
+                            checkAuthenticationStatus();
+                        }
+                        if (typeof updateAuthenticationUI === 'function') {
+                            updateAuthenticationUI();
+                        }
+                    }, 200);
+                } catch (error) {
+                    console.error('❌ Falha ao carregar recursos:', error);
+                }
             });
 
-            // Verificar se o usuário saiu da página por muito tempo
+            // Verificação de visibilidade da página
             let pageHiddenTime = null;
+            let authCheckInterval = null;
             
             document.addEventListener('visibilitychange', function() {
                 if (document.hidden) {
                     pageHiddenTime = Date.now();
+                    // Parar verificações quando a página está oculta
+                    if (authCheckInterval) {
+                        clearInterval(authCheckInterval);
+                        authCheckInterval = null;
+                    }
                 } else {
-                    // Se a página foi oculta por mais de 5 minutos, verificar autenticação
+                    // Verificar autenticação quando a página volta ao foco
                     if (pageHiddenTime && (Date.now() - pageHiddenTime) > 300000) { // 5 minutos
                         console.log('⏰ Página oculta por muito tempo, verificando autenticação');
                         if (typeof checkAuthenticationStatus === 'function') {
@@ -308,6 +336,38 @@
                         }
                     }
                     pageHiddenTime = null;
+                    
+                    // Reiniciar verificações periódicas
+                    if (localStorage.getItem('access_token')) {
+                        authCheckInterval = setInterval(function() {
+                            if (typeof checkAuthenticationStatus === 'function') {
+                                checkAuthenticationStatus();
+                            }
+                        }, 60000); // A cada minuto quando a página está ativa
+                    }
+                }
+            });
+
+            // Verificar mudanças no localStorage (múltiplas abas)
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'access_token' || e.key === 'user_data') {
+                    console.log('💾 Dados de autenticação mudaram em outra aba');
+                    setTimeout(function() {
+                        if (typeof updateAuthenticationUI === 'function') {
+                            updateAuthenticationUI();
+                        }
+                    }, 100);
+                }
+            });
+
+            // Verificação periódica inicial
+            window.addEventListener('load', function() {
+                if (localStorage.getItem('access_token')) {
+                    authCheckInterval = setInterval(function() {
+                        if (typeof checkAuthenticationStatus === 'function') {
+                            checkAuthenticationStatus();
+                        }
+                    }, 60000); // A cada minuto
                 }
             });
         </script>
