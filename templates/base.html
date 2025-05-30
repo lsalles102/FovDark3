@@ -277,42 +277,32 @@
         <div id="toast-container" class="toast-container"></div>
 
         <!-- Scripts -->
+        <script src="/static/script.js" defer></script>
         <script>
-            // Verificar se o script principal foi carregado corretamente
-            function loadMainScript() {
-                return new Promise((resolve, reject) => {
-                    const script = document.createElement('script');
-                    script.src = '/static/script.js';
-                    script.defer = true;
-                    script.onload = () => {
-                        console.log('✅ Script principal carregado com sucesso');
-                        resolve();
-                    };
-                    script.onerror = (error) => {
-                        console.error('❌ Erro ao carregar script principal:', error);
-                        reject(error);
-                    };
-                    document.head.appendChild(script);
-                });
-            }
-
-            // Carregar script e inicializar
-            document.addEventListener('DOMContentLoaded', async function() {
-                try {
-                    await loadMainScript();
-                    
-                    // Aguardar um pouco para garantir inicialização
-                    setTimeout(function() {
+            // Inicialização após carregamento do DOM
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('✅ DOM carregado, inicializando sistema');
+                
+                // Aguardar um pouco para garantir que o script.js foi carregado
+                setTimeout(function() {
+                    try {
                         if (typeof checkAuthenticationStatus === 'function') {
+                            console.log('🔍 Verificando status de autenticação');
                             checkAuthenticationStatus();
+                        } else {
+                            console.warn('⚠️ Função checkAuthenticationStatus não encontrada');
                         }
+                        
                         if (typeof updateAuthenticationUI === 'function') {
+                            console.log('🎨 Atualizando UI de autenticação');
                             updateAuthenticationUI();
+                        } else {
+                            console.warn('⚠️ Função updateAuthenticationUI não encontrada');
                         }
-                    }, 200);
-                } catch (error) {
-                    console.error('❌ Falha ao carregar recursos:', error);
-                }
+                    } catch (error) {
+                        console.error('❌ Erro na inicialização:', error);
+                    }
+                }, 300);
             });
 
             // Verificação de visibilidade da página

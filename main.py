@@ -51,8 +51,14 @@ async def not_found_handler(request: Request, exc):
         # Para arquivos JavaScript, retornar resposta JavaScript válida em caso de erro
         if request.url.path.endswith('.js'):
             return Response(
-                content="console.error('Arquivo JavaScript não encontrado');",
-                media_type="application/javascript",
+                content="console.error('Arquivo JavaScript não encontrado:', '" + request.url.path + "');",
+                media_type="application/javascript; charset=utf-8",
+                status_code=404
+            )
+        elif request.url.path.endswith('.css'):
+            return Response(
+                content="/* CSS file not found */",
+                media_type="text/css; charset=utf-8", 
                 status_code=404
             )
         return Response("File not found", status_code=404)
@@ -127,11 +133,15 @@ class StaticFileMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
         
-        # Set proper content type for JavaScript files
+        # Set proper content type and headers for static files
         if request.url.path.endswith('.js'):
             response.headers['content-type'] = 'application/javascript; charset=utf-8'
+            response.headers['cache-control'] = 'public, max-age=3600'
         elif request.url.path.endswith('.css'):
             response.headers['content-type'] = 'text/css; charset=utf-8'
+            response.headers['cache-control'] = 'public, max-age=3600'
+        elif request.url.path.startswith('/static/'):
+            response.headers['cache-control'] = 'public, max-age=86400'
             
         return response
 

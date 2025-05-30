@@ -11,21 +11,43 @@ document.addEventListener('DOMContentLoaded', function() {
         // Verificar se estamos em uma página válida
         if (!document.body) {
             console.error('❌ Body não encontrado, aguardando...');
-            setTimeout(() => document.dispatchEvent(new Event('DOMContentLoaded')), 100);
+            setTimeout(() => {
+                if (document.body) {
+                    document.dispatchEvent(new Event('DOMContentLoaded'));
+                }
+            }, 100);
             return;
         }
         
-        // Inicializar componentes em ordem
-        initializeApp();
-        setupNavigation();
-        setupToastContainer();
+        // Verificar se todas as funções necessárias estão disponíveis
+        const requiredFunctions = ['initializeApp', 'setupNavigation', 'setupToastContainer', 'setupGlobalEventListeners'];
+        const missingFunctions = requiredFunctions.filter(func => typeof window[func] !== 'function');
+        
+        if (missingFunctions.length > 0) {
+            console.warn('⚠️ Algumas funções não estão disponíveis:', missingFunctions);
+        }
+        
+        // Inicializar componentes em ordem (com verificações)
+        if (typeof initializeApp === 'function') {
+            initializeApp();
+        }
+        if (typeof setupNavigation === 'function') {
+            setupNavigation();
+        }
+        if (typeof setupToastContainer === 'function') {
+            setupToastContainer();
+        }
         
         // Verificar autenticação após um pequeno delay
         setTimeout(() => {
-            checkAuthenticationStatus();
-        }, 100);
+            if (typeof checkAuthenticationStatus === 'function') {
+                checkAuthenticationStatus();
+            }
+        }, 200);
         
-        setupGlobalEventListeners();
+        if (typeof setupGlobalEventListeners === 'function') {
+            setupGlobalEventListeners();
+        }
         
         console.log('✅ Sistema inicializado com sucesso');
         
@@ -35,7 +57,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Fallback: tentar novamente após um delay
         setTimeout(() => {
             try {
-                updateAuthenticationUI();
+                if (typeof updateAuthenticationUI === 'function') {
+                    updateAuthenticationUI();
+                }
             } catch (e) {
                 console.error('❌ Fallback também falhou:', e);
             }
