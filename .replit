@@ -3,9 +3,10 @@ run = "Run command"
 
 [nix]
 channel = "stable-24_05"
+packages = ["libxcrypt"]
 
 [workflows]
-runButton = "Test FovDark"
+runButton = "FovDark Server Run"
 
 [[workflows.workflow]]
 name = "Project"
@@ -50,6 +51,15 @@ args = "python main.py"
 [[workflows.workflow]]
 name = "Test FovDark"
 author = 43280668
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py"
+
+[[workflows.workflow]]
+name = "FovDark Server Run"
+author = 43284681
 mode = "sequential"
 
 [[workflows.workflow.tasks]]
