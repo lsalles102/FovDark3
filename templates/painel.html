@@ -417,21 +417,22 @@ block extra_head %}
             <div class="card-content">
                 <div style="text-align: center; margin-bottom: 1.5rem">
                     <i
-                        class="fas fa-lock"
+                        class="fas fa-rocket"
                         style="
                             font-size: 2rem;
                             color: var(--primary);
                             margin-bottom: 1rem;
                         "
                     ></i>
+                    <h3 style="color: var(--text-primary); margin-bottom: 0.5rem;">FovDark Loader</h3>
                     <p
                         style="
                             color: var(--text-secondary);
                             margin-bottom: 1.5rem;
+                            line-height: 1.5;
                         "
                     >
-                        Download disponível apenas para usuários com licença
-                        ativa
+                        Baixe o loader oficial do FovDark. Execute como administrador para melhor performance.
                     </p>
                 </div>
                 <button
@@ -791,7 +792,7 @@ block extra_head %}
             infoElement.textContent = infoText;
 
             downloadBtn.innerHTML =
-                '<i class="fas fa-download"></i> BAIXAR FOVDARK';
+                '<i class="fas fa-download"></i> BAIXAR LOADER';
             downloadBtn.disabled = false;
             downloadBtn.className = "btn btn-success";
             downloadBtn.onclick = downloadSoftware;
@@ -877,7 +878,7 @@ block extra_head %}
         const token = localStorage.getItem("access_token");
 
         try {
-            const response = await fetch("/api/download/executable", {
+            const response = await fetch("/api/download/loader", {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -888,13 +889,13 @@ block extra_head %}
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url;
-                a.download = "Script_Dark.exe";
+                a.download = "FovDarkloader.exe";
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
 
-                showToast("Download iniciado com sucesso!", "success");
+                showToast("FovDark Loader baixado com sucesso!", "success");
             } else {
                 const error = await response.json();
                 showToast(error.detail || "Erro no download", "error");

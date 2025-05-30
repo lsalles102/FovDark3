@@ -666,12 +666,12 @@ async def get_admin_payments(
         for payment in payments
     ]
 
-@app.get("/api/download/executable")
-async def download_executable(
+@app.get("/api/download/loader")
+async def download_loader(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Download do executável para usuários com licença ativa"""
+    """Download do FovDarkloader.exe para usuários com licença ativa"""
     try:
         # Verificar se tem licença ativa
         has_active_license = current_user.data_expiracao and current_user.data_expiracao > datetime.utcnow()
@@ -679,14 +679,14 @@ async def download_executable(
         if not has_active_license:
             raise HTTPException(status_code=403, detail="Licença inválida ou expirada")
 
-        # Caminho para o arquivo executável
-        executable_path = "FovDarkloader.exe"
+        # Caminho para o arquivo loader
+        loader_path = "FovDarkloader.exe"
 
-        if not os.path.exists(executable_path):
-            raise HTTPException(status_code=404, detail="Arquivo não encontrado")
+        if not os.path.exists(loader_path):
+            raise HTTPException(status_code=404, detail="FovDark Loader não encontrado")
 
         return FileResponse(
-            executable_path,
+            loader_path,
             media_type='application/octet-stream',
             filename="FovDarkloader.exe"
         )
@@ -694,7 +694,7 @@ async def download_executable(
     except HTTPException as he:
         raise he
     except Exception as e:
-        print(f"Erro no download: {e}")
+        print(f"Erro no download do loader: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor")
 
 @app.post("/api/admin/upload-image")
