@@ -1,5 +1,6 @@
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ DOM carregado, inicializando sistema');
     console.log('🚀 FovDark System Initialized');
 
     try {
@@ -18,9 +19,11 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeApp();
         setupNavigation();
         setupToastContainer();
+        setupGlobalEventListeners();
 
         // Verificar autenticação após um pequeno delay
         setTimeout(() => {
+            updateAuthenticationUI();
             checkAuthenticationStatus();
         }, 100);
 
@@ -776,13 +779,16 @@ function createProductCard(product) {
 
 // ===== GLOBAL EVENT LISTENERS =====
 function setupGlobalEventListeners() {
+    console.log('🎯 Configurando eventos globais...');
+    
     // Update auth UI on storage changes
     window.addEventListener('storage', function(e) {
         console.log('💾 Storage mudou:', e.key);
-        if (e.key === 'access_token' || e.key === 'user_data') {
+        if (e.key === 'access_token' || e.key === 'user_data' || e.key === 'authToken' || e.key === 'userData') {
             console.log('🔄 Dados de autenticação mudaram, atualizando UI');
             setTimeout(() => {
                 updateAuthenticationUI();
+                checkAuthenticationStatus();
             }, 100);
         }
     });
@@ -807,14 +813,14 @@ function setupGlobalEventListeners() {
         }
     });
 
-    // Verificação periódica de autenticação (a cada 30 segundos)
+    // Verificação periódica de autenticação (a cada 60 segundos)
     setInterval(function() {
-        const token = localStorage.getItem('access_token');
+        const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
         if (token) {
             console.log('⏰ Verificação periódica de autenticação');
             checkAuthenticationStatus();
         }
-    }, 30000); // 30 segundos
+    }, 60000); // 60 segundos
 
     // Smooth scroll for anchor links
     document.addEventListener('click', function(e) {
