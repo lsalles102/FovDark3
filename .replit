@@ -64,6 +64,10 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
+args = "pip install fastapi uvicorn sqlalchemy psycopg2-binary python-jose[cryptography] passlib[bcrypt] python-multipart jinja2 aiofiles mercadopago requests pydantic starlette"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
 args = "python main.py"
 
 [deployment]
