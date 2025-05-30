@@ -53,8 +53,10 @@ app = FastAPI(title="FovDark - Sistema de Vendas", version="1.0.0")
 allowed_origins = [
     "http://localhost:5000",
     "http://127.0.0.1:5000",
-    "https://*.replit.dev",
-    "https://*.repl.co"
+    "https://www.fovdark.shop",
+    "https://fovdark.shop",
+    "https://*.railway.app",
+    "https://*.up.railway.app"
 ]
 
 app.add_middleware(

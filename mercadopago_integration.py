@@ -50,37 +50,14 @@ PRODUCTS = {
 }
 
 def get_domain():
-    """Obtém o domínio para redirecionamento"""
-    import os
+    """Obtém o domínio para redirecionamento no Railway"""
+    from railway_config import get_railway_domain, is_railway_environment
     
-    # Verificar se está no Railway
-    railway_static_url = os.getenv("RAILWAY_STATIC_URL")
-    if railway_static_url:
-        return railway_static_url.rstrip('/')
+    if is_railway_environment():
+        return get_railway_domain()
     
-    # Usar domínio personalizado em produção
-    custom_domain = os.getenv("CUSTOM_DOMAIN")
-    if custom_domain:
-        return custom_domain.rstrip('/')
-    
-    # Para Railway, usar domínio personalizado configurado
-    if os.getenv("RAILWAY_ENVIRONMENT"):
-        return "https://www.fovdark.shop"
-    
-    # Para produção no Replit
-    replit_url = os.getenv("REPL_URL")
-    if replit_url:
-        return replit_url.rstrip('/')
-    
-    # Detectar domínio do Replit automaticamente
-    repl_slug = os.getenv("REPL_SLUG")
-    repl_owner = os.getenv("REPL_OWNER")
-    
-    if repl_slug and repl_owner:
-        return f"https://{repl_slug}-{repl_owner}.replit.dev"
-    
-    # Fallback para domínio personalizado
-    return "https://www.fovdark.shop"
+    # Fallback para desenvolvimento local
+    return "http://localhost:5000"
 
 def create_payment_preference(plan_id, user_id, user_email, product_id=None):
     """Cria uma preferência de pagamento no Mercado Pago"""
