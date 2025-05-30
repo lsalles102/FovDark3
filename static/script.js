@@ -26,8 +26,8 @@
 
     // ===== VERIFICAÇÃO DE AUTENTICAÇÃO =====
     function checkAuthentication() {
-        const token = localStorage.getItem('access_token');
-        const userData = localStorage.getItem('user_data');
+        const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+        const userData = localStorage.getItem('user_data') || sessionStorage.getItem('user_data');
 
         console.log('🔍 Verificando autenticação...');
         console.log('🎫 Token encontrado:', !!token);
@@ -285,9 +285,15 @@
             if (response.ok && data.access_token) {
                 console.log('✅ Login bem-sucedido para:', data.user.email);
 
-                // Salvar novos dados
-                localStorage.setItem('access_token', data.access_token);
-                localStorage.setItem('user_data', JSON.stringify(data.user));
+                // Salvar novos dados (usar rememberMe se disponível)
+                const rememberMe = document.getElementById('rememberMe')?.checked || false;
+                if (rememberMe) {
+                    localStorage.setItem('access_token', data.access_token);
+                    localStorage.setItem('user_data', JSON.stringify(data.user));
+                } else {
+                    sessionStorage.setItem('access_token', data.access_token);
+                    sessionStorage.setItem('user_data', JSON.stringify(data.user));
+                }
 
                 currentUser = data.user;
                 isAuthenticated = true;

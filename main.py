@@ -20,17 +20,17 @@ from database import get_db, engine, Base
 from models import User, Payment, Product, SiteSettings
 from auth import (
     authenticate_user, create_access_token, get_current_user,
-    get_password_hash, verify_password, decode_access_token
+    get_password_hash, verify_password, decode_access_token, check_rate_limit, reset_rate_limit
 )
 
 def sanitize_input(text: str, max_length: int = 255) -> str:
     """Sanitizar entrada de texto"""
     if not text:
         return ""
-    
+
     # Remover caracteres perigosos
     text = re.sub(r'[<>"\';\\]', '', str(text))
-    
+
     # Limitar tamanho
     return text.strip()[:max_length]
 
@@ -178,14 +178,14 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
-        
+
         # Headers de segurança
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['X-Frame-Options'] = 'DENY'
         response.headers['X-XSS-Protection'] = '1; mode=block'
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
-        
+
         # Content Security Policy
         if request.url.path.endswith('.html') or 'text/html' in response.headers.get('content-type', ''):
             response.headers['Content-Security-Policy'] = (
@@ -197,7 +197,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 "connect-src 'self' https://api.mercadopago.com; "
                 "frame-ancestors 'none';"
             )
-        
+
         # Set proper content type and headers for static files
         if request.url.path.endswith('.js'):
             response.headers['content-type'] = 'application/javascript; charset=utf-8'
@@ -207,7 +207,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             response.headers['cache-control'] = 'public, max-age=3600'
         elif request.url.path.startswith('/static/'):
             response.headers['cache-control'] = 'public, max-age=86400'
-            
+
         return response
 
 app.add_middleware(SecurityHeadersMiddleware)
@@ -232,17 +232,17 @@ async def register_user(
     email = email.strip().lower()
     if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email inválido")
-    
+
     if len(email) > 255:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email muito longo")
 
     # Validação da senha
     if len(password) < 8:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Senha deve ter pelo menos 8 caracteres")
-    
+
     if len(password) > 128:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Senha muito longa")
-    
+
     if not re.search(r'[A-Za-z]', password) or not re.search(r'[0-9]', password):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Senha deve conter letras e números")
 
@@ -283,15 +283,22 @@ async def login_user(
     email = email.strip().lower()
     if not email or not password:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email e senha são obrigatórios")
-    
+
     if len(email) > 255 or len(password) > 128:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Dados inválidos")
-    
+
     # Log de segurança (sem expor dados sensíveis)
     client_ip = request.client.host if request.client else 'unknown'
     print(f"🔄 Tentativa de login - IP: {client_ip}")
 
     try:
+        # Verificar rate limiting
+        #if not check_rate_limit(email):
+        #    raise HTTPException(
+        #        status_code=429, 
+        #        detail="Muitas tentativas de login. Tente novamente em 5 minutos."
+        #    )
+
         user_check = db.query(User).filter(User.email.ilike(email.strip())).first()
         if not user_check:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email ou senha incorretos")
@@ -319,6 +326,9 @@ async def login_user(
             if user.is_admin:
                 user.is_admin = False
                 db.commit()
+
+        # Reset rate limit após login bem-sucedido
+        #reset_rate_limit(email)
 
         access_token = create_access_token(data={"sub": user.email})
 
@@ -748,7 +758,7 @@ async def check_license(
                 "can_download": False,
                 "license_status": "expirada",
                 "message": f"Sua licença expirou há {expired_days} dias",
-                "expires_at": current_user.data_expiracao.isoformat(),
+                "expires_at": current_user.data_expiration.isoformat(),
                 "days_remaining": 0,
                 "hours_remaining": 0,
                 "expired_days": expired_days,

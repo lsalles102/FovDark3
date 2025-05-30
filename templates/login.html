@@ -186,11 +186,11 @@
                         }
                     } else {
                         console.log('❌ Erro no login:', data.detail);
-                        showError(data.detail || 'Erro ao fazer login');
+                        showToast(data.detail || 'Erro ao fazer login', 'error');
                     }
                 } catch (error) {
                     console.error('❌ Erro:', error);
-                    showError('Erro de conexão. Tente novamente.');
+                    showToast('Erro de conexão. Tente novamente.', 'error');
                 } finally {
                     // Restaurar botão
                     submitButton.disabled = false;

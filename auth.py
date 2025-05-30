@@ -1,6 +1,14 @@
 import os
 from datetime import datetime, timedelta
 from typing import Optional
+import logging
+from functools import wraps
+import time
+
+# Rate limiting simples
+login_attempts = {}
+MAX_ATTEMPTS = 5
+BLOCK_TIME = 300  # 5 minutos
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -27,28 +35,36 @@ except Exception as e:
 security = HTTPBearer()
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verificar senha com tratamento de erros melhorado"""
-    try:
-        result = pwd_context.verify(plain_password, hashed_password)
-        print(f"🔐 Verificação bcrypt bem-sucedida: {result}")
-        return result
-    except Exception as e:
-        print(f"❌ Erro na verificação bcrypt: {e}")
-        # Tentar verificação manual como fallback
-        try:
-            import bcrypt
-            if isinstance(plain_password, str):
-                plain_password = plain_password.encode('utf-8')
-            if isinstance(hashed_password, str):
-                hashed_password = hashed_password.encode('utf-8')
-            
-            result = bcrypt.checkpw(plain_password, hashed_password)
-            print(f"🔧 Verificação manual bcrypt: {result}")
-            return result
-        except Exception as fallback_error:
-            print(f"❌ Fallback também falhou: {fallback_error}")
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def check_rate_limit(email: str) -> bool:
+    """Verifica se o email não excedeu o limite de tentativas"""
+    current_time = time.time()
+
+    if email in login_attempts:
+        attempts, last_attempt = login_attempts[email]
+
+        # Reset counter se passou o tempo de bloqueio
+        if current_time - last_attempt > BLOCK_TIME:
+            login_attempts[email] = (1, current_time)
+            return True
+
+        # Bloquear se excedeu tentativas
+        if attempts >= MAX_ATTEMPTS:
             return False
+
+        # Incrementar tentativas
+        login_attempts[email] = (attempts + 1, current_time)
+    else:
+        login_attempts[email] = (1, current_time)
+
+    return True
+
+def reset_rate_limit(email: str):
+    """Reset contador de tentativas após login bem-sucedido"""
+    if email in login_attempts:
+        del login_attempts[email]
 
 
 def get_password_hash(password: str) -> str:
@@ -68,27 +84,38 @@ def authenticate_user(db: Session, email: str, password: str) -> Optional[User]:
         # Log sem expor email completo
         email_masked = email[:3] + "***" + email[email.find('@'):]
         print(f"🔍 Tentativa de autenticação para: {email_masked}")
-        
+
+        # Verificar rate limit
+        if not check_rate_limit(email):
+            print(f"🚫 Muitas tentativas de login para: {email_masked}")
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Muitas tentativas de login. Tente novamente mais tarde."
+            )
+
         user = db.query(User).filter(User.email.ilike(email.strip())).first()
         if not user:
             print(f"❌ Usuário não encontrado")
             return None
-        
+
         # Verificar se há muitas tentativas de login
         if user.tentativas_login >= 5:
             print(f"🚫 Conta bloqueada por muitas tentativas")
             return None
-        
+
         print(f"✅ Usuário encontrado")
-        
+
         password_valid = verify_password(password, user.senha_hash)
-        
+
         if not password_valid:
             print(f"❌ Falha na autenticação")
             return None
-        
+
+        reset_rate_limit(email)  # Resetar tentativas após sucesso
         print(f"✅ Autenticação bem-sucedida")
         return user
+    except HTTPException as http_ex:
+        raise http_ex  # Re-raise para que o handler superior capture
     except Exception as e:
         print(f"💥 Erro na autenticação: erro interno")
         return None
@@ -151,7 +178,7 @@ async def get_current_user(
     # Verificar se o email está autorizado como admin (comparação case-insensitive)
     user_email_lower = user.email.lower().strip()
     is_authorized_admin = user_email_lower in [email.lower() for email in AUTHORIZED_ADMIN_EMAILS]
-    
+
     if is_authorized_admin:
         # Garantir que usuários autorizados sejam admin
         if not user.is_admin:
