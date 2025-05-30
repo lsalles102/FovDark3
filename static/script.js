@@ -701,3 +701,40 @@
     window.validateToken = validateToken; // Expose the new validateToken function
 
 })();
+
+function handleSuccessfulLogin(data) {
+        console.log('✅ Login bem-sucedido para:', data.user.email);
+
+        // Salvar dados do usuário
+        const userData = {
+            email: data.user.email,
+            is_admin: data.user.is_admin
+        };
+
+        localStorage.setItem('user_data', JSON.stringify(userData));
+        console.log('💾 Dados salvos no localStorage:', userData);
+
+        // Atualizar variáveis globais
+        currentUser = userData;
+        isAuthenticated = true;
+
+        showToast('Login realizado com sucesso!', 'success');
+
+        console.log('🧭 Redirecionando usuário...');
+        console.log('👤 Usuário atual:', currentUser.email);
+        console.log('👑 É admin:', currentUser?.is_admin);
+
+        // Forçar atualização da navegação antes de redirecionar
+        updateNavigation(true);
+
+        // Aguardar um momento antes de redirecionar para garantir que os dados sejam salvos
+        setTimeout(() => {
+            if (currentUser?.is_admin) {
+                console.log('🚀 Redirecionando admin para /admin');
+                window.location.replace('/admin');
+            } else {
+                console.log('🚀 Redirecionando usuário para /painel');
+                window.location.replace('/painel');
+            }
+        }, 100);
+    }

@@ -16,19 +16,50 @@ SECRET_KEY = os.getenv("SECRET_KEY", "darkfov-super-secret-key-2024")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 120  # 2 horas para evitar desconexões frequentes
 
-# Configuração bcrypt
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Configuração bcrypt com versão específica para evitar erro de compatibilidade
+try:
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
+except Exception as e:
+    print(f"⚠️ Erro na configuração bcrypt: {e}")
+    # Fallback para configuração mais básica
+    pwd_context = CryptContext(schemes=["argon2", "bcrypt"], deprecated="auto")
+
 security = HTTPBearer()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verificar senha"""
-    return pwd_context.verify(plain_password, hashed_password)
+    """Verificar senha com tratamento de erros melhorado"""
+    try:
+        result = pwd_context.verify(plain_password, hashed_password)
+        print(f"🔐 Verificação bcrypt bem-sucedida: {result}")
+        return result
+    except Exception as e:
+        print(f"❌ Erro na verificação bcrypt: {e}")
+        # Tentar verificação manual como fallback
+        try:
+            import bcrypt
+            if isinstance(plain_password, str):
+                plain_password = plain_password.encode('utf-8')
+            if isinstance(hashed_password, str):
+                hashed_password = hashed_password.encode('utf-8')
+            
+            result = bcrypt.checkpw(plain_password, hashed_password)
+            print(f"🔧 Verificação manual bcrypt: {result}")
+            return result
+        except Exception as fallback_error:
+            print(f"❌ Fallback também falhou: {fallback_error}")
+            return False
 
 
 def get_password_hash(password: str) -> str:
-    """Gerar hash da senha"""
-    return pwd_context.hash(password)
+    """Gerar hash da senha com tratamento de erros"""
+    try:
+        return pwd_context.hash(password)
+    except Exception as e:
+        print(f"❌ Erro ao gerar hash: {e}")
+        # Fallback para bcrypt direto
+        import bcrypt
+        return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
 
 def authenticate_user(db: Session, email: str, password: str) -> Optional[User]:

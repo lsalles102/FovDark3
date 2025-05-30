@@ -1695,38 +1695,56 @@ async function checkAdminAuth() {
 
     if (!token) {
         console.log('❌ Sem token, redirecionando para login');
-        window.location.href = '/login';
+        window.location.replace('/login');
+        return false;
+    }
+
+    // Verificar se o usuário tem dados de admin localmente primeiro
+    if (!userData.is_admin) {
+        console.log('❌ Usuário não é admin localmente, redirecionando para painel');
+        showToast('Acesso negado. Privilégios de administrador necessários.', 'error');
+        setTimeout(() => {
+            window.location.replace('/painel');
+        }, 2000);
         return false;
     }
 
     // Verificar se o token ainda é válido
     try {
-        const response = await fetch('/api/admin/users', {
-            headers: { 'Authorization': `Bearer ${token}` }
+        const response = await fetch('/api/verify_token', {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
         });
 
         if (response.status === 401) {
             console.log('❌ Token expirado, redirecionando para login');
             localStorage.clear();
-            window.location.href = '/login';
+            window.location.replace('/login');
             return false;
         }
 
-        if (!userData.is_admin && response.ok) {
-            console.log('❌ Usuário não é admin, redirecionando para painel');
-            showToast('Acesso negado. Privilégios de administrador necessários.', 'error');
-            setTimeout(() => {
-                window.location.href = '/painel';
-            }, 2000);
-            return false;
+        if (response.ok) {
+            const data = await response.json();
+            if (!data.user.is_admin) {
+                console.log('❌ Usuário não é admin no servidor, redirecionando para painel');
+                showToast('Acesso negado. Privilégios de administrador necessários.', 'error');
+                setTimeout(() => {
+                    window.location.replace('/painel');
+                }, 2000);
+                return false;
+            }
         }
 
         console.log('✅ Usuário admin autenticado com sucesso');
         return true;
     } catch (error) {
         console.error('❌ Erro na verificação de auth:', error);
-        window.location.href = '/login';
-        return false;
+        // Em caso de erro de rede, não redirecionar imediatamente
+        console.log('⚠️ Erro de rede, mantendo usuário na página');
+        return true; // Assumir que está ok se for erro de rede
     }
 }
 
