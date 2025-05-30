@@ -333,6 +333,33 @@ block content %}
     <script>
         let selectedProductId = null;
 
+        // ===== FAQ FUNCTIONALITY =====
+        function toggleFaq(element) {
+            const faqItem = element.closest('.faq-item');
+            const faqAnswer = faqItem.querySelector('.faq-answer');
+            const isActive = faqItem.classList.contains('active');
+
+            // Fechar todos os outros FAQs
+            document.querySelectorAll('.faq-item').forEach(item => {
+                if (item !== faqItem) {
+                    item.classList.remove('active');
+                    const answer = item.querySelector('.faq-answer');
+                    if (answer) {
+                        answer.style.maxHeight = '0';
+                    }
+                }
+            });
+
+            // Toggle do FAQ atual
+            if (isActive) {
+                faqItem.classList.remove('active');
+                faqAnswer.style.maxHeight = '0';
+            } else {
+                faqItem.classList.add('active');
+                faqAnswer.style.maxHeight = faqAnswer.scrollHeight + 'px';
+            }
+        }
+
         // Carregar produtos ao carregar a página
         document.addEventListener('DOMContentLoaded', function() {
             loadProducts();
