@@ -1021,7 +1021,7 @@ async def mercadopago_status():
 
         if mp:
             is_production = "TEST" not in MERCADOPAGO_ACCESS_TOKEN
-            
+
             return {
                 "status": "configured",
                 "message": f"✅ MercadoPago configurado em modo {'PRODUÇÃO' if is_production else 'TESTE'}",
