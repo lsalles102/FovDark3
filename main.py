@@ -800,19 +800,6 @@ async def get_maintenance_status(
         print(f"❌ Erro ao verificar status de manutenção: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor")
 
-
-            "id": payment.id,
-            "user_id": payment.user_id,
-            "product_id": payment.product_id,
-            "valor": payment.valor,
-            "data_pagamento": payment.data_pagamento.isoformat() if payment.data_pagamento else None,
-            "status": payment.status,
-            "plano": payment.plano,
-            "gateway_id": payment.gateway_id
-        }
-        for payment in payments
-    ]
-
 @app.get("/api/download/loader")
 async def download_loader(
     current_user: User = Depends(get_current_user),
