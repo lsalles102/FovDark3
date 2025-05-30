@@ -81,31 +81,31 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
         self.calls = calls
         self.period = period
         self.requests = defaultdict(list)
-    
+
     async def dispatch(self, request: Request, call_next):
         # Pular rate limiting para arquivos estáticos e admin
         if request.url.path.startswith("/static") or request.url.path.startswith("/admin"):
             return await call_next(request)
-            
+
         client_ip = request.client.host if request.client else "unknown"
         now = time.time()
-        
+
         # Limpar requisições antigas
         self.requests[client_ip] = [
             req_time for req_time in self.requests[client_ip] 
             if now - req_time < self.period
         ]
-        
+
         # Verificar se excedeu o limite
         if len(self.requests[client_ip]) >= self.calls:
             raise HTTPException(
                 status_code=429, 
                 detail="Muitas requisições. Tente novamente em alguns minutos."
             )
-        
+
         # Adicionar requisição atual
         self.requests[client_ip].append(now)
-        
+
         return await call_next(request)
 
 class MaintenanceMiddleware(BaseHTTPMiddleware):
@@ -183,7 +183,7 @@ async def login_user(
     print(f"  📧 Email: {email}")
     print(f"  🌐 IP: {request.client.host if request.client else 'unknown'}")
     print(f"  📋 Headers: {dict(request.headers)}")
-    
+
     try:
         user_check = db.query(User).filter(User.email.ilike(email.strip())).first()
         if not user_check:
@@ -256,6 +256,17 @@ async def get_all_users(
         }
         for user in users
     ]
+
+# ===== API ENDPOINTS =====
+
+@app.get("/api/settings/public")
+async def get_public_settings():
+    """Endpoint para configurações públicas"""
+    return {
+        "site_name": "FovDark",
+        "version": "1.0.0",
+        "maintenance_mode": False
+    }
 
 @app.get("/api/products")
 async def get_products(db: Session = Depends(get_db)):
@@ -406,13 +417,13 @@ async def update_product(
     print(f"  Recursos: '{features}'")
     print(f"  Ativo: '{is_active}'")
     print(f"  Destaque: '{is_featured}'")
-    
+
     # Verificar se o produto existe
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         print(f"❌ Produto {product_id} não encontrado no banco de dados")
         raise HTTPException(status_code=404, detail="Produto não encontrado")
-    
+
     print(f"✅ Produto encontrado: '{product.name}' (ID: {product.id})")
     print(f"📊 Estado atual do produto:")
     print(f"  Nome atual: '{product.name}'")
@@ -423,10 +434,10 @@ async def update_product(
         # Validar dados de entrada
         if not name or not name.strip():
             raise HTTPException(status_code=400, detail="Nome do produto é obrigatório")
-        
+
         if price < 0:
             raise HTTPException(status_code=400, detail="Preço deve ser maior ou igual a zero")
-            
+
         if duration_days <= 0:
             raise HTTPException(status_code=400, detail="Duração deve ser maior que zero")
 
@@ -489,7 +500,7 @@ async def update_product(
                 "updated_at": product.updated_at.isoformat() if product.updated_at else None
             }
         }
-        
+
         print(f"📤 Retornando resposta: {response_data}")
         return response_data
 
@@ -710,7 +721,7 @@ async def upload_image(
         # Verificar tamanho do arquivo (máximo 5MB para melhor performance)
         if not file.size or file.size > 5 * 1024 * 1024:
             raise HTTPException(status_code=400, detail="Arquivo muito grande. Máximo 5MB")
-        
+
         # Verificar se o arquivo tem nome válido
         if not file.filename or len(file.filename.strip()) == 0:
             raise HTTPException(status_code=400, detail="Nome do arquivo inválido")
@@ -725,7 +736,7 @@ async def upload_image(
         import uuid
         timestamp = int(time.time())
         unique_id = str(uuid.uuid4())[:8]
-        
+
         # Obter extensão do arquivo
         if file.filename and '.' in file.filename:
             file_extension = file.filename.split('.')[-1].lower()
@@ -832,22 +843,22 @@ async def change_password(
         # Verificar senha atual
         if not verify_password(current_password, current_user.senha_hash):
             raise HTTPException(status_code=400, detail="Senha atual incorreta")
-        
+
         # Validar nova senha
         if len(new_password) < 8:
             raise HTTPException(status_code=400, detail="A nova senha deve ter pelo menos 8 caracteres")
-        
+
         # Verificar se a nova senha é diferente da atual
         if verify_password(new_password, current_user.senha_hash):
             raise HTTPException(status_code=400, detail="A nova senha deve ser diferente da atual")
-        
+
         # Atualizar senha
         current_user.senha_hash = get_password_hash(new_password)
         current_user.updated_at = datetime.utcnow()
         db.commit()
-        
+
         return {"message": "Senha alterada com sucesso"}
-        
+
     except HTTPException as he:
         raise he
     except Exception as e:
@@ -865,7 +876,7 @@ async def mercadopago_status():
     """Verificar status da integração do MercadoPago"""
     try:
         from mercadopago_integration import mp
-        
+
         if mp:
             return {
                 "status": "configured",
