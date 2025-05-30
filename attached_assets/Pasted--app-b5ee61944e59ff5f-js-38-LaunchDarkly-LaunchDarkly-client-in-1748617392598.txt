@@ -1,0 +1,130 @@
+      /////////////////////
+      
+_app-b5ee61944e59ff5f.js:38 [LaunchDarkly] LaunchDarkly client initialized
+_app-b5ee61944e59ff5f.js:38 [ChromeTransport] connectChrome error: Error: MetaMask extension not found
+    at inpage.js:1:16512
+(anonymous) @ _app-b5ee61944e59ff5f.js:38Understand this error
+bash.svg:1 
+            
+            
+           Failed to load resource: net::ERR_NAME_NOT_RESOLVEDUnderstand this error
+FovDark3:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+ [ChromeTransport] connectChrome error: Error: MetaMask extension not found
+    at inpage.js:1:16512
+connect @ inpage.js:1Understand this error
+inpage.js:1 [ChromeTransport] connectChrome error: Error: MetaMask extension not found
+    at inpage.js:1:16512
+connect @ inpage.js:1Understand this error
+inpage.js:1 [ChromeTransport] connectChrome error: Error: MetaMask extension not found
+    at inpage.js:1:16512
+connect @ inpage.js:1Understand this error
+inpage.js:1 [ChromeTransport] connectChrome error: Error: MetaMask extension not found
+    at inpage.js:1:16512
+connect @ inpage.js:1Understand this error
+stallwart.build.js:1 stallwart: failed ping 1
+inpage.js:1 [ChromeTransport] connectChrome error: Error: MetaMask extension not found
+    at inpage.js:1:16512
+connect @ inpage.js:1Understand this error
+inpage.js:1 [ChromeTransport] connectChrome error: Error: MetaMask extension not found
+    at inpage.js:1:16512
+connect @ inpage.js:1Understand this error
+3stallwart.build.js:1 stallwart: failed ping 1
+12Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.Understand this error
+framework-9076dd0e43a56c45.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-9076dd0e43a56c45.js:1Understand this warning
+framework-9076dd0e43a56c45.js:1 Unrecognized feature: 'battery'.
+_ @ framework-9076dd0e43a56c45.js:1Understand this warning
+framework-9076dd0e43a56c45.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-9076dd0e43a56c45.js:1Understand this warning
+framework-9076dd0e43a56c45.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-9076dd0e43a56c45.js:1Understand this warning
+framework-9076dd0e43a56c45.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-9076dd0e43a56c45.js:1Understand this warning
+framework-9076dd0e43a56c45.js:1 Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-9076dd0e43a56c45.js:1Understand this warning
+framework-9076dd0e43a56c45.js:1 Unrecognized feature: 'navigation-override'.
+_ @ framework-9076dd0e43a56c45.js:1Understand this warning
+framework-9076dd0e43a56c45.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-9076dd0e43a56c45.js:1Understand this warning
+framework-9076dd0e43a56c45.js:1 Unrecognized feature: 'publickey-credentials'.
+_ @ framework-9076dd0e43a56c45.js:1Understand this warning
+framework-9076dd0e43a56c45.js:1 Unrecognized feature: 'speaker-selection'.
+_ @ framework-9076dd0e43a56c45.js:1Understand this warning
+framework-9076dd0e43a56c45.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-9076dd0e43a56c45.js:1Understand this warning
+framework-9076dd0e43a56c45.js:1 Unrecognized feature: 'unsized-media'.
+_ @ framework-9076dd0e43a56c45.js:1Understand this warning
+framework-9076dd0e43a56c45.js:1 Unrecognized feature: 'pointer-lock'.
+_ @ framework-9076dd0e43a56c45.js:1Understand this warning
+framework-9076dd0e43a56c45.js:1 Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-9076dd0e43a56c45.js:1Understand this warning
+framework-9076dd0e43a56c45.js:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-9076dd0e43a56c45.js:1Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'ambient-light-sensor'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'ambient-light-sensor'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'battery'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'battery'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-not-rendered'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-not-rendered'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-out-of-viewport'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-out-of-viewport'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'layout-animations'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'layout-animations'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'legacy-image-formats'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'legacy-image-formats'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'navigation-override'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'navigation-override'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'oversized-images'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'oversized-images'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'publickey-credentials'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'publickey-credentials'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'speaker-selection'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'speaker-selection'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'unoptimized-images'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'unoptimized-images'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'unsized-media'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'unsized-media'.Understand this warning
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.Understand this warning
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.Understand this warning
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.Understand this warning
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.Understand this warning
+7ed7f2d6-db9e-438d-af3b-937dbce16e0a-00-3khdf1wplu4y5.worf.replit.dev/:39 X-Frame-Options may only be set via an HTTP header sent along with a document. It may not be set inside <meta>.Understand this error
+7ed7f2d6-db9e-438d-af3b-937dbce16e0a-00-3khdf1wplu4y5.worf.replit.dev/:39 X-Frame-Options may only be set via an HTTP header sent along with a document. It may not be set inside <meta>.Understand this error
+ 🚀 FovDark System Initialized
+ 🔧 Inicializando aplicação...
+ 📍 Página atual: /
+ 🏠 Inicializando página inicial...
+ 🧭 Configurando navegação...
+ 🌐 Página totalmente carregada
+ 🔐 Verificando status de autenticação...
+ ❌ Usuário não autenticado
+ 🔄 Atualizando navegação para usuário não autenticado
+7ed7f2d6-db9e-438d-af3b-937dbce16e0a-00-3khdf1wplu4y5.worf.replit.dev/:39 X-Frame-Options may only be set via an HTTP header sent along with a document. It may not be set inside <meta>.Understand this error
+7ed7f2d6-db9e-438d-af3b-937dbce16e0a-00-3khdf1wplu4y5.worf.replit.dev/:39 X-Frame-Options may only be set via an HTTP header sent along with a document. It may not be set inside <meta>.Understand this error
+Console.js:61 🚀 FovDark System Initialized
+Console.js:61 🔧 Inicializando aplicação...
+Console.js:61 📍 Página atual: /
+Console.js:61 🏠 Inicializando página inicial...
+Console.js:61 🧭 Configurando navegação...
+Console.js:61 🌐 Página totalmente carregada
+Console.js:61 🔐 Verificando status de autenticação...
+Console.js:61 ❌ Usuário não autenticado
+Console.js:61 🔄 Atualizando navegação para usuário não autenticado
+ [ChromeTransport] connectChrome error: Error: MetaMask extension not found
+    at inpage.js:1:16512
+connect @ inpage.js:1Understand this error
+inpage.js:1 [ChromeTransport] connectChrome error: Error: MetaMask extension not found
+    at inpage.js:1:16512
+connect @ inpage.js:1Understand this error
+ [ChromeTransport] connectChrome error: Error: MetaMask extension not found
+    at inpage.js:1:16512
+Mt.forEach.n.<computed> @ eruda.js:2Understand this error
+Console.js:61 [ChromeTransport] connectChrome error: Error: MetaMask extension not found
+    at inpage.js:1:16512
+Mt.forEach.n.<computed> @ Console.js:61Understand this error
+
+                
+          
+          
+          
+         Chrome is moving towards a new experience that allows users to choose to browse without third-party cookies.Understand this warning
