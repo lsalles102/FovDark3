@@ -20,8 +20,8 @@ if MERCADOPAGO_ACCESS_TOKEN:
         print("🏭 ✅ MercadoPago inicializado em MODO PRODUÇÃO")
         print("💰 Pronto para receber pagamentos reais!")
 else:
-    print("❌ MercadoPago token NÃO CONFIGURADO")
-    print("📝 Configure MERCADOPAGO_ACCESS_TOKEN nos Secrets do Replit")
+    print("❌ MercadoPago Access Token NÃO CONFIGURADO")
+    print("📝 Configure a variável MERCADOPAGO_ACCESS_TOKEN nas variáveis de ambiente do Railway")
     mp = None
 
 # Definição dos produtos
