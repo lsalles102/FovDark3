@@ -25,41 +25,69 @@
     }
 
     // ===== VERIFICAÇÃO DE AUTENTICAÇÃO =====
-    function checkAuthentication() {
-        const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
-        const userData = localStorage.getItem('user_data') || sessionStorage.getItem('user_data');
-
+    async function checkAuthentication() {
         console.log('🔍 Verificando autenticação...');
-        console.log('🎫 Token encontrado:', !!token);
-        console.log('👤 Dados do usuário encontrados:', !!userData);
 
-        if (token && userData) {
+        const token = localStorage.getItem('access_token');
+        const userData = localStorage.getItem('user_data');
+
+        if (!token) {
+            console.log('❌ Token não encontrado');
+            clearAuthData();
+            updateNavigation(false);
+            return;
+        }
+
+        // Se tem dados do usuário salvos, usar eles primeiro
+        if (userData) {
             try {
-                const newUserData = JSON.parse(userData);
-
-                // Verificar se é um usuário diferente do atual
-                if (currentUser && currentUser.email !== newUserData.email) {
-                    console.log('🔄 Usuário diferente detectado, atualizando...');
-                    console.log(`   Anterior: ${currentUser.email}`);
-                    console.log(`   Novo: ${newUserData.email}`);
-                }
-
-                currentUser = newUserData;
+                currentUser = JSON.parse(userData);
                 isAuthenticated = true;
                 updateNavigation(true);
-                console.log('✅ Usuário autenticado:', currentUser.email);
-                console.log('👑 É admin:', currentUser.is_admin);
-
+                console.log('✅ Usando dados salvos do usuário:', currentUser.email);
+                return;
             } catch (error) {
-                console.error('❌ Erro ao processar dados do usuário:', error);
+                console.error('❌ Erro ao processar dados salvos:', error);
+            }
+        }
+
+        // Verificar token no servidor apenas se necessário
+        try {
+            const response = await fetch('/api/verify_token', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.valid) {
+                    localStorage.setItem('user_data', JSON.stringify(data.user));
+                    currentUser = data.user;
+                    isAuthenticated = true;
+                    updateNavigation(true);
+                    console.log('✅ Usuário autenticado:', currentUser.email);
+                } else {
+                    console.log('❌ Token inválido');
+                    clearAuthData();
+                    updateNavigation(false);
+                }
+            } else {
+                console.log('❌ Erro na verificação do token');
                 clearAuthData();
                 updateNavigation(false);
             }
-        } else {
-            currentUser = null;
-            isAuthenticated = false;
+        } catch (error) {
+            console.error('❌ Erro na verificação de autenticação:', error);
+            // Não limpar dados em caso de erro de rede
+            if (currentUser) {
+                console.log('🔄 Mantendo sessão devido a erro de rede');
+                return;
+            }
+            clearAuthData();
             updateNavigation(false);
-            console.log('❌ Usuário não autenticado');
         }
     }
 
@@ -282,32 +310,25 @@
 
             const data = await response.json();
 
-            if (response.ok && data.access_token) {
-                console.log('✅ Login bem-sucedido para:', data.user.email);
+            if (response.ok) {
+                console.log('✅ Login bem-sucedido');
 
-                // Salvar novos dados (usar rememberMe se disponível)
-                const rememberMe = document.getElementById('rememberMe')?.checked || false;
-                if (rememberMe) {
-                    localStorage.setItem('access_token', data.access_token);
-                    localStorage.setItem('user_data', JSON.stringify(data.user));
-                } else {
-                    sessionStorage.setItem('access_token', data.access_token);
-                    sessionStorage.setItem('user_data', JSON.stringify(data.user));
-                }
+                // Salvar dados de forma simples
+                localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('user_data', JSON.stringify(data.user));
 
+                console.log('✅ Dados salvos:', data.user.email);
+
+                // Atualizar estado
                 currentUser = data.user;
                 isAuthenticated = true;
 
-                console.log('💾 Dados salvos no localStorage:', {
-                    email: currentUser.email,
-                    is_admin: currentUser.is_admin
-                });
-
-                showToast(`Bem-vindo, ${data.user.email}!`, 'success');
-
-                setTimeout(() => {
-                    redirectUser();
-                }, 1000);
+                // Redirecionar imediatamente
+                if (data.user.is_admin) {
+                    window.location.replace('/admin');
+                } else {
+                    window.location.replace('/painel');
+                }
 
             } else {
                 console.log('❌ Erro no login:', data.detail);

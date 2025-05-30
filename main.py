@@ -758,7 +758,7 @@ async def check_license(
                 "can_download": False,
                 "license_status": "expirada",
                 "message": f"Sua licença expirou há {expired_days} dias",
-                "expires_at": current_user.data_expiration.isoformat(),
+                "expires_at": current_user.data_expiracao.isoformat(),
                 "days_remaining": 0,
                 "hours_remaining": 0,
                 "expired_days": expired_days,

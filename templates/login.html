@@ -127,23 +127,16 @@
         }
     }
 
-    // Função para salvar o token no localStorage ou sessionStorage
-    function saveToken(token, rememberMe) {
-        if (rememberMe) {
-            localStorage.setItem('access_token', token);
-            sessionStorage.removeItem('access_token'); // Clear session storage if it exists
-        } else {
-            sessionStorage.setItem('access_token', token);
-            localStorage.removeItem('access_token'); // Clear local storage if it exists
-        }
-        console.log('Token salvo com sucesso:', rememberMe ? 'localStorage' : 'sessionStorage');
+    // Funções simplificadas para gerenciar token
+    function saveToken(token) {
+        localStorage.setItem('access_token', token);
+        console.log('Token salvo com sucesso');
     }
 
-    // Função para remover o token (logout)
     function removeToken() {
         localStorage.removeItem('access_token');
-        sessionStorage.removeItem('access_token');
-        console.log('Token removido (logout).');
+        localStorage.removeItem('user_data');
+        console.log('Token removido (logout)');
     }
 
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
@@ -172,9 +165,9 @@
                     if (response.ok) {
                         console.log('✅ Login bem-sucedido');
 
-                        // Usar nova função para salvar token
-                        const rememberMe = document.getElementById('rememberMe').checked;
-                        saveToken(data.access_token, rememberMe);
+                        // Salvar token
+                        saveToken(data.access_token);
+                        localStorage.setItem('user_data', JSON.stringify(data.user));
 
                         console.log('🔄 Redirecionando usuário...');
 
