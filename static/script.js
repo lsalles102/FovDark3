@@ -967,4 +967,62 @@ function copyToClipboard(text) {
             textArea.remove();
         }
     }
-}The code integrates MercadoPago payment processing, loads product data from an API, and displays products on the page with the option to purchase.
+}
+<///The code integrates MercadoPago payment processing, loads product data from an API, and displays products on the page with the option to purchase.
+async function selectPlan(productId, productPrice, planName, durationDays) {
+    const token = localStorage.getItem('access_token');
+
+    if (!token) {
+        showToast('Você precisa estar logado para comprar', 'error');
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 1000);
+        return;
+    }
+
+    console.log(`✨ Iniciando checkout para o plano: ${planName} (ID: ${productId})`);
+    console.log('💰 Preço:', productPrice);
+    console.log('⏳ Duração:', durationDays, 'dias');
+
+    try {
+        // Criar checkout no Mercado Pago
+        const checkoutData = {
+            plano: productId || planName,
+            product_id: productId
+        };
+
+        console.log('🛒 Enviando dados de checkout:', checkoutData);
+
+        const response = await fetch('/api/criar-checkout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify(checkoutData)
+        });
+
+        if (!response.ok) {
+            const errorBody = await response.text();
+            console.error('❌ Erro ao criar checkout:', response.status, errorBody);
+            showToast(`Erro ao criar checkout: ${response.status} - ${errorBody}`, 'error');
+            return;
+        }
+
+        const data = await response.json();
+        console.log('🎁 Resposta do checkout:', data);
+
+        if (data && data.init_point) {
+            // Redirecionar para o Mercado Pago
+            console.log('📍 Redirecionando para:', data.init_point);
+            window.location.href = data.init_point;
+        } else {
+            console.error('❌ Link de checkout inválido');
+            showToast('Erro ao obter link de pagamento', 'error');
+        }
+
+    } catch (error) {
+        console.error('💥 Erro geral no checkout:', error);
+        showToast('Erro ao processar pagamento', 'error');
+    }
+}
