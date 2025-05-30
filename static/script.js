@@ -88,58 +88,58 @@ function closeMobileMenu() {
 
 async function login(e) {
     e.preventDefault();
-    
+
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
     const loginBtn = document.getElementById('login-btn');
-    
+
     console.log('🔄 Iniciando processo de login...');
-    
+
     // Validações básicas
     if (!email || !password) {
         showToast('Por favor, preencha todos os campos', 'error');
         return;
     }
-    
+
     // Validar formato do email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
         showToast('Por favor, insira um email válido', 'error');
         return;
     }
-    
+
     // Estado de loading
     const originalText = loginBtn.innerHTML;
     loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>ENTRANDO...</span>';
     loginBtn.disabled = true;
-    
+
     try {
         console.log('📧 Email:', email);
-        
+
         // Preparar dados do formulário
         const formData = new FormData();
         formData.append('email', email);
         formData.append('password', password);
-        
+
         const response = await fetch('/api/login', {
             method: 'POST',
             body: formData
         });
-        
+
         console.log('📡 Status da resposta:', response.status);
-        
+
         const data = await response.json();
         console.log('📊 Dados recebidos:', data);
-        
+
         if (response.ok && data.access_token) {
             console.log('✅ Login bem-sucedido!');
-            
+
             // Salvar dados no localStorage
             localStorage.setItem('access_token', data.access_token);
             localStorage.setItem('user_data', JSON.stringify(data.user));
-            
+
             showToast('Login realizado com sucesso!', 'success');
-            
+
             // Aguardar um pouco antes do redirecionamento
             setTimeout(() => {
                 if (data.user.is_admin) {
@@ -150,12 +150,12 @@ async function login(e) {
                     window.location.href = '/painel';
                 }
             }, 1000);
-            
+
         } else {
             console.log('❌ Erro no login:', data.detail || 'Erro desconhecido');
             showToast(data.detail || 'Email ou senha incorretos', 'error');
         }
-        
+
     } catch (error) {
         console.error('💥 Erro na requisição:', error);
         showToast('Erro de conexão. Tente novamente.', 'error');
@@ -172,7 +172,7 @@ function showToast(message, type = 'info') {
     if (existingToast) {
         existingToast.remove();
     }
-    
+
     // Criar novo toast
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
@@ -180,7 +180,7 @@ function showToast(message, type = 'info') {
         <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
         <span>${message}</span>
     `;
-    
+
     // Adicionar estilos se não existirem
     if (!document.querySelector('#toast-styles')) {
         const style = document.createElement('style');
@@ -202,25 +202,25 @@ function showToast(message, type = 'info') {
                 z-index: 9999;
                 animation: slideIn 0.3s ease-out;
             }
-            
+
             .toast-success {
                 border-color: hsl(var(--success));
                 background: hsl(var(--success) / 0.1);
             }
-            
+
             .toast-error {
                 border-color: hsl(var(--danger));
                 background: hsl(var(--danger) / 0.1);
             }
-            
+
             .toast-success i {
                 color: hsl(var(--success));
             }
-            
+
             .toast-error i {
                 color: hsl(var(--danger));
             }
-            
+
             @keyframes slideIn {
                 from {
                     transform: translateX(100%);
@@ -234,9 +234,9 @@ function showToast(message, type = 'info') {
         `;
         document.head.appendChild(style);
     }
-    
+
     document.body.appendChild(toast);
-    
+
     // Remover após 5 segundos
     setTimeout(() => {
         if (toast.parentNode) {
@@ -343,7 +343,7 @@ function updateAuthenticationUI() {
 async function fetchWithTimeout(url, options = {}, timeout = 10000) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
-    
+
     try {
         const response = await fetch(url, {
             ...options,
@@ -363,7 +363,7 @@ async function fetchWithTimeout(url, options = {}, timeout = 10000) {
 // Função para mostrar loading
 function showLoading(element, text = 'Carregando...') {
     if (!element) return;
-    
+
     const originalContent = element.innerHTML;
     element.innerHTML = `
         <div class="loading-content">
@@ -378,7 +378,7 @@ function showLoading(element, text = 'Carregando...') {
 // Função para esconder loading
 function hideLoading(element) {
     if (!element || !element.dataset.originalContent) return;
-    
+
     element.innerHTML = element.dataset.originalContent;
     element.disabled = false;
     delete element.dataset.originalContent;
@@ -967,149 +967,4 @@ function copyToClipboard(text) {
             textArea.remove();
         }
     }
-}
-
-// ===== PURCHASE FUNCTIONS =====
-async function processPayment(plano) {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-        showToast('Você precisa estar logado para comprar', 'error');
-        window.location.href = '/login';
-        return;
-    }
-
-    try {
-        const response = await fetch('/api/mercadopago/create-preference', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ plan_id: plano })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            const initPoint = data.init_point || data.sandbox_init_point;
-            if (initPoint) {
-                window.location.href = initPoint;
-            } else {
-                showToast('Erro ao gerar link de pagamento', 'error');
-            }
-        } else {
-            showToast(data.detail || 'Erro ao processar pagamento', 'error');
-        }
-    } catch (error) {
-        console.error('Erro:', error);
-        showToast('Erro de conexão', 'error');
-    }
-}
-
-function selectPlan(productId, price, planName, durationDays) {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-        showToast('Você precisa estar logado para comprar', 'error');
-        window.location.href = '/login?redirect=comprar';
-        return;
-    }
-
-    // Processar pagamento diretamente
-    processPayment(productId);
-}
-
-// ===== FAQ FUNCTIONS =====
-function toggleFaq(element) {
-    const faqItem = element.parentElement;
-    const answer = faqItem.querySelector('.faq-answer');
-    const icon = element.querySelector('i');
-
-    // Fechar outros FAQs
-    document.querySelectorAll('.faq-item').forEach(item => {
-        if (item !== faqItem && item.classList.contains('active')) {
-            item.classList.remove('active');
-            const otherAnswer = item.querySelector('.faq-answer');
-            const otherIcon = item.querySelector('.faq-question i');
-            if (otherAnswer) otherAnswer.style.maxHeight = '0';
-            if (otherIcon) otherIcon.style.transform = 'rotate(0deg)';
-        }
-    });
-
-    // Toggle atual
-    const isActive = faqItem.classList.contains('active');
-
-    if (isActive) {
-        faqItem.classList.remove('active');
-        if (answer) answer.style.maxHeight = '0';
-        if (icon) icon.style.transform = 'rotate(0deg)';
-    } else {
-        faqItem.classList.add('active');
-        if (answer) {
-            const scrollHeight = answer.scrollHeight;
-            answer.style.maxHeight = scrollHeight + 'px';
-        }
-        if (icon) icon.style.transform = 'rotate(180deg)';
-    }
-}
-
-// ===== EXTERNAL LINKS =====
-function openExternalLink(url, platform) {
-    window.open(url, '_blank');
-    console.log(`🔗 Link externo aberto: ${platform} - ${url}`);
-}
-
-// ===== SSL CHECK =====
-function checkSSL() {
-    if (location.protocol === 'https:') {
-        console.log('✅ Conexão SSL Segura');
-        return true;
-    } else {
-        console.warn('⚠️ Conexão não segura');
-        return false;
-    }
-}
-
-// ===== INITIALIZATION =====
-document.addEventListener('DOMContentLoaded', function() {
-    checkSSL();
-
-    // Adicionar indicador SSL ao footer se existir
-    const footer = document.querySelector('.footer');
-    if (footer && location.protocol === 'https:') {
-        const sslBadge = document.createElement('div');
-        sslBadge.className = 'ssl-badge';
-        sslBadge.innerHTML = '<i class="fas fa-lock"></i> Conexão Segura SSL';
-        sslBadge.style.cssText = 'color: #00ff8c; font-size: 0.8rem; margin-top: 1rem; text-align: center;';
-        footer.appendChild(sslBadge);
-    }
-});
-
-console.log('✅ FovDark Script carregado com sucesso');
-
-function updateUserInfo(user) {
-    const userInfo = document.querySelector('.user-info');
-    if (userInfo) {
-        // Lista de emails autorizados como admin
-        const AUTHORIZED_ADMIN_EMAILS = [
-            'admin@fovdark.com',
-            'lsalles102@gmail.com'
-        ];
-
-        // Verificar se o email está na lista de autorizados (case-insensitive)
-        const userEmailLower = user.email.toLowerCase().trim();
-        const isAuthorizedAdmin = AUTHORIZED_ADMIN_EMAILS.some(email => 
-            email.toLowerCase() === userEmailLower
-        );
-
-        // Mostrar badge apenas se for autorizado E se is_admin for true
-        const adminBadge = (isAuthorizedAdmin && user.is_admin) ? '<span class="admin-badge">ADMIN</span>' : '';
-
-        userInfo.innerHTML = `
-            <div class="user-avatar">${user.email.charAt(0).toUpperCase()}</div>
-            <div class="user-details">
-                <div class="user-email">${user.email} ${adminBadge}</div>
-                <div class="user-since">Membro desde ${new Date().getFullYear()}</div>
-            </div>
-        `;
-    }
-}
+}The code integrates MercadoPago payment processing, loads product data from an API, and displays products on the page with the option to purchase.

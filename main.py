@@ -860,6 +860,31 @@ async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
+@app.get("/api/mercadopago/status")
+async def mercadopago_status():
+    """Verificar status da integração do MercadoPago"""
+    try:
+        from mercadopago_integration import mp
+        
+        if mp:
+            return {
+                "status": "configured",
+                "message": "MercadoPago configurado e pronto para uso",
+                "environment": "production" if "ACCESS_TOKEN" in str(mp._access_token) else "sandbox"
+            }
+        else:
+            return {
+                "status": "not_configured", 
+                "message": "MercadoPago não configurado. Configure o MERCADOPAGO_ACCESS_TOKEN nos Secrets.",
+                "environment": "test_mode"
+            }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Erro ao verificar MercadoPago: {str(e)}",
+            "environment": "unknown"
+        }
+
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_page(request: Request):
     return templates.TemplateResponse("admin.html", {"request": request})
