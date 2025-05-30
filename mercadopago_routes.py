@@ -22,8 +22,8 @@ class CheckoutRequest(BaseModel):
     plano: str
     product_id: Optional[int] = None
 
-@router.post("/criar-checkout")
-async def criar_checkout(
+@router.post("/create-checkout")
+async def create_checkout(
     request: CheckoutRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -31,7 +31,14 @@ async def criar_checkout(
     """Criar checkout no Mercado Pago"""
     try:
         print(f"🛒 Criando checkout para usuário: {current_user.email}")
-        print(f"📦 Plano: {request.plano}, Product ID: {request.product_id}")
+        print(f"📦 Dados recebidos: {request}")
+
+        # Validar se não é admin tentando comprar para si mesmo
+        #if current_user.is_admin:
+        #    raise HTTPException(
+        #        status_code=400, 
+        #        detail="Não é possível pagar para você mesmo."
+        #    )
 
         # Buscar produto no banco de dados se product_id fornecido
         if request.product_id:
@@ -98,7 +105,7 @@ async def criar_checkout(
         # Garantir que temos pelo menos um dos links
         init_point = preference_result.get("init_point")
         sandbox_init_point = preference_result.get("sandbox_init_point")
-        
+
         if not init_point and not sandbox_init_point:
             print("❌ Nenhuma URL de checkout encontrada na resposta do Mercado Pago")
             raise HTTPException(status_code=500, detail="Erro: URL de pagamento não gerada pelo Mercado Pago")
@@ -110,7 +117,7 @@ async def criar_checkout(
             "init_point": init_point,
             "sandbox_init_point": sandbox_init_point
         }
-        
+
         print(f"📤 Enviando resposta: {response_data}")
         return response_data
 

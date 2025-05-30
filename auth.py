@@ -179,18 +179,15 @@ async def get_current_user(
     user_email_lower = user.email.lower().strip()
     is_authorized_admin = user_email_lower in [email.lower() for email in AUTHORIZED_ADMIN_EMAILS]
 
-    if is_authorized_admin:
-        # Garantir que usuários autorizados sejam admin
-        if not user.is_admin:
-            user.is_admin = True
-            db.commit()
-            print(f"👑 Usuário {user.email} promovido a admin")
-    else:
-        # Garantir que usuários não autorizados NÃO sejam admin
-        if user.is_admin:
-            user.is_admin = False
-            db.commit()
-            print(f"👤 Privilégios de admin removidos de {user.email}")
+    # Apenas emails autorizados podem ser admin
+    user.is_admin = is_authorized_admin
+    
+    if is_authorized_admin and not user.is_admin:
+        db.commit()
+        print(f"👑 Usuário {user.email} promovido a admin")
+    elif not is_authorized_admin and user.is_admin:
+        db.commit()
+        print(f"👤 Privilégios de admin removidos de {user.email}")
 
     return user
 
