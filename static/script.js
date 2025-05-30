@@ -275,44 +275,93 @@ function checkAuthenticationStatus() {
     const token = localStorage.getItem('access_token');
     const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
 
-    if (token && userData) {
+    console.log('🔍 Verificando status de autenticação...');
+    console.log('📧 Token existe:', !!token);
+    console.log('👤 User data exists:', !!userData.email);
+
+    if (token && userData.email) {
         // Verificar se o token ainda é válido
         fetch('/api/license/check', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         }).then(response => {
+            console.log('📡 Resposta da verificação de token:', response.status);
+            
             if (response.status === 401) {
-                // Token expirado
-                console.log('🔄 Token expirado, fazendo logout');
-                logout();
-            } else if (!response.ok) {
+                // Token expirado ou inválido
+                console.log('❌ Token expirado/inválido, fazendo logout automático');
+                clearAuthenticationData();
+                updateAuthenticationUI();
+                
+                // Redirecionar para login se estiver em página protegida
+                if (window.location.pathname === '/painel' || window.location.pathname === '/admin') {
+                    window.location.href = '/login';
+                }
+            } else if (response.ok) {
+                console.log('✅ Token válido, atualizando UI');
+                updateAuthenticationUI();
+            } else {
                 console.log('⚠️ Erro na verificação, mas não é 401:', response.status);
-                // Não fazer logout em caso de erro de servidor
+                // Em caso de erro de servidor, manter o usuário logado mas atualizar UI
+                updateAuthenticationUI();
             }
         }).catch(error => {
             console.log('❌ Erro de rede ao verificar token:', error);
-            // Não fazer logout em caso de erro de rede
+            // Em caso de erro de rede, apenas atualizar UI sem deslogar
+            updateAuthenticationUI();
         });
+    } else {
+        // Não há token ou dados de usuário
+        console.log('❌ Sem token ou dados de usuário válidos');
+        clearAuthenticationData();
+        updateAuthenticationUI();
     }
+}
 
-    updateAuthenticationUI();
+function clearAuthenticationData() {
+    console.log('🧹 Limpando dados de autenticação');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user_data');
 }
 
 function updateAuthenticationUI() {
     const token = localStorage.getItem('access_token');
     const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
 
+    console.log('🎨 Atualizando UI de autenticação...');
+    console.log('📧 Token existe:', !!token);
+    console.log('👤 Email do usuário:', userData.email);
+
     const loginLink = document.getElementById('loginLink');
     const logoutLink = document.getElementById('logoutLink');
     const painelLink = document.getElementById('painelLink');
     const adminLink = document.getElementById('adminLink');
 
+    // Log dos elementos encontrados
+    console.log('🔗 Elementos encontrados:', {
+        loginLink: !!loginLink,
+        logoutLink: !!logoutLink,
+        painelLink: !!painelLink,
+        adminLink: !!adminLink
+    });
+
     if (token && userData.email) {
+        console.log('✅ Usuário logado - mostrando elementos de usuário autenticado');
+        
         // Usuário logado
-        if (loginLink) loginLink.style.display = 'none';
-        if (logoutLink) logoutLink.style.display = 'flex';
-        if (painelLink) painelLink.style.display = 'flex';
+        if (loginLink) {
+            loginLink.style.display = 'none';
+            console.log('🚪 Link de login ocultado');
+        }
+        if (logoutLink) {
+            logoutLink.style.display = 'flex';
+            console.log('🚪 Link de logout mostrado');
+        }
+        if (painelLink) {
+            painelLink.style.display = 'flex';
+            console.log('📋 Link do painel mostrado');
+        }
 
         // Lista de emails autorizados como admin
         const AUTHORIZED_ADMIN_EMAILS = [
@@ -326,16 +375,33 @@ function updateAuthenticationUI() {
             email.toLowerCase() === userEmailLower
         );
 
+        console.log('👑 É admin autorizado:', isAuthorizedAdmin);
+
         // Mostrar/ocultar link admin
         if (adminLink) {
             adminLink.style.display = isAuthorizedAdmin ? 'flex' : 'none';
+            console.log('⚙️ Link admin:', isAuthorizedAdmin ? 'mostrado' : 'ocultado');
         }
     } else {
+        console.log('❌ Usuário não logado - mostrando elementos de usuário não autenticado');
+        
         // Usuário não logado
-        if (loginLink) loginLink.style.display = 'flex';
-        if (logoutLink) logoutLink.style.display = 'none';
-        if (painelLink) painelLink.style.display = 'none';
-        if (adminLink) adminLink.style.display = 'none';
+        if (loginLink) {
+            loginLink.style.display = 'flex';
+            console.log('🚪 Link de login mostrado');
+        }
+        if (logoutLink) {
+            logoutLink.style.display = 'none';
+            console.log('🚪 Link de logout ocultado');
+        }
+        if (painelLink) {
+            painelLink.style.display = 'none';
+            console.log('📋 Link do painel ocultado');
+        }
+        if (adminLink) {
+            adminLink.style.display = 'none';
+            console.log('⚙️ Link admin ocultado');
+        }
     }
 }
 
@@ -385,13 +451,19 @@ function hideLoading(element) {
 }
 
 function logout() {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user_data');
-
+    console.log('🚪 Iniciando processo de logout');
+    
+    // Limpar todos os dados de autenticação
+    clearAuthenticationData();
+    
+    // Atualizar UI imediatamente
+    updateAuthenticationUI();
+    
     showToast('Logout realizado com sucesso', 'success');
 
     // Redirecionar para home após 1 segundo
     setTimeout(() => {
+        console.log('🏠 Redirecionando para home');
         window.location.href = '/';
     }, 1000);
 }
@@ -885,10 +957,35 @@ function createProductCard(product) {
 function setupGlobalEventListeners() {
     // Update auth UI on storage changes
     window.addEventListener('storage', function(e) {
+        console.log('💾 Storage mudou:', e.key);
         if (e.key === 'access_token' || e.key === 'user_data') {
+            console.log('🔄 Dados de autenticação mudaram, atualizando UI');
             updateAuthenticationUI();
         }
     });
+
+    // Verificar autenticação quando a página ganha foco
+    window.addEventListener('focus', function() {
+        console.log('👁️ Página ganhou foco, verificando autenticação');
+        checkAuthenticationStatus();
+    });
+
+    // Verificar autenticação quando a página se torna visível
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            console.log('👁️ Página se tornou visível, verificando autenticação');
+            checkAuthenticationStatus();
+        }
+    });
+
+    // Verificação periódica de autenticação (a cada 30 segundos)
+    setInterval(function() {
+        const token = localStorage.getItem('access_token');
+        if (token) {
+            console.log('⏰ Verificação periódica de autenticação');
+            checkAuthenticationStatus();
+        }
+    }, 30000); // 30 segundos
 
     // Smooth scroll for anchor links
     document.addEventListener('click', function(e) {

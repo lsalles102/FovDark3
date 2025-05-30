@@ -278,6 +278,40 @@
 
         <!-- Scripts -->
         <script src="/static/script.js" defer></script>
+        
+        <!-- Script para verificação de autenticação em todas as páginas -->
+        <script>
+            // Verificar autenticação quando a página carrega
+            window.addEventListener('load', function() {
+                console.log('📄 Página carregada, verificando autenticação');
+                
+                // Aguardar um pouco para garantir que o script principal foi carregado
+                setTimeout(function() {
+                    if (typeof checkAuthenticationStatus === 'function') {
+                        checkAuthenticationStatus();
+                    }
+                }, 100);
+            });
+
+            // Verificar se o usuário saiu da página por muito tempo
+            let pageHiddenTime = null;
+            
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    pageHiddenTime = Date.now();
+                } else {
+                    // Se a página foi oculta por mais de 5 minutos, verificar autenticação
+                    if (pageHiddenTime && (Date.now() - pageHiddenTime) > 300000) { // 5 minutos
+                        console.log('⏰ Página oculta por muito tempo, verificando autenticação');
+                        if (typeof checkAuthenticationStatus === 'function') {
+                            checkAuthenticationStatus();
+                        }
+                    }
+                    pageHiddenTime = null;
+                }
+            });
+        </script>
+        
         {% block scripts %}{% endblock %}
     </body>
 </html>
