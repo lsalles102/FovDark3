@@ -544,13 +544,22 @@
                 console.error('❌ Erro na resposta:', errorText);
                 
                 if (response.status === 404) {
-                    showToast('Produto não encontrado', 'error');
+                    showToast('Endpoint não encontrado', 'error');
                 } else if (response.status === 401) {
                     showToast('Sessão expirada. Faça login novamente.', 'error');
                     setTimeout(() => window.location.href = '/login', 1000);
                 } else {
                     showToast('Erro ao processar pagamento', 'error');
                 }
+                return;
+            }
+
+            // Verificar se a resposta é realmente JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const htmlResponse = await response.text();
+                console.error('❌ Resposta não é JSON:', htmlResponse.substring(0, 200));
+                showToast('Erro: Resposta inválida do servidor', 'error');
                 return;
             }
 

@@ -102,8 +102,8 @@ class CheckoutRequest(BaseModel):
     plano: str
     product_id: Optional[int] = None
 
-@router.post("/create-checkout")
-async def create_checkout(
+@router.post("/criar-checkout")
+async def criar_checkout(
     request: CheckoutRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
