@@ -51,10 +51,21 @@ PRODUCTS = {
 
 def get_domain():
     """Retorna o domínio base da aplicação"""
-    from railway_config import get_railway_domain, is_railway_environment
-
-    if is_railway_environment():
-        return get_railway_domain()
+    import os
+    
+    # Primeiro, tentar obter o domínio do Replit
+    replit_domains = os.getenv("REPLIT_DOMAINS")
+    if replit_domains:
+        # REPLIT_DOMAINS contém o domínio principal
+        return f"https://{replit_domains}"
+    
+    # Tentar Railway
+    try:
+        from railway_config import get_railway_domain, is_railway_environment
+        if is_railway_environment():
+            return get_railway_domain()
+    except ImportError:
+        pass
 
     # Fallback para desenvolvimento local
     return "http://localhost:5000"
@@ -92,6 +103,10 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
                 return {"error": f"Plano {plan_id} não encontrado"}
             product_info = PRODUCTS[plan_id]
 
+        # Validar preço mínimo (MercadoPago tem valor mínimo de R$ 0.50)
+        if product_info['price'] < 0.50:
+            return {"error": f"Valor mínimo é R$ 0,50. Valor informado: R$ {product_info['price']:.2f}"}
+
         domain_url = get_domain()
 
         preference_data = {
@@ -111,7 +126,7 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
             },
             "back_urls": {
                 "success": f"{domain_url}/success",
-                "failure": f"{domain_url}/cancelled",
+                "failure": f"{domain_url}/cancelled", 
                 "pending": f"{domain_url}/pending"
             },
             "auto_return": "approved",
@@ -140,6 +155,11 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
         print(f"💰 Produto: {product_info['name']} - R$ {product_info['price']}")
         print(f"🌐 Domínio configurado: {domain_url}")
         print(f"🔑 Token tipo: {'TESTE' if 'TEST' in MERCADOPAGO_ACCESS_TOKEN else 'PRODUÇÃO'}")
+        print(f"📋 URLs de retorno:")
+        print(f"  - Success: {domain_url}/success")
+        print(f"  - Failure: {domain_url}/cancelled")
+        print(f"  - Pending: {domain_url}/pending")
+        print(f"📧 Webhook URL: {domain_url}/api/webhook/mercadopago")
 
         try:
             preference_response = mp.preference().create(preference_data)
