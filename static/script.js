@@ -442,11 +442,21 @@
     }
 
     function displayProducts(products, container) {
+        console.log('🎨 Renderizando produtos:', products);
+        
         container.innerHTML = products.map(product => {
+            console.log('🔧 Processando produto:', product.id, product.name);
+            
             const features = product.features || [];
             const featuresHTML = features.map(feature => 
                 `<li><i class="fas fa-check"></i>${feature.trim()}</li>`
             ).join('');
+
+            // Garantir que o ID do produto seja válido
+            const productId = product.id || 0;
+            const productPrice = product.price || 0;
+            const productName = (product.name || 'Produto').replace(/'/g, "\\'");
+            const durationDays = product.duration_days || 30;
 
             return `
                 <div class="pricing-plan ${product.is_featured ? 'featured' : ''}">
@@ -455,8 +465,8 @@
                         <h3 class="plan-name">${product.name}</h3>
                         <div class="plan-price">
                             <span class="currency">R$</span>
-                            <span class="amount">${product.price.toFixed(2)}</span>
-                            <span class="period">/${product.duration_days} dias</span>
+                            <span class="amount">${productPrice.toFixed(2)}</span>
+                            <span class="period">/${durationDays} dias</span>
                         </div>
                     </div>
                     <div class="plan-description">
@@ -470,46 +480,95 @@
                             <li><i class="fas fa-check"></i>Suporte 24/7</li>
                         `}
                     </ul>
-                    <button class="plan-button" onclick="selectPlan('${product.id}', ${product.price}, '${product.name}', ${product.duration_days})">
+                    <button class="plan-button" onclick="selectPlan(${productId}, ${productPrice}, '${productName}', ${durationDays})" data-product-id="${productId}">
                         ESCOLHER PLANO
                     </button>
                 </div>
             `;
         }).join('');
+        
+        console.log('✅ Produtos renderizados com sucesso');
     }
 
     // ===== COMPRA =====
     window.selectPlan = async function(productId, productPrice, planName, durationDays) {
+        console.log('🔄 Iniciando processo de pagamento...');
+        console.log('📦 Product ID:', productId);
+        console.log('💰 Preço:', productPrice);
+        console.log('📋 Plano:', planName);
+        
         if (!isAuthenticated) {
             showToast('Faça login para comprar', 'warning');
             setTimeout(() => window.location.href = '/login', 1000);
             return;
         }
 
+        // Verificar se productId é válido
+        if (!productId || productId === 'undefined' || productId === undefined) {
+            console.error('❌ Product ID inválido:', productId);
+            showToast('Erro: Produto inválido', 'error');
+            return;
+        }
+
         try {
+            // Converter productId para número se for string
+            const numericProductId = parseInt(productId);
+            if (isNaN(numericProductId)) {
+                console.error('❌ Product ID não é um número válido:', productId);
+                showToast('Erro: ID do produto inválido', 'error');
+                return;
+            }
+
+            console.log('📤 Enviando requisição de checkout...');
+            
+            const requestBody = {
+                product_id: numericProductId,
+                plano: planName || 'Plano Padrão'
+            };
+            
+            console.log('📄 Body da requisição:', requestBody);
+            
             const response = await fetch('/api/criar-checkout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('access_token')}`
                 },
-                body: JSON.stringify({
-                    product_id: productId,
-                    plano: planName
-                })
+                body: JSON.stringify(requestBody)
             });
 
-            const data = await response.json();
+            console.log('📡 Status da resposta:', response.status);
 
-            if (response.ok && data.init_point) {
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ Erro na resposta:', errorText);
+                
+                if (response.status === 404) {
+                    showToast('Produto não encontrado', 'error');
+                } else if (response.status === 401) {
+                    showToast('Sessão expirada. Faça login novamente.', 'error');
+                    setTimeout(() => window.location.href = '/login', 1000);
+                } else {
+                    showToast('Erro ao processar pagamento', 'error');
+                }
+                return;
+            }
+
+            const data = await response.json();
+            console.log('📥 Resposta do servidor:', data);
+
+            if (data.success && data.init_point) {
+                console.log('✅ Redirecionando para pagamento...');
+                showToast('Redirecionando para pagamento...', 'info');
                 window.location.href = data.init_point;
             } else {
+                console.error('❌ Resposta inválida:', data);
                 showToast(data.detail || 'Erro ao processar pagamento', 'error');
             }
 
         } catch (error) {
-            console.error('❌ Erro no checkout:', error);
-            showToast('Erro de conexão', 'error');
+            console.error('💥 Erro crítico:', error);
+            showToast('Erro de conexão com o servidor', 'error');
         }
     };
 

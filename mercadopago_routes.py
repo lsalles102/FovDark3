@@ -1,3 +1,83 @@
+
+from fastapi import APIRouter, Depends, HTTPException, Request
+from sqlalchemy.orm import Session
+from pydantic import BaseModel
+from database import get_db
+from models import User, Product, Payment
+from auth import get_current_user
+from mercadopago_integration import create_payment_preference
+import uuid
+from datetime import datetime
+
+router = APIRouter()
+
+class CheckoutRequest(BaseModel):
+    product_id: int
+    plano: str
+
+@router.post("/criar-checkout")
+async def criar_checkout(
+    request: CheckoutRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        print(f"🛒 Criando checkout para produto ID: {request.product_id}")
+        
+        # Verificar se o produto existe
+        product = db.query(Product).filter(Product.id == request.product_id).first()
+        if not product:
+            print(f"❌ Produto {request.product_id} não encontrado")
+            raise HTTPException(status_code=404, detail="Produto não encontrado")
+        
+        print(f"✅ Produto encontrado: {product.name} - R$ {product.price}")
+        
+        # Criar preferência de pagamento
+        preference_data = create_payment_preference(
+            product_id=product.id,
+            user_id=current_user.id,
+            product_name=product.name,
+            price=float(product.price),
+            duration_days=product.duration_days
+        )
+        
+        if not preference_data or 'init_point' not in preference_data:
+            print("❌ Erro ao criar preferência de pagamento")
+            raise HTTPException(status_code=500, detail="Erro ao criar preferência de pagamento")
+        
+        # Criar registro de pagamento pendente
+        payment = Payment(
+            user_id=current_user.id,
+            product_id=product.id,
+            valor=float(product.price),
+            status="pending",
+            plano=request.plano,
+            gateway_id=preference_data.get('id'),
+            data_pagamento=datetime.utcnow()
+        )
+        
+        db.add(payment)
+        db.commit()
+        db.refresh(payment)
+        
+        print(f"✅ Checkout criado com sucesso - ID: {payment.id}")
+        
+        return {
+            "success": True,
+            "init_point": preference_data['init_point'],
+            "preference_id": preference_data['id'],
+            "payment_id": payment.id
+        }
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"❌ Erro ao criar checkout: {e}")
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+
 from fastapi import APIRouter, Depends, HTTPException, Request, Form
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
