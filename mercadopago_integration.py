@@ -88,7 +88,14 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
             db.close()
 
             if not produto_db:
+                print(f"❌ Produto ID {product_id} não encontrado no banco")
                 return {"error": "Produto não encontrado"}
+
+            print(f"✅ Produto encontrado no banco:")
+            print(f"   - Nome: {produto_db.name}")
+            print(f"   - Dias configurados: {produto_db.duration_days}")
+            print(f"   - Preço: R$ {produto_db.price}")
+            print(f"   - ID: {produto_db.id}")
 
             product_info = {
                 'name': produto_db.name,
@@ -97,6 +104,8 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
                 'days': produto_db.duration_days,
                 'currency': 'BRL'
             }
+            
+            print(f"🔍 Product info criado com {product_info['days']} dias")
         else:
             # Usar produtos legados
             if plan_id not in PRODUCTS:
