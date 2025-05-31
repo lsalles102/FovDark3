@@ -160,12 +160,18 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
         print(f"  - Failure: {domain_url}/cancelled")
         print(f"  - Pending: {domain_url}/pending")
         print(f"📧 Webhook URL: {domain_url}/api/webhook/mercadopago")
-        print(f"📋 Metadados enviados:")
+        print(f"📋 Metadados que serão enviados:")
         print(f"  - Plan ID: {plan_id}")
         print(f"  - Product ID: {product_id}")
-        print(f"  - Days: {product_info['days']}")
+        print(f"  - Days: {product_info['days']} (valor obtido do produto)")
         print(f"  - User ID: {user_id}")
         print(f"  - User Email: {user_email}")
+        print(f"  - Environment: {'production' if 'TEST' not in MERCADOPAGO_ACCESS_TOKEN else 'test'}")
+        
+        print(f"🔍 Dados completos da preferência:")
+        print(f"  - Item: {product_info['name']} - R$ {product_info['price']}")
+        print(f"  - Descrição: {product_info['description']}")
+        print(f"  - Duração configurada: {product_info['days']} dias")
 
         try:
             preference_response = mp.preference().create(preference_data)
@@ -259,36 +265,60 @@ def handle_payment_notification(payment_data):
             preference_info = mp.preference().get(preference_id)
             if preference_info["status"] == 200:
                 metadata = preference_info["response"].get("metadata", {})
-                days_to_add = int(metadata.get("days", 1))
                 plan_name = metadata.get("plan_id", "Plano Padrão")
                 product_id = metadata.get("product_id")
                 if product_id and product_id.isdigit():
                     product_id = int(product_id)
                 else:
                     product_id = None
-        
-        # Se não conseguir obter dos metadados, tentar buscar diretamente do produto
-        if product_id and days_to_add == 1:
+
+        print(f"🔍 Debug - Preference ID: {preference_id}")
+        print(f"🔍 Debug - Product ID obtido dos metadados: {product_id}")
+        print(f"🔍 Debug - Plan Name: {plan_name}")
+
+        # SEMPRE buscar os dias do produto no banco de dados primeiro
+        if product_id:
             try:
                 from models import Product
                 produto_db = db.query(Product).filter(Product.id == product_id).first()
                 if produto_db:
                     days_to_add = produto_db.duration_days
                     plan_name = produto_db.name
-                    print(f"🔍 Dias obtidos do produto no banco: {days_to_add}")
+                    print(f"✅ Dias obtidos do produto no banco (ID {product_id}): {days_to_add}")
+                else:
+                    print(f"❌ Produto ID {product_id} não encontrado no banco")
             except Exception as e:
                 print(f"⚠️ Erro ao buscar produto do banco: {e}")
         
-        # Fallback para planos legados
+        # Fallback para planos legados APENAS se não conseguiu obter do banco
         if days_to_add == 1 and plan_name in PRODUCTS:
             days_to_add = PRODUCTS[plan_name]["days"]
-            print(f"🔍 Dias obtidos dos produtos legados: {days_to_add}")
+            print(f"🔄 Fallback - Dias obtidos dos produtos legados: {days_to_add}")
+        
+        # Se ainda não conseguiu obter dias válidos, usar o valor dos metadados como último recurso
+        if days_to_add == 1 and preference_id:
+            try:
+                metadata_days = int(metadata.get("days", 1))
+                if metadata_days > 1:
+                    days_to_add = metadata_days
+                    print(f"🔄 Usando dias dos metadados: {days_to_add}")
+            except:
+                pass
 
-        print(f"📅 Adicionando {days_to_add} dias ao usuário")
-        print(f"🔍 Debug - Preference ID: {preference_id}")
-        print(f"🔍 Debug - Product ID: {product_id}")
-        print(f"🔍 Debug - Plan Name: {plan_name}")
-        print(f"🔍 Debug - Metadados obtidos: {metadata if 'metadata' in locals() else 'Nenhum'}")
+        print(f"📅 RESULTADO FINAL: Adicionando {days_to_add} dias ao usuário")
+        print(f"🏷️ Nome do plano: {plan_name}")
+        
+        # Validação final para garantir que não adicionamos apenas 1 dia por erro
+        if days_to_add <= 1:
+            print(f"⚠️ AVISO: Apenas {days_to_add} dia(s) sendo adicionado(s). Isso pode ser um erro!")
+            print(f"🔍 Verificando se é o produto de teste...")
+        
+        # Log final de debug
+        print(f"🔍 Debug final:")
+        print(f"  - Product ID final: {product_id}")
+        print(f"  - Dias finais: {days_to_add}")
+        print(f"  - Nome do plano final: {plan_name}")
+        print(f"  - Metadados: {metadata if 'metadata' in locals() else 'Nenhum'}")
 
         # Criar registro de pagamento
         payment = Payment(
