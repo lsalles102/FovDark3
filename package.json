@@ -1,0 +1,23 @@
+{
+  "name": "fovdark3",
+  "version": "1.0.0",
+  "description": "Started building your app\r Crie um projeto full-stack chamado \"FovDark\" com FastAPI, PostgreSQL e frontend embutido.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lsalles102/FovDark3.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lsalles102/FovDark3/issues"
+  },
+  "homepage": "https://github.com/lsalles102/FovDark3#readme",
+  "dependencies": {
+    "@mercadopago/sdk-js": "^0.0.3"
+  }
+}
