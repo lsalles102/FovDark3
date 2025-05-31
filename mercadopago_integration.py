@@ -160,6 +160,12 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
         print(f"  - Failure: {domain_url}/cancelled")
         print(f"  - Pending: {domain_url}/pending")
         print(f"📧 Webhook URL: {domain_url}/api/webhook/mercadopago")
+        print(f"📋 Metadados enviados:")
+        print(f"  - Plan ID: {plan_id}")
+        print(f"  - Product ID: {product_id}")
+        print(f"  - Days: {product_info['days']}")
+        print(f"  - User ID: {user_id}")
+        print(f"  - User Email: {user_email}")
 
         try:
             preference_response = mp.preference().create(preference_data)
@@ -245,7 +251,7 @@ def handle_payment_notification(payment_data):
 
         # Obter metadados da preferência
         preference_id = payment_details.get("preference_id")
-        days_to_add = 30  # Padrão
+        days_to_add = 1  # Padrão mínimo
         plan_name = "Plano Padrão"
         product_id = None
 
@@ -253,15 +259,36 @@ def handle_payment_notification(payment_data):
             preference_info = mp.preference().get(preference_id)
             if preference_info["status"] == 200:
                 metadata = preference_info["response"].get("metadata", {})
-                days_to_add = int(metadata.get("days", 30))
+                days_to_add = int(metadata.get("days", 1))
                 plan_name = metadata.get("plan_id", "Plano Padrão")
                 product_id = metadata.get("product_id")
                 if product_id and product_id.isdigit():
                     product_id = int(product_id)
                 else:
                     product_id = None
+        
+        # Se não conseguir obter dos metadados, tentar buscar diretamente do produto
+        if product_id and days_to_add == 1:
+            try:
+                from models import Product
+                produto_db = db.query(Product).filter(Product.id == product_id).first()
+                if produto_db:
+                    days_to_add = produto_db.duration_days
+                    plan_name = produto_db.name
+                    print(f"🔍 Dias obtidos do produto no banco: {days_to_add}")
+            except Exception as e:
+                print(f"⚠️ Erro ao buscar produto do banco: {e}")
+        
+        # Fallback para planos legados
+        if days_to_add == 1 and plan_name in PRODUCTS:
+            days_to_add = PRODUCTS[plan_name]["days"]
+            print(f"🔍 Dias obtidos dos produtos legados: {days_to_add}")
 
         print(f"📅 Adicionando {days_to_add} dias ao usuário")
+        print(f"🔍 Debug - Preference ID: {preference_id}")
+        print(f"🔍 Debug - Product ID: {product_id}")
+        print(f"🔍 Debug - Plan Name: {plan_name}")
+        print(f"🔍 Debug - Metadados obtidos: {metadata if 'metadata' in locals() else 'Nenhum'}")
 
         # Criar registro de pagamento
         payment = Payment(
