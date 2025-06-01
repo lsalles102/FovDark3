@@ -344,19 +344,17 @@
         </div>
     </div>
 </section>
+{% endblock %}
 
 {% block scripts %}
-<!-- SDK MercadoPago.js V2 -->
-<script src="https://sdk.mercadopago.com/js/v2"></script>
-
 <script>
-  const mp = new MercadoPago("APP_USR-d3554b5b-eeae-4495-88e3-93fa0fa9e81e", {
-    locale: "pt-BR",
+  // Inicializando o SDK Mercado Pago com a sua Public Key
+  const mp = new MercadoPago('SUA_PUBLIC_KEY', {
+    locale: 'pt-BR',
   });
-  console.log("Mercado Pago SDK carregado com sucesso:", mp);
-</script>
 
-<script>
-// Seu código JavaScript existente aqui...
+  console.log("Mercado Pago SDK carregado com sucesso:", mp);
+
+  // Adicione a lógica de pagamento ou qualquer outra interação com o Mercado Pago aqui
 </script>
 {% endblock %}
