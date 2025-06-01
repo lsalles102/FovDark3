@@ -1000,21 +1000,88 @@ async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
+@app.get("/api/test-mercadopago")
+async def test_mercadopago():
+    """Testar configuração do MercadoPago"""
+    try:
+        from mercadopago_integration import MERCADOPAGO_ACCESS_TOKEN, mp, get_domain
+        
+        if not MERCADOPAGO_ACCESS_TOKEN:
+            return {
+                "status": "error",
+                "message": "Token do MercadoPago não configurado",
+                "solution": "Configure MERCADOPAGO_ACCESS_TOKEN nos Secrets"
+            }
+        
+        if not mp:
+            return {
+                "status": "error", 
+                "message": "SDK do MercadoPago não inicializado",
+                "solution": "Verifique se o token está correto"
+            }
+        
+        # Testar criação de uma preferência simples
+        test_preference = {
+            "items": [{
+                "title": "Teste",
+                "quantity": 1,
+                "unit_price": 1.00,
+                "currency_id": "BRL"
+            }],
+            "back_urls": {
+                "success": f"{get_domain()}/success",
+                "failure": f"{get_domain()}/cancelled",
+                "pending": f"{get_domain()}/pending"
+            }
+        }
+        
+        try:
+            test_response = mp.preference().create(test_preference)
+            if test_response["status"] == 201:
+                return {
+                    "status": "success",
+                    "message": "MercadoPago configurado corretamente",
+                    "environment": "TEST" if "TEST" in MERCADOPAGO_ACCESS_TOKEN else "PRODUCTION",
+                    "domain": get_domain()
+                }
+            else:
+                return {
+                    "status": "error",
+                    "message": f"Erro na API: Status {test_response['status']}",
+                    "details": test_response.get("response", {})
+                }
+        except Exception as api_error:
+            return {
+                "status": "error",
+                "message": f"Erro na comunicação com API: {str(api_error)}",
+                "solution": "Verifique se o token está correto e se não expirou"
+            }
+            
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Erro interno: {str(e)}"
+        }
+
 @app.get("/api/debug/payment-config")
 async def debug_payment_config():
     """Debug da configuração de pagamentos"""
     try:
         import os
-        from mercadopago_integration import MERCADOPAGO_ACCESS_TOKEN, mp
+        from mercadopago_integration import MERCADOPAGO_ACCESS_TOKEN, mp, get_domain
         
         config_info = {
             "mercadopago_configured": bool(MERCADOPAGO_ACCESS_TOKEN),
             "token_type": "TEST" if MERCADOPAGO_ACCESS_TOKEN and "TEST" in MERCADOPAGO_ACCESS_TOKEN else "PRODUCTION" if MERCADOPAGO_ACCESS_TOKEN else "NONE",
+            "token_prefix": MERCADOPAGO_ACCESS_TOKEN[:20] + "..." if MERCADOPAGO_ACCESS_TOKEN else "NONE",
             "sdk_initialized": bool(mp),
+            "domain": get_domain(),
+            "webhook_url": f"{get_domain()}/api/webhook/mercadopago",
             "environment_vars": {
                 "MERCADOPAGO_ACCESS_TOKEN": "CONFIGURADO" if MERCADOPAGO_ACCESS_TOKEN else "NÃO CONFIGURADO",
                 "PORT": os.getenv("PORT", "5000"),
-                "DATABASE_URL": "CONFIGURADO" if os.getenv("DATABASE_URL") else "NÃO CONFIGURADO"
+                "DATABASE_URL": "CONFIGURADO" if os.getenv("DATABASE_URL") else "NÃO CONFIGURADO",
+                "CUSTOM_DOMAIN": os.getenv("CUSTOM_DOMAIN", "NÃO CONFIGURADO")
             }
         }
         

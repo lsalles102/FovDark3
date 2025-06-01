@@ -78,12 +78,27 @@ def get_domain():
 def create_payment_preference(plan_id, user_id, user_email, product_id=None):
     """Cria uma preferência de pagamento no Mercado Pago"""
     try:
+        print(f"🔍 DEBUG - Iniciando criação de preferência:")
+        print(f"  - Plan ID: {plan_id}")
+        print(f"  - User ID: {user_id}")
+        print(f"  - User Email: {user_email}")
+        print(f"  - Product ID: {product_id}")
+        
         if not mp:
             print("❌ MercadoPago SDK não inicializado")
             print(f"❌ Token configurado: {bool(MERCADOPAGO_ACCESS_TOKEN)}")
             return {
                 "error": "Integração do Mercado Pago não configurada. Configure o MERCADOPAGO_ACCESS_TOKEN nas variáveis de ambiente."
             }
+        
+        # Validações básicas
+        if not user_email or "@" not in user_email:
+            print(f"❌ Email inválido: {user_email}")
+            return {"error": "Email do usuário inválido"}
+        
+        if not user_id or user_id <= 0:
+            print(f"❌ User ID inválido: {user_id}")
+            return {"error": "ID do usuário inválido"}
 
         # Se product_id for fornecido, buscar produto do banco
         if product_id:
@@ -117,25 +132,40 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
                 return {"error": f"Plano {plan_id} não encontrado"}
             product_info = PRODUCTS[plan_id]
 
-        # Validar preço mínimo (MercadoPago tem valor mínimo de R$ 0.50)
-        if product_info['price'] < 0.50:
-            return {"error": f"Valor mínimo é R$ 0,50. Valor informado: R$ {product_info['price']:.2f}"}
+        # Validações de preço e produto
+        price = float(product_info['price'])
+        if price < 0.50:
+            print(f"❌ Preço muito baixo: R$ {price:.2f}")
+            return {"error": f"Valor mínimo é R$ 0,50. Valor informado: R$ {price:.2f}"}
+        
+        if price > 50000:
+            print(f"❌ Preço muito alto: R$ {price:.2f}")
+            return {"error": f"Valor muito alto. Máximo permitido: R$ 50.000,00"}
+        
+        if product_info['days'] <= 0:
+            print(f"❌ Duração inválida: {product_info['days']} dias")
+            return {"error": "Duração do produto deve ser maior que zero"}
 
         domain_url = get_domain()
+        print(f"🌐 Domínio configurado: {domain_url}")
 
+        # Sanitizar dados da preferência
+        item_title = str(product_info['name'])[:256]  # Limitar título
+        item_description = str(product_info['description'])[:600]  # Limitar descrição
+        
         preference_data = {
             "items": [
                 {
-                    "title": product_info['name'],
-                    "description": product_info['description'],
+                    "title": item_title,
+                    "description": item_description,
                     "quantity": 1,
-                    "currency_id": product_info['currency'],
-                    "unit_price": product_info['price']
+                    "currency_id": "BRL",  # Fixar moeda
+                    "unit_price": round(float(product_info['price']), 2)  # Arredondar preço
                 }
             ],
             "payer": {
-                "email": user_email,
-                "name": user_email.split("@")[0],
+                "email": user_email.lower().strip(),
+                "name": user_email.split("@")[0][:64],  # Limitar nome
                 "surname": "Cliente"
             },
             "back_urls": {
@@ -187,13 +217,33 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
         print(f"  - Descrição: {product_info['description']}")
         print(f"  - Duração configurada: {product_info['days']} dias")
 
+        print(f"📋 Dados da preferência que será enviada:")
+        print(f"  - Título: {item_title}")
+        print(f"  - Preço: R$ {product_info['price']:.2f}")
+        print(f"  - Email: {user_email}")
+        print(f"  - Domínio: {domain_url}")
+        
         try:
             preference_response = mp.preference().create(preference_data)
             print(f"📊 Status da resposta: {preference_response.get('status')}")
-            print(f"📊 Resposta: {preference_response}")
+            
+            if preference_response.get("status") not in [200, 201]:
+                print(f"❌ Resposta de erro da API: {preference_response}")
+                error_message = "Erro desconhecido"
+                
+                if "response" in preference_response:
+                    response_data = preference_response["response"]
+                    if "message" in response_data:
+                        error_message = response_data["message"]
+                    elif "cause" in response_data:
+                        error_message = str(response_data["cause"])
+                
+                return {"error": f"Erro do MercadoPago: {error_message}"}
+                
         except Exception as api_error:
-            print(f"❌ Erro na API do MercadoPago: {api_error}")
-            return {"error": f"Erro na API do MercadoPago: {str(api_error)}"}
+            print(f"❌ Exceção na API do MercadoPago: {api_error}")
+            print(f"❌ Tipo do erro: {type(api_error)}")
+            return {"error": f"Erro de comunicação com MercadoPago: {str(api_error)}"}
 
         if preference_response["status"] == 201:
             print("✅ Preferência criada com sucesso no Mercado Pago")
@@ -203,7 +253,7 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
             print(f"  - Sandbox Init Point: {response_data.get('sandbox_init_point')}")
             return response_data
         else:
-            print(f"❌ Erro ao criar preferência: {preference_response}")
+            print(f"❌ Status inesperado: {preference_response}")
             return {'error': 'Erro ao criar preferência de pagamento'}
 
     except Exception as e:

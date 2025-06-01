@@ -443,10 +443,10 @@
 
     function displayProducts(products, container) {
         console.log('🎨 Renderizando produtos:', products);
-        
+
         container.innerHTML = products.map(product => {
             console.log('🔧 Processando produto:', product.id, product.name);
-            
+
             const features = product.features || [];
             const featuresHTML = features.map(feature => 
                 `<li><i class="fas fa-check"></i>${feature.trim()}</li>`
@@ -486,7 +486,7 @@
                 </div>
             `;
         }).join('');
-        
+
         console.log('✅ Produtos renderizados com sucesso');
     }
 
@@ -496,7 +496,7 @@
         console.log('📦 Product ID:', productId);
         console.log('💰 Preço:', productPrice);
         console.log('📋 Plano:', planName);
-        
+
         if (!isAuthenticated) {
             showToast('Faça login para comprar', 'warning');
             setTimeout(() => window.location.href = '/login', 1000);
@@ -520,14 +520,19 @@
             }
 
             console.log('📤 Enviando requisição de checkout...');
-            
+
             const requestBody = {
                 product_id: numericProductId,
                 plano: planName || 'Plano Padrão'
             };
-            
+
             console.log('📄 Body da requisição:', requestBody);
-            
+
+            console.log('🔄 Enviando dados para checkout:', {
+                plano: planName || 'Plano Padrão',
+                product_id: numericProductId
+            });
+
             const response = await fetch('/api/criar-checkout', {
                 method: 'POST',
                 headers: {
@@ -537,20 +542,12 @@
                 body: JSON.stringify(requestBody)
             });
 
-            console.log('📡 Status da resposta:', response.status);
+            console.log('📊 Status da resposta:', response.status);
 
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error('❌ Erro na resposta:', errorText);
-                
-                if (response.status === 404) {
-                    showToast('Endpoint não encontrado', 'error');
-                } else if (response.status === 401) {
-                    showToast('Sessão expirada. Faça login novamente.', 'error');
-                    setTimeout(() => window.location.href = '/login', 1000);
-                } else {
-                    showToast('Erro ao processar pagamento', 'error');
-                }
+                const errorData = await response.json();
+                console.error('❌ Erro na resposta:', errorData);
+                showToast(errorData.detail || 'Erro ao criar checkout', 'error');
                 return;
             }
 
@@ -564,7 +561,7 @@
             }
 
             const data = await response.json();
-            console.log('📥 Resposta do servidor:', data);
+            console.log('✅ Dados do checkout recebidos:', data);
 
             if (data.success && data.init_point) {
                 console.log('✅ Redirecionando para pagamento...');
