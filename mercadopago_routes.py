@@ -130,42 +130,89 @@ async def criar_checkout(
 async def mercadopago_webhook(request: Request, db: Session = Depends(get_db)):
     """Webhook para receber notificações do Mercado Pago"""
     try:
+        print(f"🔔 WEBHOOK MERCADOPAGO RECEBIDO")
+        print(f"=" * 50)
+        
         # Obter dados do webhook
         body = await request.body()
-
-        # Log do webhook recebido
-        print(f"🔔 Webhook recebido do Mercado Pago")
+        print(f"📨 Body recebido: {body}")
         print(f"📋 Headers: {dict(request.headers)}")
+        print(f"🌐 URL: {request.url}")
+        print(f"🔧 Método: {request.method}")
 
-        # Tentar decodificar como JSON
+        # Tentar decodificar como JSON primeiro
+        data = {}
         try:
-            data = json.loads(body) if body else {}
-        except json.JSONDecodeError:
+            if body:
+                body_str = body.decode('utf-8')
+                print(f"📝 Body decodificado: {body_str}")
+                data = json.loads(body_str)
+                print(f"✅ JSON decodificado com sucesso")
+            else:
+                print(f"⚠️ Body vazio, tentando form data")
+        except json.JSONDecodeError as json_error:
+            print(f"❌ Erro ao decodificar JSON: {json_error}")
             # Se não for JSON válido, tentar como form data
-            form_data = await request.form()
-            data = dict(form_data)
+            try:
+                form_data = await request.form()
+                data = dict(form_data)
+                print(f"📋 Form data obtido: {data}")
+            except Exception as form_error:
+                print(f"❌ Erro ao obter form data: {form_error}")
+                data = {}
 
-        print(f"📊 Dados recebidos: {data}")
+        print(f"📊 Dados finais processados: {data}")
+        print(f"🔍 Tipo de notificação: {data.get('type', 'N/A')}")
 
         # Verificar se é uma notificação de pagamento
-        if data.get("type") == "payment":
-            success, message = handle_payment_notification(data)
-
-            if success:
-                print(f"✅ Webhook processado: {message}")
-                return {"status": "ok", "message": message}
-            else:
-                print(f"❌ Erro no webhook: {message}")
-                return {"status": "error", "message": message}
+        notification_type = data.get("type")
+        if notification_type == "payment":
+            print(f"💳 Processando notificação de pagamento...")
+            
+            # Verificar se temos o ID do pagamento
+            payment_id = data.get("data", {}).get("id") if isinstance(data.get("data"), dict) else data.get("id")
+            print(f"🆔 Payment ID detectado: {payment_id}")
+            
+            if not payment_id:
+                print(f"❌ Payment ID não encontrado nos dados")
+                print(f"🔍 Estrutura dos dados: {data}")
+                return {"status": "error", "message": "Payment ID não encontrado"}
+            
+            try:
+                success, message = handle_payment_notification(data)
+                
+                if success:
+                    print(f"✅ WEBHOOK PROCESSADO COM SUCESSO: {message}")
+                    return {"status": "ok", "message": message}
+                else:
+                    print(f"❌ ERRO NO PROCESSAMENTO DO WEBHOOK: {message}")
+                    return {"status": "error", "message": message}
+                    
+            except Exception as process_error:
+                print(f"💥 Exceção durante processamento: {process_error}")
+                import traceback
+                traceback.print_exc()
+                return {"status": "error", "message": f"Erro no processamento: {str(process_error)}"}
+                
+        elif notification_type == "merchant_order":
+            print(f"📦 Notificação de merchant_order recebida (ignorando)")
+            return {"status": "ok", "message": "Merchant order notification received"}
+        elif notification_type == "plan":
+            print(f"📋 Notificação de plan recebida (ignorando)")
+            return {"status": "ok", "message": "Plan notification received"}
+        elif notification_type == "subscription":
+            print(f"🔄 Notificação de subscription recebida (ignorando)")
+            return {"status": "ok", "message": "Subscription notification received"}
         else:
-            print(f"ℹ️ Tipo de notificação ignorado: {data.get('type', 'unknown')}")
-            return {"status": "ok", "message": "Tipo de notificação não processado"}
+            print(f"ℹ️ Tipo de notificação desconhecido ou ignorado: {notification_type}")
+            print(f"📋 Dados completos: {data}")
+            return {"status": "ok", "message": f"Tipo de notificação '{notification_type}' não processado"}
 
     except Exception as e:
-        print(f"💥 Erro crítico no webhook: {str(e)}")
+        print(f"💥 ERRO CRÍTICO NO WEBHOOK MERCADOPAGO: {str(e)}")
         import traceback
         traceback.print_exc()
-        return {"status": "error", "message": str(e)}
+        return {"status": "error", "message": f"Erro crítico: {str(e)}"}
 
 @router.get("/payment/status/{payment_id}")
 async def check_payment_status(
@@ -204,6 +251,99 @@ async def check_payment_status(
 async def get_available_plans():
     """Retorna os planos disponíveis"""
     return PRODUCTS
+
+@router.post("/test-webhook/{payment_id}")
+async def test_webhook_processing(
+    payment_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Endpoint para testar processamento de webhook com payment_id real"""
+    try:
+        print(f"🧪 TESTE DE WEBHOOK - Payment ID: {payment_id}")
+        
+        # Simular dados de webhook do MercadoPago
+        test_webhook_data = {
+            "type": "payment",
+            "data": {
+                "id": payment_id
+            }
+        }
+        
+        print(f"📊 Dados de teste: {test_webhook_data}")
+        
+        # Processar usando a função real
+        success, message = handle_payment_notification(test_webhook_data)
+        
+        if success:
+            return {
+                "success": True,
+                "message": f"Teste de webhook bem-sucedido: {message}",
+                "payment_id": payment_id
+            }
+        else:
+            return {
+                "success": False,
+                "message": f"Erro no teste de webhook: {message}",
+                "payment_id": payment_id
+            }
+            
+    except Exception as e:
+        print(f"❌ Erro no teste de webhook: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erro no teste: {str(e)}")
+
+@router.get("/debug/payment/{payment_id}")
+async def debug_payment_info(
+    payment_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Debug de informações de pagamento do MercadoPago"""
+    try:
+        from mercadopago_integration import mp
+        
+        if not mp:
+            raise HTTPException(status_code=500, detail="MercadoPago não configurado")
+        
+        # Buscar informações do pagamento
+        payment_info = mp.payment().get(payment_id)
+        
+        if payment_info["status"] != 200:
+            raise HTTPException(status_code=400, detail=f"Erro ao buscar pagamento: {payment_info}")
+        
+        payment_details = payment_info["response"]
+        
+        # Buscar informações da preferência se disponível
+        preference_info = None
+        preference_id = payment_details.get("preference_id")
+        if preference_id:
+            pref_response = mp.preference().get(preference_id)
+            if pref_response["status"] == 200:
+                preference_info = pref_response["response"]
+        
+        # Buscar pagamento no banco local
+        local_payment = db.query(Payment).filter(
+            Payment.gateway_id == payment_id
+        ).first()
+        
+        return {
+            "payment_details": payment_details,
+            "preference_info": preference_info,
+            "local_payment": {
+                "id": local_payment.id if local_payment else None,
+                "user_id": local_payment.user_id if local_payment else None,
+                "product_id": local_payment.product_id if local_payment else None,
+                "status": local_payment.status if local_payment else None,
+                "plano": local_payment.plano if local_payment else None,
+                "valor": local_payment.valor if local_payment else None,
+            } if local_payment else None
+        }
+        
+    except Exception as e:
+        print(f"❌ Erro no debug: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/test-payment/{plan_id}")
 async def test_payment_activation(

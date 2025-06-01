@@ -163,6 +163,21 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
         item_title = str(product_info['name'])[:256]  # Limitar título
         item_description = str(product_info['description'])[:600]  # Limitar descrição
 
+        # Criar referência externa mais robusta
+        external_ref = f"user_{user_id}_product_{product_id or plan_id}"
+        
+        # Criar metadados completos
+        metadata = {
+            "plan_id": str(plan_id),
+            "product_id": str(product_id) if product_id else "",
+            "days": str(product_info['days']),
+            "user_id": str(user_id),
+            "user_email": user_email,
+            "environment": "production" if "TEST" not in MERCADOPAGO_ACCESS_TOKEN else "test",
+            "created_at": datetime.utcnow().isoformat(),
+            "domain": domain_url
+        }
+        
         preference_data = {
             "items": [
                 {
@@ -184,15 +199,8 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
                 "pending": f"{domain_url}/pending"
             },
             "auto_return": "approved",
-            "external_reference": f"user_{user_id}_product_{product_id or plan_id}",
-            "metadata": {
-                "plan_id": plan_id,
-                "product_id": str(product_id) if product_id else "",
-                "days": str(product_info['days']),
-                "user_id": str(user_id),
-                "user_email": user_email,
-                "environment": "production" if "TEST" not in MERCADOPAGO_ACCESS_TOKEN else "test"
-            },
+            "external_reference": external_ref,
+            "metadata": metadata,
             "notification_url": f"{domain_url}/api/webhook/mercadopago",
             "statement_descriptor": "FOVDARK",
             "payment_methods": {
@@ -204,6 +212,15 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
             "expiration_date_from": datetime.utcnow().isoformat(),
             "expiration_date_to": (datetime.utcnow() + timedelta(hours=24)).isoformat()
         }
+        
+        print(f"📋 DADOS DA PREFERÊNCIA CRIADA:")
+        print(f"   - External Reference: {external_ref}")
+        print(f"   - Metadados: {metadata}")
+        print(f"   - Webhook URL: {domain_url}/api/webhook/mercadopago")
+        print(f"   - Item: {item_title} - R$ {product_info['price']}")
+        print(f"   - Dias configurados: {product_info['days']}")
+        print(f"   - Product ID: {product_id}")
+        print(f"   - Plan ID: {plan_id}")
 
         print(f"🔄 Criando preferência no Mercado Pago para usuário {user_id}")
         print(f"💰 Produto: {product_info['name']} - R$ {product_info['price']}")
@@ -281,155 +298,239 @@ def handle_payment_notification(payment_data):
         # Obter dados do pagamento
         payment_id = payment_data.get("data", {}).get("id")
         if not payment_id:
+            print("❌ ID do pagamento não encontrado na notificação")
             return False, "ID do pagamento não encontrado"
 
         print(f"💳 Processando pagamento ID: {payment_id}")
 
         # Buscar informações do pagamento no Mercado Pago
-        payment_info = mp.payment().get(payment_id)
+        try:
+            payment_info = mp.payment().get(payment_id)
+        except Exception as api_error:
+            print(f"❌ Erro na API do MercadoPago: {api_error}")
+            return False, f"Erro na API: {str(api_error)}"
 
         if payment_info["status"] != 200:
             print(f"❌ Erro ao buscar pagamento: {payment_info}")
             return False, "Erro ao buscar informações do pagamento"
 
         payment_details = payment_info["response"]
-        print(f"📊 Status do pagamento: {payment_details['status']}")
+        print(f"📊 Status do pagamento recebido: {payment_details['status']}")
+        print(f"💰 Valor do pagamento: R$ {payment_details.get('transaction_amount', 0)}")
 
         # Verificar se o pagamento foi aprovado
         if payment_details["status"] != "approved":
             print(f"⏳ Pagamento ainda não aprovado: {payment_details['status']}")
+            # Atualizar status se existe pagamento pendente
+            db = next(get_db())
+            try:
+                pending_payment = db.query(Payment).filter(
+                    Payment.gateway_id == str(payment_id)
+                ).first()
+                if pending_payment:
+                    pending_payment.status = payment_details["status"]
+                    db.commit()
+                    print(f"🔄 Status do pagamento atualizado para: {payment_details['status']}")
+            except Exception as e:
+                print(f"⚠️ Erro ao atualizar status pendente: {e}")
+            finally:
+                db.close()
+            
             return True, f"Pagamento com status: {payment_details['status']}"
 
         # Obter dados do usuário da referência externa
         external_reference = payment_details.get("external_reference", "")
+        print(f"🔍 Referência externa: {external_reference}")
+        
         if not external_reference:
+            print("❌ Referência externa não encontrada")
             return False, "Referência externa não encontrada"
 
-        # Extrair user_id da referência
+        # Extrair user_id e product_id da referência
         try:
-            user_id = int(external_reference.split("_")[1])
-        except (IndexError, ValueError):
+            # Formato: user_{user_id}_product_{product_id} ou user_{user_id}_product_{plan_id}
+            parts = external_reference.split("_")
+            user_id = int(parts[1])
+            
+            # Tentar obter product_id se presente
+            product_id = None
+            if len(parts) >= 4 and parts[3].isdigit():
+                product_id = int(parts[3])
+            
+            print(f"👤 User ID extraído: {user_id}")
+            print(f"📦 Product ID extraído: {product_id}")
+            
+        except (IndexError, ValueError) as e:
+            print(f"❌ Erro ao extrair dados da referência: {e}")
             return False, "Formato de referência externa inválido"
-
-        print(f"👤 Processando para usuário ID: {user_id}")
 
         # Conectar ao banco
         db = next(get_db())
-        user = db.query(User).filter(User.id == user_id).first()
-        if not user:
+        try:
+            user = db.query(User).filter(User.id == user_id).first()
+            if not user:
+                print(f"❌ Usuário ID {user_id} não encontrado no banco")
+                return False, "Usuário não encontrado"
+
+            print(f"👤 Usuário encontrado: {user.email}")
+
+            # Verificar se o pagamento já foi processado
+            existing_payment = db.query(Payment).filter(
+                Payment.gateway_id == str(payment_id)
+            ).first()
+
+            if existing_payment and existing_payment.status == "completed":
+                print(f"✅ Pagamento já processado anteriormente")
+                return True, "Pagamento já processado"
+
+            # Obter informações do produto e plano
+            days_to_add = 30  # Padrão
+            plan_name = "Plano Padrão"
+            actual_product_id = product_id
+
+            # PRIORIDADE 1: Buscar produto no banco de dados
+            if product_id:
+                try:
+                    from models import Product
+                    produto_db = db.query(Product).filter(Product.id == product_id).first()
+                    if produto_db:
+                        days_to_add = produto_db.duration_days
+                        plan_name = produto_db.name
+                        print(f"✅ Produto encontrado no banco:")
+                        print(f"   - ID: {produto_db.id}")
+                        print(f"   - Nome: {produto_db.name}")
+                        print(f"   - Dias: {produto_db.duration_days}")
+                        print(f"   - Preço: R$ {produto_db.price}")
+                    else:
+                        print(f"❌ Produto ID {product_id} não encontrado no banco")
+                        actual_product_id = None
+                except Exception as e:
+                    print(f"⚠️ Erro ao buscar produto do banco: {e}")
+                    actual_product_id = None
+
+            # PRIORIDADE 2: Buscar nos metadados da preferência
+            preference_id = payment_details.get("preference_id")
+            if preference_id:
+                try:
+                    preference_info = mp.preference().get(preference_id)
+                    if preference_info["status"] == 200:
+                        metadata = preference_info["response"].get("metadata", {})
+                        print(f"📋 Metadados da preferência: {metadata}")
+                        
+                        # Se não conseguiu do banco, tentar dos metadados
+                        if days_to_add == 30:  # Ainda é o padrão
+                            metadata_days = metadata.get("days")
+                            if metadata_days and str(metadata_days).isdigit():
+                                days_to_add = int(metadata_days)
+                                print(f"📅 Dias obtidos dos metadados: {days_to_add}")
+                        
+                        # Atualizar plan_name se disponível
+                        metadata_plan = metadata.get("plan_id")
+                        if metadata_plan:
+                            plan_name = metadata_plan
+                            print(f"🏷️ Nome do plano dos metadados: {plan_name}")
+                        
+                        # Verificar product_id nos metadados se não temos
+                        if not actual_product_id:
+                            metadata_product_id = metadata.get("product_id")
+                            if metadata_product_id and str(metadata_product_id).isdigit():
+                                actual_product_id = int(metadata_product_id)
+                                print(f"📦 Product ID dos metadados: {actual_product_id}")
+                                
+                                # Tentar buscar produto novamente
+                                try:
+                                    produto_db = db.query(Product).filter(Product.id == actual_product_id).first()
+                                    if produto_db:
+                                        days_to_add = produto_db.duration_days
+                                        plan_name = produto_db.name
+                                        print(f"✅ Produto encontrado via metadados: {produto_db.name} - {days_to_add} dias")
+                                except Exception as e:
+                                    print(f"⚠️ Erro ao buscar produto via metadados: {e}")
+                        
+                except Exception as e:
+                    print(f"⚠️ Erro ao buscar metadados da preferência: {e}")
+
+            # PRIORIDADE 3: Fallback para planos legados
+            if days_to_add == 30 and plan_name in PRODUCTS:
+                days_to_add = PRODUCTS[plan_name]["days"]
+                print(f"🔄 Fallback para plano legado: {plan_name} - {days_to_add} dias")
+
+            # Validação final
+            if days_to_add <= 0:
+                days_to_add = 30
+                print(f"⚠️ Dias inválidos, usando padrão: {days_to_add} dias")
+
+            print(f"📅 RESULTADO FINAL:")
+            print(f"   - Usuário: {user.email}")
+            print(f"   - Produto ID: {actual_product_id}")
+            print(f"   - Plano: {plan_name}")
+            print(f"   - Dias a adicionar: {days_to_add}")
+            print(f"   - Valor: R$ {payment_details['transaction_amount']}")
+
+            # Atualizar ou criar registro de pagamento
+            if existing_payment:
+                existing_payment.status = 'completed'
+                existing_payment.product_id = actual_product_id
+                existing_payment.plano = plan_name
+                existing_payment.data_pagamento = datetime.utcnow()
+                print(f"🔄 Pagamento existente atualizado")
+            else:
+                payment = Payment(
+                    user_id=user_id,
+                    product_id=actual_product_id,
+                    valor=payment_details["transaction_amount"],
+                    status='completed',
+                    plano=plan_name,
+                    gateway_id=str(payment_id),
+                    data_pagamento=datetime.utcnow()
+                )
+                db.add(payment)
+                print(f"🆕 Novo registro de pagamento criado")
+
+            # Atualizar licença do usuário
+            old_expiration = user.data_expiracao
+            
+            if user.data_expiracao and user.data_expiracao > datetime.utcnow():
+                # Estender licença existente
+                user.data_expiracao = user.data_expiracao + timedelta(days=days_to_add)
+                print(f"⏰ Licença estendida:")
+                print(f"   - De: {old_expiration}")
+                print(f"   - Para: {user.data_expiracao}")
+            else:
+                # Nova licença
+                user.data_expiracao = datetime.utcnow() + timedelta(days=days_to_add)
+                print(f"🆕 Nova licença criada:")
+                print(f"   - Válida até: {user.data_expiracao}")
+
+            user.status_licenca = "ativa"
+            print(f"✅ Status da licença atualizado para: ativa")
+
+            # Commit das alterações
+            db.commit()
+            
+            print(f"✅ PAGAMENTO PROCESSADO COM SUCESSO!")
+            print(f"   - Usuário: {user.email}")
+            print(f"   - Valor: R$ {payment_details['transaction_amount']}")
+            print(f"   - Produto: {plan_name}")
+            print(f"   - Dias adicionados: {days_to_add}")
+            print(f"   - Licença válida até: {user.data_expiracao}")
+            
+            return True, f"Pagamento processado: {plan_name} - {days_to_add} dias adicionados"
+
+        except Exception as e:
+            print(f"❌ Erro durante processamento: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            db.rollback()
+            return False, f"Erro no processamento: {str(e)}"
+        finally:
             db.close()
-            return False, "Usuário não encontrado"
-
-        # Verificar se o pagamento já foi processado
-        existing_payment = db.query(Payment).filter(
-            Payment.gateway_id == str(payment_id)
-        ).first()
-
-        if existing_payment:
-            db.close()
-            return True, "Pagamento já processado"
-
-        # Obter metadados da preferência
-        preference_id = payment_details.get("preference_id")
-        days_to_add = 1  # Padrão mínimo
-        plan_name = "Plano Padrão"
-        product_id = None
-
-        if preference_id:
-            preference_info = mp.preference().get(preference_id)
-            if preference_info["status"] == 200:
-                metadata = preference_info["response"].get("metadata", {})
-                plan_name = metadata.get("plan_id", "Plano Padrão")
-                product_id = metadata.get("product_id")
-                if product_id and product_id.isdigit():
-                    product_id = int(product_id)
-                else:
-                    product_id = None
-
-        print(f"🔍 Debug - Preference ID: {preference_id}")
-        print(f"🔍 Debug - Product ID obtido dos metadados: {product_id}")
-        print(f"🔍 Debug - Plan Name: {plan_name}")
-
-        # SEMPRE buscar os dias do produto no banco de dados primeiro
-        if product_id:
-            try:
-                from models import Product
-                produto_db = db.query(Product).filter(Product.id == product_id).first()
-                if produto_db:
-                    days_to_add = produto_db.duration_days
-                    plan_name = produto_db.name
-                    print(f"✅ Dias obtidos do produto no banco (ID {product_id}): {days_to_add}")
-                else:
-                    print(f"❌ Produto ID {product_id} não encontrado no banco")
-            except Exception as e:
-                print(f"⚠️ Erro ao buscar produto do banco: {e}")
-
-        # Fallback para planos legados APENAS se não conseguiu obter do banco
-        if days_to_add == 1 and plan_name in PRODUCTS:
-            days_to_add = PRODUCTS[plan_name]["days"]
-            print(f"🔄 Fallback - Dias obtidos dos produtos legados: {days_to_add}")
-
-        # Se ainda não conseguiu obter dias válidos, usar o valor dos metadados como último recurso
-        if days_to_add == 1 and preference_id:
-            try:
-                metadata_days = int(metadata.get("days", 1))
-                if metadata_days > 1:
-                    days_to_add = metadata_days
-                    print(f"🔄 Usando dias dos metadados: {days_to_add}")
-            except:
-                pass
-
-        print(f"📅 RESULTADO FINAL: Adicionando {days_to_add} dias ao usuário")
-        print(f"🏷️ Nome do plano: {plan_name}")
-
-        # Validação final para garantir que não adicionamos apenas 1 dia por erro
-        if days_to_add <= 1:
-            print(f"⚠️ AVISO: Apenas {days_to_add} dia(s) sendo adicionado(s). Isso pode ser um erro!")
-            print(f"🔍 Verificando se é o produto de teste...")
-
-        # Log final de debug
-        print(f"🔍 Debug final:")
-        print(f"  - Product ID final: {product_id}")
-        print(f"  - Dias finais: {days_to_add}")
-        print(f"  - Nome do plano final: {plan_name}")
-        print(f"  - Metadados: {metadata if 'metadata' in locals() else 'Nenhum'}")
-
-        # Criar registro de pagamento
-        payment = Payment(
-            user_id=user_id,
-            product_id=product_id,
-            valor=payment_details["transaction_amount"],
-            status='completed',
-            plano=plan_name,
-            gateway_id=str(payment_id),
-            data_pagamento=datetime.utcnow()
-        )
-        db.add(payment)
-
-        # Atualizar licença do usuário
-        if user.data_expiracao and user.data_expiracao > datetime.utcnow():
-            # Estender licença existente
-            user.data_expiracao = user.data_expiracao + timedelta(days=days_to_add)
-            print(f"⏰ Licença estendida até: {user.data_expiracao}")
-        else:
-            # Nova licença
-            user.data_expiracao = datetime.utcnow() + timedelta(days=days_to_add)
-            print(f"🆕 Nova licença criada até: {user.data_expiracao}")
-
-        user.status_licenca = "ativa"
-
-        db.commit()
-        db.close()
-
-        print(f"✅ Pagamento processado com sucesso para {user.email}")
-        return True, "Pagamento processado com sucesso"
 
     except Exception as e:
-        print(f"❌ Erro ao processar notificação: {str(e)}")
-        if 'db' in locals():
-            db.rollback()
-            db.close()
-        return False, str(e)
+        print(f"❌ Erro crítico ao processar notificação: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return False, f"Erro crítico: {str(e)}"
 
 def get_plan_details(plan_id):
     """Retorna os detalhes de um plano"""

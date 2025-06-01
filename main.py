@@ -1123,6 +1123,56 @@ async def debug_railway():
     except Exception as e:
         return {"error": str(e), "traceback": str(e)}
 
+@app.get("/api/debug/payments")
+async def debug_payments(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Debug de pagamentos do usuário"""
+    try:
+        # Buscar pagamentos do usuário
+        user_payments = db.query(Payment).filter(
+            Payment.user_id == current_user.id
+        ).order_by(Payment.data_pagamento.desc()).all()
+        
+        # Buscar todos os produtos disponíveis
+        products = db.query(Product).filter(Product.is_active == True).all()
+        
+        return {
+            "user_info": {
+                "id": current_user.id,
+                "email": current_user.email,
+                "license_expires": current_user.data_expiracao.isoformat() if current_user.data_expiracao else None,
+                "license_status": current_user.status_licenca
+            },
+            "payments": [
+                {
+                    "id": p.id,
+                    "product_id": p.product_id,
+                    "valor": p.valor,
+                    "status": p.status,
+                    "plano": p.plano,
+                    "gateway_id": p.gateway_id,
+                    "data_pagamento": p.data_pagamento.isoformat() if p.data_pagamento else None
+                }
+                for p in user_payments
+            ],
+            "available_products": [
+                {
+                    "id": prod.id,
+                    "name": prod.name,
+                    "price": prod.price,
+                    "duration_days": prod.duration_days,
+                    "is_active": prod.is_active
+                }
+                for prod in products
+            ]
+        }
+        
+    except Exception as e:
+        print(f"❌ Erro no debug de pagamentos: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
     """Health check endpoint"""
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
