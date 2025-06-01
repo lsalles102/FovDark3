@@ -6,7 +6,7 @@ channel = "stable-24_05"
 packages = ["libxcrypt"]
 
 [workflows]
-runButton = "FovDark Server"
+runButton = "FovDark Server Complete"
 
 [[workflows.workflow]]
 name = "Project"
@@ -78,6 +78,19 @@ args = "python start.py"
 [[workflows.workflow]]
 name = "FovDark Iniciar"
 author = 43310215
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pip install fastapi uvicorn sqlalchemy psycopg2-binary python-jose[cryptography] passlib[bcrypt] python-multipart jinja2 aiofiles mercadopago requests pydantic starlette"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python start.py"
+
+[[workflows.workflow]]
+name = "FovDark Server Complete"
+author = 43373253
 mode = "sequential"
 
 [[workflows.workflow.tasks]]
