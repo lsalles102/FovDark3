@@ -323,57 +323,7 @@ block content %}
                 </div>
             </div>
 
-            <div id="checkoutMethodModal" style="display: none">
-                <div class="checkout-method-selection">
-                    <div class="method-header">
-                        <h4>ESCOLHA O MÉTODO DE PAGAMENTO</h4>
-                        <p>Selecione como deseja pagar</p>
-                    </div>
-
-                    <div class="payment-methods-grid">
-                        <div class="payment-method-card" onclick="proceedWithSecureFields()">
-                            <div class="method-icon">
-                                <i class="fas fa-credit-card"></i>
-                            </div>
-                            <h5>Checkout Seguro</h5>
-                            <p>Pague diretamente em nosso site com segurança</p>
-                            <div class="method-benefits">
-                                <span class="benefit">
-                                    <i class="fas fa-shield-alt"></i>
-                                    Mais Seguro
-                                </span>
-                                <span class="benefit">
-                                    <i class="fas fa-bolt"></i>
-                                    Mais Rápido
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="payment-method-card" onclick="proceedWithMercadoPago()">
-                            <div class="method-icon">
-                                <i class="fas fa-external-link-alt"></i>
-                            </div>
-                            <h5>Mercado Pago</h5>
-                            <p>Redirecionar para o site do Mercado Pago</p>
-                            <div class="method-benefits">
-                                <span class="benefit">
-                                    <i class="fas fa-mobile-alt"></i>
-                                    PIX Disponível
-                                </span>
-                                <span class="benefit">
-                                    <i class="fas fa-credit-card"></i>
-                                    Todos os Cartões
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button class="btn-close-method" onclick="closeMethodModal()">
-                        <i class="fas fa-times"></i>
-                        Cancelar
-                    </button>
-                </div>
-            </div>
+            
 
             <!-- Container para produtos dinâmicos -->
             <div id="products-container" class="products-grid">
@@ -1393,7 +1343,8 @@ display: flex;
                                 <div class="product-duration">${product.duration_days} dias de acesso</div>
 
                                 <button class="product-button" onclick="chooseCheckoutMethod('${product.name}', ${product.price}, ${product.duration_days}, ${product.id})">
-                                    <span>Comprar agora</span>
+                                    <i class="fas fa-shopping-cart"></i>
+                                    Comprar agora
                                 </button>
                             </div>
                         </div>
@@ -1429,17 +1380,16 @@ display: flex;
         const token = localStorage.getItem("access_token");
 
         if (!token) {
-            openCheckoutModal(name, price, duration, productId);
-        } else {
-            // Mostrar modal de escolha de método
-            const methodModal = document.getElementById("checkoutMethodModal");
-            if (methodModal) {
-                methodModal.style.display = "flex";
-            } else {
-                console.log('❌ Modal de método não encontrado, abrindo checkout direto');
-                openCheckoutModal(name, price, duration, productId);
-            }
+            // Redirecionar para login se não estiver logado
+            showToast('Você precisa fazer login para comprar', 'warning');
+            setTimeout(() => {
+                window.location.href = '/login?redirect=comprar';
+            }, 1500);
+            return;
         }
+
+        // Ir direto para o checkout do MercadoPago
+        proceedWithMercadoPago();
     }
 
     function closeMethodModal() {
@@ -1458,32 +1408,19 @@ display: flex;
     }
 
     function proceedWithMercadoPago() {
-        closeMethodModal();
-
         if (!selectedProduct) {
             showToast('Produto não selecionado', 'error');
             return;
         }
 
-        // Buscar o nome do produto selecionado
-        const productCard = document.querySelector(`.product-card button[onclick*="${selectedProduct}"]`);
-        let productName = 'Produto Selecionado';
-        
-        if (productCard) {
-            const titleElement = productCard.closest('.product-card').querySelector('.product-title');
-            if (titleElement) {
-                productName = titleElement.textContent;
-            }
-        }
-
         console.log('🔄 Prosseguindo com MercadoPago:', { 
             product: selectedProduct, 
-            name: productName, 
-            price: selectedPrice 
+            price: selectedPrice,
+            duration: selectedDuration
         });
 
-        // Usar método tradicional do Mercado Pago
-        openCheckoutModal(productName, selectedPrice, selectedDuration, selectedProduct);
+        // Processar pagamento diretamente
+        processPayment();
     }
 
     function openCheckoutModal(name, price, duration, productId) {
@@ -1544,21 +1481,8 @@ display: flex;
             return;
         }
 
-        const submitBtn = document.querySelector('.btn-checkout');
-        if (!submitBtn) {
-            console.error('❌ Botão de checkout não encontrado');
-            return;
-        }
-
-        const originalContent = submitBtn.innerHTML;
-
         // Mostrar loading
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSANDO...';
-        submitBtn.disabled = true;
-
-        // Mostrar modal de loading
-        document.getElementById('checkoutForm').style.display = 'none';
-        document.getElementById('loadingPayment').style.display = 'block';
+        showToast('Processando pagamento...', 'info');
 
         try {
             console.log('🚀 Iniciando processo de pagamento...');
@@ -1582,9 +1506,7 @@ display: flex;
 
             if (response.ok && data.success) {
                 console.log("✅ Checkout criado com sucesso!");
-                console.log("🔗 Init Point:", data.init_point);
-                console.log("🔗 Sandbox Init Point:", data.sandbox_init_point);
-
+                
                 // Determinar qual URL usar
                 const checkoutUrl = data.init_point || data.sandbox_init_point;
 
@@ -1592,12 +1514,13 @@ display: flex;
                     showToast("Redirecionando para o pagamento...", "success");
                     console.log("🚀 Redirecionando para:", checkoutUrl);
 
-                    // Redirecionar imediatamente
-                    window.location.href = checkoutUrl;
+                    // Redirecionar após delay para mostrar mensagem
+                    setTimeout(() => {
+                        window.location.href = checkoutUrl;
+                    }, 1000);
                 } else {
                     console.error("❌ Nenhuma URL de checkout encontrada");
                     showToast("Erro: URL de pagamento não encontrada", "error");
-                    resetPaymentForm();
                 }
             } else {
                 console.error("❌ Erro na resposta:", data);
@@ -1610,20 +1533,11 @@ display: flex;
                     }, 2000);
                 } else {
                     showToast(data.detail || data.message || "Erro ao processar pagamento", "error");
-                    resetPaymentForm();
                 }
             }
         } catch (error) {
             console.error('❌ Erro durante o pagamento:', error);
             showToast('Erro de conexão. Tente novamente.', 'error');
-            resetPaymentForm();
-        }
-
-        function resetPaymentForm() {
-            submitBtn.innerHTML = originalContent;
-            submitBtn.disabled = false;
-            document.getElementById('checkoutForm').style.display = 'block';
-            document.getElementById('loadingPayment').style.display = 'none';
         }
     }
 
