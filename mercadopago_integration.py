@@ -181,8 +181,10 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
         preference_data = {
             "items": [
                 {
+                    "id": str(product_id or plan_id),  # ID do item para melhorar aprovação
                     "title": item_title,
                     "description": item_description,
+                    "category_id": "games",  # Categoria para melhorar aprovação
                     "quantity": 1,
                     "currency_id": "BRL",  # Fixar moeda
                     "unit_price": round(float(product_info['price']), 2)  # Arredondar preço
