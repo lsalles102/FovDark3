@@ -323,6 +323,58 @@ block content %}
                 </div>
             </div>
 
+            <div id="checkoutMethodModal" style="display: none">
+                <div class="checkout-method-selection">
+                    <div class="method-header">
+                        <h4>ESCOLHA O MÉTODO DE PAGAMENTO</h4>
+                        <p>Selecione como deseja pagar</p>
+                    </div>
+
+                    <div class="payment-methods-grid">
+                        <div class="payment-method-card" onclick="proceedWithSecureFields()">
+                            <div class="method-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <h5>Checkout Seguro</h5>
+                            <p>Pague diretamente em nosso site com segurança</p>
+                            <div class="method-benefits">
+                                <span class="benefit">
+                                    <i class="fas fa-shield-alt"></i>
+                                    Mais Seguro
+                                </span>
+                                <span class="benefit">
+                                    <i class="fas fa-bolt"></i>
+                                    Mais Rápido
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="payment-method-card" onclick="proceedWithMercadoPago()">
+                            <div class="method-icon">
+                                <i class="fas fa-external-link-alt"></i>
+                            </div>
+                            <h5>Mercado Pago</h5>
+                            <p>Redirecionar para o site do Mercado Pago</p>
+                            <div class="method-benefits">
+                                <span class="benefit">
+                                    <i class="fas fa-mobile-alt"></i>
+                                    PIX Disponível
+                                </span>
+                                <span class="benefit">
+                                    <i class="fas fa-credit-card"></i>
+                                    Todos os Cartões
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn-close-method" onclick="closeMethodModal()">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+
             <!-- Container para produtos dinâmicos -->
             <div id="products-container" class="products-grid">
                 <!-- Produtos serão carregados dinamicamente -->
@@ -1049,6 +1101,125 @@ block content %}
         }
     }
 
+    /* Checkout Method Modal */
+    #checkoutMethodModal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(10px);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .checkout-method-selection {
+        background: hsl(var(--bg-secondary));
+        border: 2px solid hsl(var(--border-primary));
+        border-radius: var(--radius-xl);
+        max-width: 600px;
+        width: 100%;
+        padding: 2rem;
+        animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .method-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .method-header h4 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: hsl(var(--text-primary));
+    }
+
+    .method-header p {
+        color: hsl(var(--text-secondary));
+    }
+
+    .payment-methods-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .payment-method-card {
+        background: hsl(var(--bg-tertiary));
+        border: 2px solid hsl(var(--border-primary));
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all var(--transition-medium);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .payment-method-card:hover {
+        border-color: hsl(var(--primary));
+        background: hsl(var(--primary) / 0.1);
+        transform: translateY(-5px);
+    }
+
+    .method-icon {
+        font-size: 2.5rem;
+        color: hsl(var(--primary));
+        margin-bottom: 1rem;
+    }
+
+    .payment-method-card h5 {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+        color: hsl(var(--text-primary));
+    }
+
+    .payment-method-card p {
+        color: hsl(var(--text-secondary));
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .method-benefits {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .benefit {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: hsl(var(--success));
+        background: hsl(var(--success) / 0.1);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-sm);
+    }
+
+    .btn-close-method {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid hsl(var(--border-primary));
+        border-radius: var(--radius-md);
+        background: transparent;
+        color: hsl(var(--text-secondary));
+        cursor: pointer;
+        transition: all var(--transition-medium);
+    }
+
+    .btn-close-method:hover {
+        border-color: hsl(var(--danger));
+        color: hsl(var(--danger));
+        background: hsl(var(--danger) / 0.1);
+    }
+
     /* Responsive */
     @media (max-width: 640px) {
         .checkout-modal {
@@ -1068,6 +1239,15 @@ block content %}
         .security-badges {
             flex-direction: column;
             gap: 0.75rem;
+        }
+
+        .payment-methods-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .checkout-method-selection {
+            padding: 1.5rem;
         }
     }
 
@@ -1213,7 +1393,7 @@ block content %}
                                 </div>
                                 <div class="product-duration">${product.duration_days} dias de acesso</div>
 
-                                <button class="product-button" onclick="openCheckoutModal('${product.name}', ${product.price}, ${product.duration_days}, ${product.id})">
+                                <button class="product-button" onclick="chooseCheckoutMethod('${product.name}', ${product.price}, ${product.duration_days}, ${product.id})">
                                     <span>Comprar agora</span>
                                 </button>
                             </div>
@@ -1239,6 +1419,49 @@ block content %}
         return icons[index % icons.length];
     }
 
+    function chooseCheckoutMethod(name, price, duration, productId) {
+        selectedProduct = productId;
+        selectedPrice = price;
+        selectedDuration = duration;
+
+        // Verificar se o usuário está logado
+        const token = localStorage.getItem("access_token");
+
+        if (!token) {
+            openCheckoutModal(name, price, duration, productId);
+        } else {
+            // Mostrar modal de escolha de método
+            document.getElementById("checkoutMethodModal").style.display = "block";
+        }
+    }
+
+    function closeMethodModal() {
+        document.getElementById("checkoutMethodModal").style.display = "none";
+    }
+
+    function proceedWithSecureFields() {
+        closeMethodModal();
+        
+        // Redirecionar para checkout seguro
+        const params = new URLSearchParams({
+            product: selectedProduct
+        });
+        
+        window.location.href = `/secure-checkout?${params}`;
+    }
+
+    function proceedWithMercadoPago() {
+        closeMethodModal();
+        
+        // Usar método tradicional do Mercado Pago
+        openCheckoutModal(
+            document.querySelector(`[data-product-id="${selectedProduct}"] .product-title`).textContent,
+            selectedPrice,
+            selectedDuration,
+            selectedProduct
+        );
+    }
+
     function openCheckoutModal(name, price, duration, productId) {
         selectedProduct = productId;
         selectedPrice = price;
@@ -1253,11 +1476,13 @@ block content %}
             document.getElementById("loginPrompt").style.display = "block";
             document.getElementById("checkoutForm").style.display = "none";
             document.getElementById("loadingPayment").style.display = "none";
+            document.getElementById("checkoutMethodModal").style.display = "none";
         } else {
             // Mostrar formulário de checkout
             document.getElementById("loginPrompt").style.display = "none";
             document.getElementById("checkoutForm").style.display = "block";
             document.getElementById("loadingPayment").style.display = "none";
+            document.getElementById("checkoutMethodModal").style.display = "none";
 
             // Atualizar informações do produto
             document.getElementById("selectedPlan").textContent =

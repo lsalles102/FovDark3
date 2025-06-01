@@ -1,0 +1,597 @@
+
+{% extends "base.html" %}
+{% block title %}Checkout Seguro - FovDark{% endblock %}
+{% block content %}
+<section class="secure-checkout-section">
+    <div class="container">
+        <div class="checkout-header">
+            <h1>CHECKOUT SEGURO</h1>
+            <p>Complete seu pagamento de forma segura</p>
+        </div>
+
+        <div class="checkout-container">
+            <div class="order-summary">
+                <div class="order-card">
+                    <h3>Resumo do Pedido</h3>
+                    <div class="order-item">
+                        <span id="productName">Carregando...</span>
+                        <span id="productPrice">R$ 0,00</span>
+                    </div>
+                    <div class="order-duration">
+                        <span id="productDuration">0 dias</span>
+                    </div>
+                    <div class="order-total">
+                        <strong>Total: <span id="totalPrice">R$ 0,00</span></strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="payment-form">
+                <form id="securePaymentForm">
+                    <div class="form-section">
+                        <h3>Dados do Cartão</h3>
+                        
+                        <div class="form-group">
+                            <label for="cardNumber">Número do Cartão</label>
+                            <div id="cardNumber" class="secure-field"></div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="expirationDate">Validade</label>
+                                <div id="expirationDate" class="secure-field"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="securityCode">CVV</label>
+                                <div id="securityCode" class="secure-field"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cardholderName">Nome no Cartão</label>
+                            <input type="text" id="cardholderName" name="cardholderName" required>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Dados do Comprador</h3>
+                        
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required readonly>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="docType">Tipo de Documento</label>
+                                <select id="docType" name="docType" required>
+                                    <option value="">Selecione</option>
+                                    <option value="CPF">CPF</option>
+                                    <option value="CNPJ">CNPJ</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="docNumber">Número do Documento</label>
+                                <input type="text" id="docNumber" name="docNumber" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="payment-actions">
+                        <button type="button" class="btn-back" onclick="goBack()">
+                            <i class="fas fa-arrow-left"></i>
+                            Voltar
+                        </button>
+                        <button type="submit" class="btn-pay" id="payButton">
+                            <i class="fas fa-lock"></i>
+                            Pagar R$ <span id="payAmount">0,00</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="security-indicators">
+            <div class="security-item">
+                <i class="fas fa-shield-alt"></i>
+                <span>Pagamento 256-bit SSL</span>
+            </div>
+            <div class="security-item">
+                <i class="fas fa-lock"></i>
+                <span>Dados Criptografados</span>
+            </div>
+            <div class="security-item">
+                <i class="fas fa-certificate"></i>
+                <span>Mercado Pago Seguro</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <h3>Processando Pagamento</h3>
+        <p>Aguarde enquanto processamos sua transação...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://sdk.mercadopago.com/js/v2"></script>
+<script>
+    let mp, cardForm, productData = {};
+    let currentUser = null;
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        await initializeSecureCheckout();
+    });
+
+    async function initializeSecureCheckout() {
+        try {
+            // Verificar autenticação
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+
+            // Obter dados do usuário
+            const userResponse = await fetch('/api/license/check', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!userResponse.ok) {
+                throw new Error('Usuário não autenticado');
+            }
+
+            currentUser = await userResponse.json();
+            document.getElementById('email').value = currentUser.email;
+
+            // Obter dados do produto da URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('product');
+            
+            if (!productId) {
+                window.location.href = '/comprar';
+                return;
+            }
+
+            await loadProductData(productId);
+            await initializeMercadoPago();
+
+        } catch (error) {
+            console.error('Erro na inicialização:', error);
+            showError('Erro ao inicializar checkout: ' + error.message);
+        }
+    }
+
+    async function loadProductData(productId) {
+        try {
+            const response = await fetch('/api/products');
+            const products = await response.json();
+            
+            productData = products.find(p => p.id == productId);
+            if (!productData) {
+                throw new Error('Produto não encontrado');
+            }
+
+            // Atualizar interface
+            document.getElementById('productName').textContent = productData.name;
+            document.getElementById('productPrice').textContent = `R$ ${productData.price.toFixed(2)}`;
+            document.getElementById('productDuration').textContent = `${productData.duration_days} dias de acesso`;
+            document.getElementById('totalPrice').textContent = `R$ ${productData.price.toFixed(2)}`;
+            document.getElementById('payAmount').textContent = productData.price.toFixed(2);
+
+        } catch (error) {
+            console.error('Erro ao carregar produto:', error);
+            throw error;
+        }
+    }
+
+    async function initializeMercadoPago() {
+        try {
+            // Obter chave pública do MercadoPago
+            const response = await fetch('/api/mercadopago/public-key');
+            const data = await response.json();
+            
+            if (!data.public_key) {
+                throw new Error('Chave pública do MercadoPago não encontrada');
+            }
+
+            // Inicializar SDK
+            mp = new MercadoPago(data.public_key, {
+                locale: 'pt-BR'
+            });
+
+            // Criar formulário seguro
+            cardForm = mp.cardForm({
+                amount: productData.price.toString(),
+                iframe: true,
+                form: {
+                    id: "securePaymentForm",
+                    cardNumber: {
+                        id: "cardNumber",
+                        placeholder: "0000 0000 0000 0000"
+                    },
+                    expirationDate: {
+                        id: "expirationDate",
+                        placeholder: "MM/YY"
+                    },
+                    securityCode: {
+                        id: "securityCode",
+                        placeholder: "123"
+                    },
+                    cardholderName: {
+                        id: "cardholderName",
+                        placeholder: "Nome como está no cartão"
+                    },
+                    issuer: {
+                        id: "issuer",
+                        placeholder: "Banco emissor"
+                    },
+                    installments: {
+                        id: "installments",
+                        placeholder: "Parcelas"
+                    },
+                    identificationType: {
+                        id: "docType"
+                    },
+                    identificationNumber: {
+                        id: "docNumber"
+                    }
+                },
+                callbacks: {
+                    onFormMounted: error => {
+                        if (error) {
+                            console.error('Erro ao montar formulário:', error);
+                            showError('Erro ao carregar formulário de pagamento');
+                        } else {
+                            console.log('Formulário seguro carregado com sucesso');
+                        }
+                    },
+                    onSubmit: event => {
+                        event.preventDefault();
+                        processSecurePayment();
+                    },
+                    onFetching: (resource) => {
+                        console.log("Fetching resource: ", resource);
+                    }
+                }
+            });
+
+        } catch (error) {
+            console.error('Erro ao inicializar MercadoPago:', error);
+            showError('Erro ao inicializar sistema de pagamento');
+        }
+    }
+
+    async function processSecurePayment() {
+        try {
+            showLoading(true);
+
+            const cardData = await cardForm.getCardFormData();
+            
+            if (!cardData.token) {
+                throw new Error('Erro ao gerar token do cartão');
+            }
+
+            // Enviar dados para o backend
+            const response = await fetch('/api/process-secure-payment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                },
+                body: JSON.stringify({
+                    token: cardData.token,
+                    payment_method_id: cardData.payment_method_id,
+                    issuer_id: cardData.issuer_id,
+                    installments: cardData.installments,
+                    product_id: productData.id,
+                    amount: productData.price,
+                    payer: {
+                        email: currentUser.email,
+                        identification: {
+                            type: document.getElementById('docType').value,
+                            number: document.getElementById('docNumber').value
+                        }
+                    }
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                // Pagamento processado com sucesso
+                if (result.status === 'approved') {
+                    window.location.href = '/success?payment_id=' + result.payment_id;
+                } else if (result.status === 'pending') {
+                    window.location.href = '/pending?payment_id=' + result.payment_id;
+                } else {
+                    window.location.href = '/cancelled?payment_id=' + result.payment_id;
+                }
+            } else {
+                throw new Error(result.message || 'Erro no processamento do pagamento');
+            }
+
+        } catch (error) {
+            console.error('Erro no pagamento:', error);
+            showError('Erro no pagamento: ' + error.message);
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    function showLoading(show) {
+        document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+        document.getElementById('payButton').disabled = show;
+    }
+
+    function showError(message) {
+        alert('Erro: ' + message);
+    }
+
+    function goBack() {
+        window.history.back();
+    }
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .secure-checkout-section {
+        min-height: 100vh;
+        padding: 2rem 0;
+        background: linear-gradient(135deg, 
+            var(--bg-primary) 0%, 
+            var(--bg-secondary) 100%);
+    }
+
+    .checkout-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .checkout-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .checkout-container {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .order-summary {
+        position: sticky;
+        top: 2rem;
+        height: fit-content;
+    }
+
+    .order-card {
+        background: var(--bg-secondary);
+        border: 2px solid var(--border-primary);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+    }
+
+    .order-card h3 {
+        margin-bottom: 1rem;
+        color: var(--primary);
+    }
+
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border-primary);
+    }
+
+    .order-duration {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .order-total {
+        font-size: 1.1rem;
+        padding-top: 1rem;
+        border-top: 2px solid var(--primary);
+    }
+
+    .payment-form {
+        background: var(--bg-secondary);
+        border: 2px solid var(--border-primary);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+    }
+
+    .form-section {
+        margin-bottom: 2rem;
+    }
+
+    .form-section h3 {
+        margin-bottom: 1rem;
+        color: var(--primary);
+        border-bottom: 1px solid var(--border-primary);
+        padding-bottom: 0.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid var(--border-primary);
+        border-radius: var(--radius-md);
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        font-size: 1rem;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+
+    .secure-field {
+        height: 45px;
+        border: 2px solid var(--border-primary);
+        border-radius: var(--radius-md);
+        background: var(--bg-tertiary);
+    }
+
+    .secure-field iframe {
+        border: none;
+        width: 100%;
+        height: 100%;
+    }
+
+    .payment-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn-back {
+        flex: 1;
+        padding: 1rem;
+        border: 2px solid var(--border-primary);
+        border-radius: var(--radius-md);
+        background: transparent;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all var(--transition-medium);
+    }
+
+    .btn-back:hover {
+        border-color: var(--primary);
+        background: var(--primary);
+        color: #000;
+    }
+
+    .btn-pay {
+        flex: 2;
+        padding: 1rem;
+        border: none;
+        border-radius: var(--radius-md);
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: #000;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all var(--transition-medium);
+    }
+
+    .btn-pay:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--glow);
+    }
+
+    .btn-pay:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .security-indicators {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--border-primary);
+    }
+
+    .security-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .security-item i {
+        color: var(--success);
+    }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    }
+
+    .loading-content {
+        text-align: center;
+        color: var(--text-primary);
+    }
+
+    .loading-spinner {
+        width: 60px;
+        height: 60px;
+        border: 4px solid var(--border-primary);
+        border-top: 4px solid var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+        .checkout-container {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .payment-actions {
+            flex-direction: column;
+        }
+        
+        .security-indicators {
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+    }
+</style>
+{% endblock %}

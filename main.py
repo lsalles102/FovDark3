@@ -927,6 +927,11 @@ async def terms_page(request: Request):
     """Página de termos de uso"""
     return templates.TemplateResponse("terms.html", {"request": request})
 
+@app.get("/secure-checkout", response_class=HTMLResponse)
+async def secure_checkout_page(request: Request):
+    """Página de checkout seguro com Secure Fields"""
+    return templates.TemplateResponse("secure_checkout.html", {"request": request})
+
 @app.get("/success", response_class=HTMLResponse)
 async def success_page(request: Request):
     """Página de pagamento bem-sucedido"""

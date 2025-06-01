@@ -345,6 +345,156 @@ async def debug_payment_info(
         print(f"❌ Erro no debug: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/mercadopago/public-key")
+async def get_mercadopago_public_key():
+    """Retorna a chave pública do MercadoPago para Secure Fields"""
+    try:
+        from mercadopago_integration import MERCADOPAGO_ACCESS_TOKEN
+        
+        if not MERCADOPAGO_ACCESS_TOKEN:
+            raise HTTPException(status_code=500, detail="MercadoPago não configurado")
+        
+        # Determinar chave pública baseada no tipo de token
+        if "TEST" in MERCADOPAGO_ACCESS_TOKEN:
+            # Ambiente de teste
+            public_key = "TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9"  # Exemplo - substitua pela sua chave de teste
+        else:
+            # Ambiente de produção
+            public_key = "APP_USR-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9"  # Exemplo - substitua pela sua chave de produção
+        
+        return {"public_key": public_key}
+        
+    except Exception as e:
+        print(f"❌ Erro ao obter chave pública: {e}")
+        raise HTTPException(status_code=500, detail="Erro ao obter configuração de pagamento")
+
+class SecurePaymentRequest(BaseModel):
+    token: str
+    payment_method_id: str
+    issuer_id: Optional[int] = None
+    installments: int = 1
+    product_id: int
+    amount: float
+    payer: dict
+
+@router.post("/process-secure-payment")
+async def process_secure_payment(
+    payment_data: SecurePaymentRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Processar pagamento usando Secure Fields"""
+    try:
+        from mercadopago_integration import mp, get_domain
+        
+        if not mp:
+            raise HTTPException(status_code=500, detail="MercadoPago não configurado")
+        
+        # Buscar produto
+        product = db.query(Product).filter(
+            Product.id == payment_data.product_id,
+            Product.is_active == True
+        ).first()
+        
+        if not product:
+            raise HTTPException(status_code=404, detail="Produto não encontrado")
+        
+        # Validar valor
+        if abs(payment_data.amount - float(product.price)) > 0.01:
+            raise HTTPException(status_code=400, detail="Valor do pagamento não confere")
+        
+        # Criar dados do pagamento
+        payment_request = {
+            "transaction_amount": float(product.price),
+            "token": payment_data.token,
+            "description": f"{product.name} - {product.duration_days} dias",
+            "installments": payment_data.installments,
+            "payment_method_id": payment_data.payment_method_id,
+            "payer": {
+                "email": current_user.email,
+                "identification": payment_data.payer["identification"]
+            },
+            "external_reference": f"user_{current_user.id}_product_{product.id}",
+            "metadata": {
+                "user_id": str(current_user.id),
+                "product_id": str(product.id),
+                "days": str(product.duration_days),
+                "plan_id": f"product_{product.id}",
+                "user_email": current_user.email,
+                "created_at": datetime.utcnow().isoformat()
+            },
+            "notification_url": f"{get_domain()}/api/webhook/mercadopago",
+            "statement_descriptor": "FOVDARK"
+        }
+        
+        # Adicionar issuer se fornecido
+        if payment_data.issuer_id:
+            payment_request["issuer_id"] = payment_data.issuer_id
+        
+        print(f"💳 Processando pagamento seguro:")
+        print(f"  - Usuário: {current_user.email}")
+        print(f"  - Produto: {product.name}")
+        print(f"  - Valor: R$ {product.price}")
+        print(f"  - Token: {payment_data.token[:20]}...")
+        
+        # Enviar para MercadoPago
+        payment_response = mp.payment().create(payment_request)
+        
+        if payment_response["status"] not in [200, 201]:
+            print(f"❌ Erro na resposta do MercadoPago: {payment_response}")
+            raise HTTPException(status_code=400, detail="Erro no processamento do pagamento")
+        
+        payment_result = payment_response["response"]
+        
+        # Registrar pagamento no banco
+        payment_record = Payment(
+            user_id=current_user.id,
+            product_id=product.id,
+            valor=float(product.price),
+            plano=product.name,
+            gateway_id=str(payment_result["id"]),
+            status=payment_result["status"],
+            data_pagamento=datetime.utcnow()
+        )
+        
+        db.add(payment_record)
+        db.commit()
+        
+        print(f"✅ Pagamento registrado:")
+        print(f"  - ID MercadoPago: {payment_result['id']}")
+        print(f"  - Status: {payment_result['status']}")
+        print(f"  - Método: {payment_result.get('payment_method_id')}")
+        
+        # Se aprovado, ativar licença imediatamente
+        if payment_result["status"] == "approved":
+            if current_user.data_expiracao and current_user.data_expiracao > datetime.utcnow():
+                current_user.data_expiracao = current_user.data_expiracao + timedelta(days=product.duration_days)
+            else:
+                current_user.data_expiracao = datetime.utcnow() + timedelta(days=product.duration_days)
+            
+            current_user.status_licenca = "ativa"
+            payment_record.status = "completed"
+            db.commit()
+            
+            print(f"🎉 Licença ativada até: {current_user.data_expiracao}")
+        
+        return {
+            "success": True,
+            "payment_id": payment_result["id"],
+            "status": payment_result["status"],
+            "status_detail": payment_result.get("status_detail"),
+            "message": "Pagamento processado com sucesso"
+        }
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"❌ Erro no pagamento seguro: {e}")
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+
 @router.post("/test-payment/{plan_id}")
 async def test_payment_activation(
     plan_id: str,
