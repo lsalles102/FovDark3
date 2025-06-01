@@ -1419,6 +1419,8 @@ display: flex;
     }
 
     function chooseCheckoutMethod(name, price, duration, productId) {
+        console.log('🛒 Selecionando produto:', { name, price, duration, productId });
+        
         selectedProduct = productId;
         selectedPrice = price;
         selectedDuration = duration;
@@ -1430,7 +1432,13 @@ display: flex;
             openCheckoutModal(name, price, duration, productId);
         } else {
             // Mostrar modal de escolha de método
-            document.getElementById("checkoutMethodModal").style.display = "block";
+            const methodModal = document.getElementById("checkoutMethodModal");
+            if (methodModal) {
+                methodModal.style.display = "flex";
+            } else {
+                console.log('❌ Modal de método não encontrado, abrindo checkout direto');
+                openCheckoutModal(name, price, duration, productId);
+            }
         }
     }
 
@@ -1452,13 +1460,30 @@ display: flex;
     function proceedWithMercadoPago() {
         closeMethodModal();
 
+        if (!selectedProduct) {
+            showToast('Produto não selecionado', 'error');
+            return;
+        }
+
+        // Buscar o nome do produto selecionado
+        const productCard = document.querySelector(`.product-card button[onclick*="${selectedProduct}"]`);
+        let productName = 'Produto Selecionado';
+        
+        if (productCard) {
+            const titleElement = productCard.closest('.product-card').querySelector('.product-title');
+            if (titleElement) {
+                productName = titleElement.textContent;
+            }
+        }
+
+        console.log('🔄 Prosseguindo com MercadoPago:', { 
+            product: selectedProduct, 
+            name: productName, 
+            price: selectedPrice 
+        });
+
         // Usar método tradicional do Mercado Pago
-        openCheckoutModal(
-            document.querySelector(`[data-product-id="${selectedProduct}"] .product-title`).textContent,
-            selectedPrice,
-            selectedDuration,
-            selectedProduct
-        );
+        openCheckoutModal(productName, selectedPrice, selectedDuration, selectedProduct);
     }
 
     function openCheckoutModal(name, price, duration, productId) {
@@ -1503,102 +1528,104 @@ display: flex;
         openCheckoutModal(name, price, duration, productId);
     }
 
-    async function processPayment(event) {
-    if (event) event.preventDefault();
-
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-        showToast('Você precisa fazer login primeiro', 'error');
-        setTimeout(() => {
-            window.location.href = '/login';
-        }, 2000);
-        return;
-    }
-
-    // Verificar se há um plano selecionado
-    const selectedPlan = document.querySelector('input[name="plano"]:checked');
-    if (!selectedPlan) {
-        showToast('Selecione um plano primeiro', 'error');
-        return;
-    }
-
-    const submitBtn = document.querySelector('.btn-checkout');
-    const originalContent = submitBtn.innerHTML;
-
-    // Mostrar loading
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSANDO...';
-    submitBtn.disabled = true;
-
-    // Mostrar modal de loading
-    document.getElementById('checkoutForm').style.display = 'none';
-    document.getElementById('loadingPayment').style.display = 'block';
-
-    try {
-        console.log('🚀 Iniciando processo de pagamento...');
-        console.log('📋 Plano selecionado:', selectedPlan.value);
-
-        const response = await fetch('/api/criar-checkout', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                product_id: selectedProduct,
-                plano: `product_${selectedProduct}`,
-            })
-        });
-
-        console.log('📡 Resposta recebida:', response.status);
-        const data = await response.json();
-        console.log('📊 Dados da resposta:', data);
-
-        if (response.ok && data.success) {
-            console.log("✅ Checkout criado com sucesso!");
-            console.log("🔗 Init Point:", data.init_point);
-            console.log("🔗 Sandbox Init Point:", data.sandbox_init_point);
-
-            // Determinar qual URL usar
-            const checkoutUrl = data.init_point || data.sandbox_init_point;
-
-            if (checkoutUrl) {
-                showToast("Redirecionando para o pagamento...", "success");
-                console.log("🚀 Redirecionando para:", checkoutUrl);
-
-                // Redirecionar imediatamente
-                window.location.href = checkoutUrl;
-            } else {
-                console.error("❌ Nenhuma URL de checkout encontrada");
-                showToast("Erro: URL de pagamento não encontrada", "error");
-                resetPaymentForm();
-            }
-        } else {
-            console.error("❌ Erro na resposta:", data);
-
-            if (response.status === 401) {
-                showToast("Sessão expirada. Faça login novamente.", "error");
-                localStorage.clear();
-                setTimeout(() => {
-                    window.location.href = "/login";
-                }, 2000);
-            } else {
-                showToast(data.detail || data.message || "Erro ao processar pagamento", "error");
-                resetPaymentForm();
-            }
+    async function processPayment() {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            showToast('Você precisa fazer login primeiro', 'error');
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 2000);
+            return;
         }
-    } catch (error) {
-        console.error('❌ Erro durante o pagamento:', error);
-        showToast('Erro de conexão. Tente novamente.', 'error');
-        resetPaymentForm();
-    }
 
-    function resetPaymentForm() {
-        submitBtn.innerHTML = originalContent;
-        submitBtn.disabled = false;
-        document.getElementById('checkoutForm').style.display = 'block';
-        document.getElementById('loadingPayment').style.display = 'none';
+        // Verificar se há um produto selecionado
+        if (!selectedProduct) {
+            showToast('Selecione um produto primeiro', 'error');
+            return;
+        }
+
+        const submitBtn = document.querySelector('.btn-checkout');
+        if (!submitBtn) {
+            console.error('❌ Botão de checkout não encontrado');
+            return;
+        }
+
+        const originalContent = submitBtn.innerHTML;
+
+        // Mostrar loading
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSANDO...';
+        submitBtn.disabled = true;
+
+        // Mostrar modal de loading
+        document.getElementById('checkoutForm').style.display = 'none';
+        document.getElementById('loadingPayment').style.display = 'block';
+
+        try {
+            console.log('🚀 Iniciando processo de pagamento...');
+            console.log('📋 Produto selecionado:', selectedProduct);
+
+            const response = await fetch('/api/criar-checkout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    product_id: selectedProduct,
+                    plano: `product_${selectedProduct}`,
+                })
+            });
+
+            console.log('📡 Resposta recebida:', response.status);
+            const data = await response.json();
+            console.log('📊 Dados da resposta:', data);
+
+            if (response.ok && data.success) {
+                console.log("✅ Checkout criado com sucesso!");
+                console.log("🔗 Init Point:", data.init_point);
+                console.log("🔗 Sandbox Init Point:", data.sandbox_init_point);
+
+                // Determinar qual URL usar
+                const checkoutUrl = data.init_point || data.sandbox_init_point;
+
+                if (checkoutUrl) {
+                    showToast("Redirecionando para o pagamento...", "success");
+                    console.log("🚀 Redirecionando para:", checkoutUrl);
+
+                    // Redirecionar imediatamente
+                    window.location.href = checkoutUrl;
+                } else {
+                    console.error("❌ Nenhuma URL de checkout encontrada");
+                    showToast("Erro: URL de pagamento não encontrada", "error");
+                    resetPaymentForm();
+                }
+            } else {
+                console.error("❌ Erro na resposta:", data);
+
+                if (response.status === 401) {
+                    showToast("Sessão expirada. Faça login novamente.", "error");
+                    localStorage.clear();
+                    setTimeout(() => {
+                        window.location.href = "/login";
+                    }, 2000);
+                } else {
+                    showToast(data.detail || data.message || "Erro ao processar pagamento", "error");
+                    resetPaymentForm();
+                }
+            }
+        } catch (error) {
+            console.error('❌ Erro durante o pagamento:', error);
+            showToast('Erro de conexão. Tente novamente.', 'error');
+            resetPaymentForm();
+        }
+
+        function resetPaymentForm() {
+            submitBtn.innerHTML = originalContent;
+            submitBtn.disabled = false;
+            document.getElementById('checkoutForm').style.display = 'block';
+            document.getElementById('loadingPayment').style.display = 'none';
+        }
     }
-}
 
         function closeCheckoutMethodModal() {
             document.getElementById('checkoutMethodModal').style.display = 'none';
