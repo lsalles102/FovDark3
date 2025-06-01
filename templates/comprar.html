@@ -1008,7 +1008,7 @@ block content %}
     }
 
     .security-badge {
-        display: flex;
+display: flex;
         flex-direction: column;
         align-items: center;
         gap: 0.25rem;
@@ -1080,7 +1080,6 @@ block content %}
 
     .progress-bar {
         height: 100%;
-        ```python
         background: linear-gradient(
             90deg,
             hsl(var(--primary)),
@@ -1441,18 +1440,18 @@ block content %}
 
     function proceedWithSecureFields() {
         closeMethodModal();
-        
+
         // Redirecionar para checkout seguro
         const params = new URLSearchParams({
             product: selectedProduct
         });
-        
+
         window.location.href = `/secure-checkout?${params}`;
     }
 
     function proceedWithMercadoPago() {
         closeMethodModal();
-        
+
         // Usar método tradicional do Mercado Pago
         openCheckoutModal(
             document.querySelector(`[data-product-id="${selectedProduct}"] .product-title`).textContent,
@@ -1504,148 +1503,158 @@ block content %}
         openCheckoutModal(name, price, duration, productId);
     }
 
-    async function processPayment() {
-        const token = localStorage.getItem("access_token");
+    async function processPayment(event) {
+    if (event) event.preventDefault();
 
-        if (!selectedProduct) {
-            showToast("Selecione um produto antes de continuar", "warning");
-            return;
-        }
-
-        // Mostrar loading
-        document.getElementById("checkoutForm").style.display = "none";
-        document.getElementById("loadingPayment").style.display = "block";
-
-        try {
-            console.log("🔄 Iniciando processo de pagamento...");
-            console.log("📦 Product ID:", selectedProduct);
-
-            const response = await fetch("/api/criar-checkout", {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    product_id: selectedProduct,
-                    plano: `product_${selectedProduct}`,
-                }),
-            });
-
-            const data = await response.json();
-            console.log("📊 Resposta do servidor:", data);
-
-            if (response.ok && data.success) {
-                console.log("✅ Checkout criado com sucesso!");
-                console.log("🔗 Init Point:", data.init_point);
-                console.log("🔗 Sandbox Init Point:", data.sandbox_init_point);
-
-                // Determinar qual URL usar
-                const checkoutUrl = data.init_point || data.sandbox_init_point;
-
-                if (checkoutUrl) {
-                    showToast("Redirecionando para o pagamento...", "success");
-                    console.log("🚀 Redirecionando para:", checkoutUrl);
-
-                    // Redirecionar imediatamente
-                    window.location.href = checkoutUrl;
-                } else {
-                    console.error("❌ Nenhuma URL de checkout encontrada");
-                    showToast("Erro: URL de pagamento não encontrada", "error");
-                    document.getElementById("checkoutForm").style.display = "block";
-                    document.getElementById("loadingPayment").style.display = "none";
-                }
-            } else {
-                console.error("❌ Erro na resposta:", data);
-
-                if (response.status === 401) {
-                    showToast("Sessão expirada. Faça login novamente.", "error");
-                    localStorage.clear();
-                    setTimeout(() => {
-                        window.location.href = "/login";
-                    }, 2000);
-                } else {
-                    showToast(
-                        data.detail || data.message || "Erro ao processar pagamento",
-                        "error",
-                    );
-                    document.getElementById("checkoutForm").style.display = "block";
-                    document.getElementById("loadingPayment").style.display = "none";
-                }
-            }
-        } catch (error) {
-            console.error("💥 Erro crítico:", error);
-            showToast("Erro ao processar pagamento", "error");
-            document.getElementById("checkoutForm").style.display = "block";
-            document.getElementById("loadingPayment").style.display = "none";
-        }
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+        showToast('Você precisa fazer login primeiro', 'error');
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 2000);
+        return;
     }
 
-    function showToast(message, type = "info") {
-        // Criar container se não existir
-        let container = document.getElementById("toast-container");
-        if (!container) {
-            container = document.createElement("div");
-            container.id = "toast-container";
-            container.style.cssText = `
+    // Verificar se há um plano selecionado
+    const selectedPlan = document.querySelector('input[name="plano"]:checked');
+    if (!selectedPlan) {
+        showToast('Selecione um plano primeiro', 'error');
+        return;
+    }
+
+    const submitBtn = document.querySelector('.btn-checkout');
+    const originalContent = submitBtn.innerHTML;
+
+    // Mostrar loading
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSANDO...';
+    submitBtn.disabled = true;
+
+    // Mostrar modal de loading
+    document.getElementById('checkoutForm').style.display = 'none';
+    document.getElementById('loadingPayment').style.display = 'block';
+
+    try {
+        console.log('🚀 Iniciando processo de pagamento...');
+        console.log('📋 Plano selecionado:', selectedPlan.value);
+
+        const response = await fetch('/api/criar-checkout', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                product_id: selectedProduct,
+                plano: `product_${selectedProduct}`,
+            })
+        });
+
+        console.log('📡 Resposta recebida:', response.status);
+        const data = await response.json();
+        console.log('📊 Dados da resposta:', data);
+
+        if (response.ok && data.success) {
+            console.log("✅ Checkout criado com sucesso!");
+            console.log("🔗 Init Point:", data.init_point);
+            console.log("🔗 Sandbox Init Point:", data.sandbox_init_point);
+
+            // Determinar qual URL usar
+            const checkoutUrl = data.init_point || data.sandbox_init_point;
+
+            if (checkoutUrl) {
+                showToast("Redirecionando para o pagamento...", "success");
+                console.log("🚀 Redirecionando para:", checkoutUrl);
+
+                // Redirecionar imediatamente
+                window.location.href = checkoutUrl;
+            } else {
+                console.error("❌ Nenhuma URL de checkout encontrada");
+                showToast("Erro: URL de pagamento não encontrada", "error");
+                resetPaymentForm();
+            }
+        } else {
+            console.error("❌ Erro na resposta:", data);
+
+            if (response.status === 401) {
+                showToast("Sessão expirada. Faça login novamente.", "error");
+                localStorage.clear();
+                setTimeout(() => {
+                    window.location.href = "/login";
+                }, 2000);
+            } else {
+                showToast(data.detail || data.message || "Erro ao processar pagamento", "error");
+                resetPaymentForm();
+            }
+        }
+    } catch (error) {
+        console.error('❌ Erro durante o pagamento:', error);
+        showToast('Erro de conexão. Tente novamente.', 'error');
+        resetPaymentForm();
+    }
+
+    function resetPaymentForm() {
+        submitBtn.innerHTML = originalContent;
+        submitBtn.disabled = false;
+        document.getElementById('checkoutForm').style.display = 'block';
+        document.getElementById('loadingPayment').style.display = 'none';
+    }
+}
+
+        function closeCheckoutMethodModal() {
+            document.getElementById('checkoutMethodModal').style.display = 'none';
+        }
+
+        function showToast(message, type = 'info') {
+            // Criar elemento toast se não existir
+            let toast = document.getElementById('toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'toast';
+                toast.style.cssText = `
                     position: fixed;
                     top: 20px;
                     right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: 500;
                     z-index: 10000;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 0.5rem;
+                    transform: translateX(100%);
+                    transition: transform 0.3s ease;
+                    max-width: 300px;
                 `;
-            document.body.appendChild(container);
-        }
+                document.body.appendChild(toast);
+            }
 
-        const toast = document.createElement("div");
-        toast.className = `toast toast-${type}`;
-        toast.style.cssText = `
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-                padding: 1rem 1.5rem;
-                border-radius: 8px;
-                color: white;
-                font-weight: 500;
-                transition: opacity 0.3s ease;
-                min-width: 300px;
-                background: ${
-                    type === "success"
-                        ? "linear-gradient(135deg, var(--success), #00cc66)"
-                        : type === "error"
-                          ? "linear-gradient(135deg, var(--danger), #cc0000)"
-                          : type === "warning"
-                            ? "linear-gradient(135deg, var(--warning), #cc8800)"
-                            : "linear-gradient(135deg, var(--primary), #0099cc)"
-                };
-            `;
+            // Definir cor baseada no tipo
+            const colors = {
+                success: '#10b981',
+                error: '#ef4444',
+                warning: '#f59e0b',
+                info: '#3b82f6'
+            };
 
-        const icon =
-            type === "success"
-                ? "check"
-                : type === "error"
-                  ? "times"
-                  : type === "warning"
-                    ? "exclamation-triangle"
-                    : "info";
+            toast.style.backgroundColor = colors[type] || colors.info;
+            toast.textContent = message;
+            toast.style.transform = 'translateX(0)';
 
-        toast.innerHTML = `
-                <i class="fas fa-${icon}-circle"></i>
-                <span>${message}</span>
-            `;
-
-        container.appendChild(toast);
-
-        setTimeout(() => {
-            toast.style.opacity = "0";
+            // Remover após 4 segundos
             setTimeout(() => {
-                if (container.contains(toast)) {
-                    container.removeChild(toast);
+                toast.style.transform = 'translateX(100%)';
+            }, 4000);
+        }
+document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Inicializando página de compra...');
+            loadProducts();
+
+            // Garantir que o primeiro plano seja selecionado por padrão
+            setTimeout(() => {
+                const firstPlan = document.querySelector('input[name="plano"]');
+                if (firstPlan && !document.querySelector('input[name="plano"]:checked')) {
+                    firstPlan.checked = true;
+                    console.log('✅ Plano padrão selecionado:', firstPlan.value);
                 }
-            }, 300);
-        }, 3000);
-    }
+            }, 500);
+        });
 </script>
 {% endblock %}
