@@ -1081,7 +1081,11 @@ async def debug_payment_config():
                 "MERCADOPAGO_ACCESS_TOKEN": "CONFIGURADO" if MERCADOPAGO_ACCESS_TOKEN else "NÃO CONFIGURADO",
                 "PORT": os.getenv("PORT", "5000"),
                 "DATABASE_URL": "CONFIGURADO" if os.getenv("DATABASE_URL") else "NÃO CONFIGURADO",
-                "CUSTOM_DOMAIN": os.getenv("CUSTOM_DOMAIN", "NÃO CONFIGURADO")
+                "CUSTOM_DOMAIN": os.getenv("CUSTOM_DOMAIN", "NÃO CONFIGURADO"),
+                "RAILWAY_STATIC_URL": os.getenv("RAILWAY_STATIC_URL", "NÃO CONFIGURADO"),
+                "RAILWAY_PUBLIC_DOMAIN": os.getenv("RAILWAY_PUBLIC_DOMAIN", "NÃO CONFIGURADO"),
+                "RAILWAY_ENVIRONMENT": os.getenv("RAILWAY_ENVIRONMENT", "NÃO CONFIGURADO"),
+                "RAILWAY_PROJECT_ID": os.getenv("RAILWAY_PROJECT_ID", "NÃO CONFIGURADO")
             }
         }
         
@@ -1089,6 +1093,35 @@ async def debug_payment_config():
         
     except Exception as e:
         return {"error": str(e)}
+
+@app.get("/api/debug/railway")
+async def debug_railway():
+    """Debug específico para Railway"""
+    try:
+        import os
+        from railway_config import is_railway_environment, get_railway_domain
+        
+        debug_info = {
+            "platform_detected": "Railway" if is_railway_environment() else "Other",
+            "is_railway": is_railway_environment(),
+            "railway_domain": get_railway_domain() if is_railway_environment() else "N/A",
+            "all_env_vars": {
+                "RAILWAY_STATIC_URL": os.getenv("RAILWAY_STATIC_URL"),
+                "RAILWAY_PUBLIC_DOMAIN": os.getenv("RAILWAY_PUBLIC_DOMAIN"), 
+                "RAILWAY_ENVIRONMENT": os.getenv("RAILWAY_ENVIRONMENT"),
+                "RAILWAY_PROJECT_ID": os.getenv("RAILWAY_PROJECT_ID"),
+                "RAILWAY_SERVICE_NAME": os.getenv("RAILWAY_SERVICE_NAME"),
+                "RAILWAY_PROJECT_NAME": os.getenv("RAILWAY_PROJECT_NAME"),
+                "CUSTOM_DOMAIN": os.getenv("CUSTOM_DOMAIN"),
+                "PORT": os.getenv("PORT"),
+                "DATABASE_URL": "SET" if os.getenv("DATABASE_URL") else "NOT_SET"
+            }
+        }
+        
+        return debug_info
+        
+    except Exception as e:
+        return {"error": str(e), "traceback": str(e)}
 
     """Health check endpoint"""
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
@@ -1098,30 +1131,43 @@ async def mercadopago_status():
     """Verificar status da integração do MercadoPago"""
     try:
         from mercadopago_integration import MERCADOPAGO_ACCESS_TOKEN, mp, get_domain
+        from railway_config import is_railway_environment
 
         # Debug das variáveis de ambiente
         import os
         debug_info = {
+            "platform": "Railway" if is_railway_environment() else "Replit" if os.getenv("REPL_SLUG") else "Other",
             "custom_domain": os.getenv("CUSTOM_DOMAIN"),
             "railway_static_url": os.getenv("RAILWAY_STATIC_URL"),
-            "railway_environment": os.getenv("RAILWAY_ENVIRONMENT"), 
+            "railway_public_domain": os.getenv("RAILWAY_PUBLIC_DOMAIN"),
+            "railway_environment": os.getenv("RAILWAY_ENVIRONMENT"),
+            "railway_project_id": os.getenv("RAILWAY_PROJECT_ID"),
+            "port": os.getenv("PORT"),
             "mercadopago_token_exists": bool(MERCADOPAGO_ACCESS_TOKEN),
-            "calculated_domain": get_domain(),
-            "platform": "Railway"
+            "calculated_domain": get_domain()
         }
 
         if not MERCADOPAGO_ACCESS_TOKEN:
+            platform_name = "Railway" if is_railway_environment() else "Replit"
             return {
                 "status": "not_configured",
                 "message": "❌ MercadoPago NÃO configurado",
-                "instructions": "Configure MERCADOPAGO_ACCESS_TOKEN nas variáveis do Railway",
+                "instructions": f"Configure MERCADOPAGO_ACCESS_TOKEN nas variáveis do {platform_name}",
                 "environment": "none",
                 "can_process_payments": False,
-                "debug": debug_info
+                "platform": platform_name,
+                "debug": debug_info,
+                "suggestions": [
+                    f"1. Acesse o painel do {platform_name}",
+                    "2. Adicione a variável MERCADOPAGO_ACCESS_TOKEN",
+                    "3. Configure CUSTOM_DOMAIN se necessário",
+                    "4. Redeploy a aplicação"
+                ]
             }
 
         if mp:
             is_production = "TEST" not in MERCADOPAGO_ACCESS_TOKEN
+            domain = get_domain()
 
             return {
                 "status": "configured",
@@ -1130,7 +1176,17 @@ async def mercadopago_status():
                 "can_process_payments": True,
                 "payments_real": is_production,
                 "token_prefix": MERCADOPAGO_ACCESS_TOKEN[:20] + "..." if len(MERCADOPAGO_ACCESS_TOKEN) > 20 else "***",
-                "webhook_url": f"{get_domain()}/api/webhook/mercadopago",
+                "webhook_url": f"{domain}/api/webhook/mercadopago",
+                "checkout_urls": {
+                    "success": f"{domain}/success",
+                    "failure": f"{domain}/cancelled", 
+                    "pending": f"{domain}/pending"
+                },
+                "domain_issues": {
+                    "domain_valid": domain.startswith('https://'),
+                    "domain_accessible": not domain.startswith('http://localhost'),
+                    "webhook_reachable": domain.startswith('https://')
+                },
                 "debug": debug_info
             }
         else:
@@ -1139,15 +1195,21 @@ async def mercadopago_status():
                 "message": "❌ Erro na inicialização do MercadoPago",
                 "environment": "error",
                 "can_process_payments": False,
-                "debug": debug_info
+                "debug": debug_info,
+                "possible_causes": [
+                    "Token do MercadoPago inválido",
+                    "Problema na conectividade",
+                    "SDK do MercadoPago não instalado"
+                ]
             }
     except Exception as e:
+        import traceback
         return {
             "status": "error",
             "message": f"❌ Erro ao verificar MercadoPago: {str(e)}",
             "environment": "unknown",
             "can_process_payments": False,
-            "debug": {"error": str(e)}
+            "debug": {"error": str(e), "traceback": traceback.format_exc()}
         }
 
 @app.get("/admin", response_class=HTMLResponse)

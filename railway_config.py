@@ -12,12 +12,16 @@ def is_railway_environment():
 
 def get_railway_domain():
     """Obtém o domínio correto para Railway"""
+    import os
+    
     # Prioridade para domínio personalizado
     custom_domain = os.getenv("CUSTOM_DOMAIN")
     if custom_domain:
+        if not custom_domain.startswith('http'):
+            custom_domain = f"https://{custom_domain}"
         return custom_domain.rstrip('/')
     
-    # URL estática do Railway
+    # URL estática do Railway (tem prioridade)
     railway_static_url = os.getenv("RAILWAY_STATIC_URL")
     if railway_static_url:
         return railway_static_url.rstrip('/')
@@ -26,6 +30,15 @@ def get_railway_domain():
     railway_public_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN")
     if railway_public_domain:
         return f"https://{railway_public_domain}"
+    
+    # Verificar PORT para confirmar Railway
+    port = os.getenv("PORT")
+    if port and port != "5000":  # Railway usa porta diferente de 5000
+        print("🚀 Railway detectado pela porta, mas sem domínio configurado")
+        # Tentar construir URL baseado no service name
+        service_name = os.getenv("RAILWAY_SERVICE_NAME", "web")
+        project_name = os.getenv("RAILWAY_PROJECT_NAME", "fovdark")
+        return f"https://{service_name}-{project_name}.up.railway.app"
     
     # Fallback para domínio personalizado
     return "https://www.fovdark.shop"

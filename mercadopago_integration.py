@@ -56,21 +56,31 @@ def get_domain():
     # Primeiro, tentar obter o domínio customizado
     custom_domain = os.getenv("CUSTOM_DOMAIN")
     if custom_domain:
-        return custom_domain
+        # Garantir que tem https://
+        if not custom_domain.startswith('http'):
+            custom_domain = f"https://{custom_domain}"
+        return custom_domain.rstrip('/')
+
+    # Verificar Railway primeiro (tem prioridade)
+    railway_static_url = os.getenv("RAILWAY_STATIC_URL")
+    if railway_static_url:
+        return railway_static_url.rstrip('/')
+    
+    railway_public_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN")
+    if railway_public_domain:
+        return f"https://{railway_public_domain}"
+    
+    # Verificar variáveis específicas do Railway
+    if os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("RAILWAY_PROJECT_ID"):
+        # Estamos no Railway mas sem domínio configurado
+        print("⚠️ Railway detectado mas sem domínio configurado!")
+        return "https://production-railway-app.railway.app"  # placeholder
 
     # Verificar se estamos no Replit
     replit_slug = os.getenv("REPL_SLUG")
     replit_owner = os.getenv("REPL_OWNER")
     if replit_slug and replit_owner:
         return f"https://{replit_slug}.{replit_owner}.repl.co"
-
-    # Tentar Railway
-    try:
-        from railway_config import get_railway_domain, is_railway_environment
-        if is_railway_environment():
-            return get_railway_domain()
-    except ImportError:
-        pass
 
     # Fallback para desenvolvimento local
     return "http://localhost:5000"
