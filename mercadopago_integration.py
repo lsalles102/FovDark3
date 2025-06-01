@@ -53,11 +53,16 @@ def get_domain():
     """Retorna o domínio base da aplicação"""
     import os
     
-    # Primeiro, tentar obter o domínio do Replit
-    replit_domains = os.getenv("REPLIT_DOMAINS")
-    if replit_domains:
-        # REPLIT_DOMAINS contém o domínio principal
-        return f"https://{replit_domains}"
+    # Primeiro, tentar obter o domínio customizado
+    custom_domain = os.getenv("CUSTOM_DOMAIN")
+    if custom_domain:
+        return custom_domain
+    
+    # Verificar se estamos no Replit
+    replit_slug = os.getenv("REPL_SLUG")
+    replit_owner = os.getenv("REPL_OWNER")
+    if replit_slug and replit_owner:
+        return f"https://{replit_slug}.{replit_owner}.repl.co"
     
     # Tentar Railway
     try:
