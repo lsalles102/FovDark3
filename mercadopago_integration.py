@@ -52,18 +52,18 @@ PRODUCTS = {
 def get_domain():
     """Retorna o domínio base da aplicação"""
     import os
-    
+
     # Primeiro, tentar obter o domínio customizado
     custom_domain = os.getenv("CUSTOM_DOMAIN")
     if custom_domain:
         return custom_domain
-    
+
     # Verificar se estamos no Replit
     replit_slug = os.getenv("REPL_SLUG")
     replit_owner = os.getenv("REPL_OWNER")
     if replit_slug and replit_owner:
         return f"https://{replit_slug}.{replit_owner}.repl.co"
-    
+
     # Tentar Railway
     try:
         from railway_config import get_railway_domain, is_railway_environment
@@ -83,19 +83,19 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
         print(f"  - User ID: {user_id}")
         print(f"  - User Email: {user_email}")
         print(f"  - Product ID: {product_id}")
-        
+
         if not mp:
             print("❌ MercadoPago SDK não inicializado")
             print(f"❌ Token configurado: {bool(MERCADOPAGO_ACCESS_TOKEN)}")
             return {
                 "error": "Integração do Mercado Pago não configurada. Configure o MERCADOPAGO_ACCESS_TOKEN nas variáveis de ambiente."
             }
-        
+
         # Validações básicas
         if not user_email or "@" not in user_email:
             print(f"❌ Email inválido: {user_email}")
             return {"error": "Email do usuário inválido"}
-        
+
         if not user_id or user_id <= 0:
             print(f"❌ User ID inválido: {user_id}")
             return {"error": "ID do usuário inválido"}
@@ -124,7 +124,7 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
                 'days': produto_db.duration_days,
                 'currency': 'BRL'
             }
-            
+
             print(f"🔍 Product info criado com {product_info['days']} dias")
         else:
             # Usar produtos legados
@@ -137,11 +137,11 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
         if price < 0.50:
             print(f"❌ Preço muito baixo: R$ {price:.2f}")
             return {"error": f"Valor mínimo é R$ 0,50. Valor informado: R$ {price:.2f}"}
-        
+
         if price > 50000:
             print(f"❌ Preço muito alto: R$ {price:.2f}")
             return {"error": f"Valor muito alto. Máximo permitido: R$ 50.000,00"}
-        
+
         if product_info['days'] <= 0:
             print(f"❌ Duração inválida: {product_info['days']} dias")
             return {"error": "Duração do produto deve ser maior que zero"}
@@ -152,7 +152,7 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
         # Sanitizar dados da preferência
         item_title = str(product_info['name'])[:256]  # Limitar título
         item_description = str(product_info['description'])[:600]  # Limitar descrição
-        
+
         preference_data = {
             "items": [
                 {
@@ -211,7 +211,7 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
         print(f"  - User ID: {user_id}")
         print(f"  - User Email: {user_email}")
         print(f"  - Environment: {'production' if 'TEST' not in MERCADOPAGO_ACCESS_TOKEN else 'test'}")
-        
+
         print(f"🔍 Dados completos da preferência:")
         print(f"  - Item: {product_info['name']} - R$ {product_info['price']}")
         print(f"  - Descrição: {product_info['description']}")
@@ -222,24 +222,24 @@ def create_payment_preference(plan_id, user_id, user_email, product_id=None):
         print(f"  - Preço: R$ {product_info['price']:.2f}")
         print(f"  - Email: {user_email}")
         print(f"  - Domínio: {domain_url}")
-        
+
         try:
             preference_response = mp.preference().create(preference_data)
             print(f"📊 Status da resposta: {preference_response.get('status')}")
-            
+
             if preference_response.get("status") not in [200, 201]:
                 print(f"❌ Resposta de erro da API: {preference_response}")
                 error_message = "Erro desconhecido"
-                
+
                 if "response" in preference_response:
                     response_data = preference_response["response"]
                     if "message" in response_data:
                         error_message = response_data["message"]
                     elif "cause" in response_data:
                         error_message = str(response_data["cause"])
-                
+
                 return {"error": f"Erro do MercadoPago: {error_message}"}
-                
+
         except Exception as api_error:
             print(f"❌ Exceção na API do MercadoPago: {api_error}")
             print(f"❌ Tipo do erro: {type(api_error)}")
@@ -353,12 +353,12 @@ def handle_payment_notification(payment_data):
                     print(f"❌ Produto ID {product_id} não encontrado no banco")
             except Exception as e:
                 print(f"⚠️ Erro ao buscar produto do banco: {e}")
-        
+
         # Fallback para planos legados APENAS se não conseguiu obter do banco
         if days_to_add == 1 and plan_name in PRODUCTS:
             days_to_add = PRODUCTS[plan_name]["days"]
             print(f"🔄 Fallback - Dias obtidos dos produtos legados: {days_to_add}")
-        
+
         # Se ainda não conseguiu obter dias válidos, usar o valor dos metadados como último recurso
         if days_to_add == 1 and preference_id:
             try:
@@ -371,12 +371,12 @@ def handle_payment_notification(payment_data):
 
         print(f"📅 RESULTADO FINAL: Adicionando {days_to_add} dias ao usuário")
         print(f"🏷️ Nome do plano: {plan_name}")
-        
+
         # Validação final para garantir que não adicionamos apenas 1 dia por erro
         if days_to_add <= 1:
             print(f"⚠️ AVISO: Apenas {days_to_add} dia(s) sendo adicionado(s). Isso pode ser um erro!")
             print(f"🔍 Verificando se é o produto de teste...")
-        
+
         # Log final de debug
         print(f"🔍 Debug final:")
         print(f"  - Product ID final: {product_id}")
