@@ -748,7 +748,7 @@ async def check_license(
                 db.commit()
 
             # Licença expirada
-            expired_days = (now - current_user.data_expiracao).days```python
+            expired_days = (now - current_user.data_expiracao).days
 
             response = {
                 "valid": False,
