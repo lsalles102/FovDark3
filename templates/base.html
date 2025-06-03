@@ -149,18 +149,16 @@
         </footer>
 
         <!-- Scripts -->
-        <!-- MercadoPago SDK -->
+        <!-- MercadoPago SDK - DEVE SER CARREGADO PRIMEIRO -->
         <script 
             src="https://sdk.mercadopago.com/js/v2" 
             onload="
-                if (window.checkMercadoPagoAvailability()) {
-                    console.log('✅ MercadoPago SDK carregado e disponível');
-                    window.mercadoPagoSDKState.loaded = true;
-                    window.mercadoPagoSDKState.loading = false;
-                } else {
-                    console.warn('⚠️ SDK carregado mas MercadoPago não disponível');
-                    window.mercadoPagoSDKState.error = 'SDK loaded but not available';
-                }
+                console.log('✅ MercadoPago SDK carregado e disponível');
+                window.mercadoPagoSDKState.loaded = true;
+                window.mercadoPagoSDKState.loading = false;
+                window.mercadoPagoSDKState.error = null;
+                // Disparar evento personalizado quando SDK estiver pronto
+                window.dispatchEvent(new CustomEvent('mercadoPagoSDKLoaded'));
             "
             onerror="
                 console.error('❌ Erro ao carregar MercadoPago SDK'); 
@@ -170,13 +168,12 @@
             onloadstart="
                 console.log('🔄 Iniciando carregamento do MercadoPago SDK...');
                 window.mercadoPagoSDKState.loading = true;
-            "
-            defer>
+            ">
         </script>
 
-        <!-- Scripts personalizados em ordem correta -->
-        <script src="/static/mercadopago-init.js" defer></script>
-        <script src="/static/script.js" defer></script>
+        <!-- Scripts personalizados APÓS o SDK -->
+        <script src="/static/mercadopago-init.js"></script>
+        <script src="/static/script.js"></script>
 
         {% block scripts %}{% endblock %}
     </body>

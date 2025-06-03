@@ -73,12 +73,16 @@
         try {
             console.log('🔧 Criando instância do MercadoPago...');
 
-            // Verificar novamente se MercadoPago está disponível
-            if (typeof MercadoPago === 'undefined' || !MercadoPago) {
+            // Verificação robusta se MercadoPago está disponível
+            if (typeof MercadoPago === 'undefined' || !MercadoPago || typeof MercadoPago !== 'function') {
                 console.error('❌ MercadoPago não está disponível no momento da inicialização');
+                console.error('❌ Tipo detectado:', typeof MercadoPago);
+                console.error('❌ Valor:', MercadoPago);
                 reject(new Error('MercadoPago SDK não disponível'));
                 return;
             }
+
+            console.log('✅ MercadoPago SDK confirmado como disponível:', typeof MercadoPago);
 
             // Obter chave pública do backend
             fetch('/api/mercadopago/public-key')
@@ -193,19 +197,47 @@
             });
     }
 
+    // Listener específico para quando o SDK do MercadoPago é carregado
+    window.addEventListener('mercadoPagoSDKLoaded', function() {
+        console.log('🎯 SDK do MercadoPago carregado - iniciando auto-inicialização...');
+        if (!autoInitAttempted) {
+            autoInitialize();
+        }
+    });
+
     // Event listeners para diferentes estados de carregamento
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', autoInitialize);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Aguardar um pouco para garantir que o SDK foi carregado
+            setTimeout(function() {
+                if (typeof MercadoPago !== 'undefined' && !autoInitAttempted) {
+                    autoInitialize();
+                }
+            }, 100);
+        });
     } else if (document.readyState === 'interactive' || document.readyState === 'complete') {
-        // DOM já carregado
-        setTimeout(autoInitialize, 500);
+        // DOM já carregado, verificar se SDK está disponível
+        if (typeof MercadoPago !== 'undefined') {
+            setTimeout(autoInitialize, 100);
+        } else {
+            // Aguardar SDK carregar
+            setTimeout(function() {
+                if (typeof MercadoPago !== 'undefined' && !autoInitAttempted) {
+                    autoInitialize();
+                }
+            }, 1000);
+        }
     }
 
-    // Listener para quando o SDK é carregado (apenas uma vez)
+    // Listener para quando a página é totalmente carregada (fallback)
     window.addEventListener('load', function() {
         if (!window.mercadoPagoState.isInitialized && !autoInitAttempted) {
-            console.log('🔄 Página carregada, tentando inicializar MercadoPago...');
-            autoInitialize();
+            console.log('🔄 Página carregada, verificando MercadoPago...');
+            if (typeof MercadoPago !== 'undefined') {
+                autoInitialize();
+            } else {
+                console.error('❌ MercadoPago ainda não disponível após page load');
+            }
         }
     });
 
