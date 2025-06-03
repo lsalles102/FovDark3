@@ -192,11 +192,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         if request.url.path.endswith('.html') or 'text/html' in response.headers.get('content-type', ''):
             response.headers['Content-Security-Policy'] = (
                 "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "
-                "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "
+                "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://sdk.mercadopago.com; "
+                "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; "
                 "img-src 'self' data: https:; "
-                "font-src 'self' https://cdnjs.cloudflare.com; "
-                "connect-src 'self' https://api.mercadopago.com; "
+                "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; "
+                "connect-src 'self' https://api.mercadopago.com https://fonts.googleapis.com; "
                 "frame-ancestors 'none';"
             )
 
@@ -755,6 +755,7 @@ async def check_license(
                 "license_status": "expirada",
                 "message": f"Sua licença expirou há {expired_days} dias",
                 "expires_at": current_user.data_expiracao.isoformat(),
+```python
                 "days_remaining": 0,
                 "hours_remaining": 0,
                 "expired_days": expired_days,
@@ -1267,21 +1268,21 @@ async def test_mercadopago():
     """Testar configuração do MercadoPago"""
     try:
         from mercadopago_integration import MERCADOPAGO_ACCESS_TOKEN, mp, get_domain
-        
+
         if not MERCADOPAGO_ACCESS_TOKEN:
             return {
                 "status": "error",
                 "message": "Token do MercadoPago não configurado",
                 "solution": "Configure MERCADOPAGO_ACCESS_TOKEN nos Secrets"
             }
-        
+
         if not mp:
             return {
                 "status": "error", 
                 "message": "SDK do MercadoPago não inicializado",
                 "solution": "Verifique se o token está correto"
             }
-        
+
         # Testar criação de uma preferência simples
         test_preference = {
             "items": [{
@@ -1296,7 +1297,7 @@ async def test_mercadopago():
                 "pending": f"{get_domain()}/pending"
             }
         }
-        
+
         try:
             test_response = mp.preference().create(test_preference)
             if test_response["status"] == 201:
@@ -1318,7 +1319,7 @@ async def test_mercadopago():
                 "message": f"Erro na comunicação com API: {str(api_error)}",
                 "solution": "Verifique se o token está correto e se não expirou"
             }
-            
+
     except Exception as e:
         return {
             "status": "error",
@@ -1331,7 +1332,7 @@ async def debug_payment_config():
     try:
         import os
         from mercadopago_integration import MERCADOPAGO_ACCESS_TOKEN, mp, get_domain
-        
+
         config_info = {
             "mercadopago_configured": bool(MERCADOPAGO_ACCESS_TOKEN),
             "token_type": "TEST" if MERCADOPAGO_ACCESS_TOKEN and "TEST" in MERCADOPAGO_ACCESS_TOKEN else "PRODUCTION" if MERCADOPAGO_ACCESS_TOKEN else "NONE",
@@ -1350,9 +1351,9 @@ async def debug_payment_config():
                 "RAILWAY_PROJECT_ID": os.getenv("RAILWAY_PROJECT_ID", "NÃO CONFIGURADO")
             }
         }
-        
+
         return config_info
-        
+
     except Exception as e:
         return {"error": str(e)}
 
@@ -1362,7 +1363,7 @@ async def debug_railway():
     try:
         import os
         from railway_config import is_railway_environment, get_railway_domain
-        
+
         debug_info = {
             "platform_detected": "Railway" if is_railway_environment() else "Other",
             "is_railway": is_railway_environment(),
@@ -1379,9 +1380,9 @@ async def debug_railway():
                 "DATABASE_URL": "SET" if os.getenv("DATABASE_URL") else "NOT_SET"
             }
         }
-        
+
         return debug_info
-        
+
     except Exception as e:
         return {"error": str(e), "traceback": str(e)}
 
@@ -1396,10 +1397,10 @@ async def debug_payments(
         user_payments = db.query(Payment).filter(
             Payment.user_id == current_user.id
         ).order_by(Payment.data_pagamento.desc()).all()
-        
+
         # Buscar todos os produtos disponíveis
         products = db.query(Product).filter(Product.is_active == True).all()
-        
+
         return {
             "user_info": {
                 "id": current_user.id,
@@ -1430,7 +1431,7 @@ async def debug_payments(
                 for prod in products
             ]
         }
-        
+
     except Exception as e:
         print(f"❌ Erro no debug de pagamentos: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -1537,7 +1538,8 @@ async def isos_page(request: Request):
 @app.get("/otimizadores", response_class=HTMLResponse)
 async def otimizadores_page(request: Request):
     """Página de otimizadores"""
-    return templates.TemplateResponse("otimizadores.html", {"request": request})
+    return templates.TemplateResponse("```python
+otimizadores.html", {"request": request})
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_page(request: Request):
