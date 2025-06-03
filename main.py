@@ -755,7 +755,6 @@ async def check_license(
                 "license_status": "expirada",
                 "message": f"Sua licença expirou há {expired_days} dias",
                 "expires_at": current_user.data_expiracao.isoformat(),
-```python
                 "days_remaining": 0,
                 "hours_remaining": 0,
                 "expired_days": expired_days,
@@ -1538,8 +1537,7 @@ async def isos_page(request: Request):
 @app.get("/otimizadores", response_class=HTMLResponse)
 async def otimizadores_page(request: Request):
     """Página de otimizadores"""
-    return templates.TemplateResponse("```python
-otimizadores.html", {"request": request})
+    return templates.TemplateResponse("otimizadores.html", {"request": request})
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_page(request: Request):
