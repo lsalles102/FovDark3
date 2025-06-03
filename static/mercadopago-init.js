@@ -31,33 +31,32 @@
             console.log('🚀 Iniciando inicialização do MercadoPago...');
 
             // Verificar se já está inicializado
-            if (window.mercadoPagoState.isInitialized) {
+            if (window.mercadoPagoState.isInitialized && window.mercadoPagoState.instance) {
                 console.log('✅ MercadoPago já inicializado');
                 resolve(window.mercadoPagoState.instance);
                 return;
             }
 
             // Verificar se o SDK está carregado
-            if (typeof MercadoPago === 'undefined') {
+            if (typeof MercadoPago === 'undefined' || !MercadoPago) {
                 console.log('⏳ SDK do MercadoPago não carregado ainda, aguardando...');
                 
-                // Aguardar até 15 segundos pelo SDK
+                // Aguardar até 10 segundos pelo SDK
                 var attempts = 0;
-                var maxAttempts = 75; // 75 x 200ms = 15 segundos
+                var maxAttempts = 50; // 50 x 200ms = 10 segundos
                 
                 var checkInterval = setInterval(function() {
                     attempts++;
                     
-                    if (typeof MercadoPago !== 'undefined') {
+                    if (typeof MercadoPago !== 'undefined' && MercadoPago) {
                         clearInterval(checkInterval);
                         console.log('✅ SDK do MercadoPago detectado após ' + (attempts * 200) + 'ms');
                         initializeMercadoPagoInstance(resolve, reject);
                     } else if (attempts >= maxAttempts) {
                         clearInterval(checkInterval);
-                        console.error('❌ Timeout: SDK do MercadoPago não carregou após 15 segundos');
-                        console.log('🔍 Verificando se há erros de CSP ou bloqueios de rede');
+                        console.error('❌ Timeout: SDK do MercadoPago não carregou após 10 segundos');
                         reject(new Error('SDK do MercadoPago não carregou - verifique CSP e conectividade'));
-                    } else if (attempts % 10 === 0) {
+                    } else if (attempts % 15 === 0) {
                         console.log('⏳ Ainda aguardando MercadoPago... tentativa ' + attempts + '/' + maxAttempts);
                     }
                 }, 200);
@@ -74,6 +73,13 @@
         try {
             console.log('🔧 Criando instância do MercadoPago...');
 
+            // Verificar novamente se MercadoPago está disponível
+            if (typeof MercadoPago === 'undefined' || !MercadoPago) {
+                console.error('❌ MercadoPago não está disponível no momento da inicialização');
+                reject(new Error('MercadoPago SDK não disponível'));
+                return;
+            }
+
             // Obter chave pública do backend
             fetch('/api/mercadopago/public-key')
                 .then(function(response) {
@@ -89,43 +95,61 @@
 
                     console.log('🔑 Chave pública obtida:', data.public_key.substring(0, 20) + '...');
 
-                    // Criar instância do MercadoPago
-                    var mp = new MercadoPago(data.public_key, {
-                        locale: 'pt-BR'
-                    });
+                    try {
+                        // Criar instância do MercadoPago com configuração mais robusta
+                        var mp = new MercadoPago(data.public_key, {
+                            locale: 'pt-BR',
+                            advancedFraudPrevention: false // Desabilitar para evitar erros de configuração
+                        });
 
-                    // Atualizar estado global
-                    window.mercadoPagoState.isLoaded = true;
-                    window.mercadoPagoState.isInitialized = true;
-                    window.mercadoPagoState.instance = mp;
-                    window.mercadoPagoState.publicKey = data.public_key;
+                        // Aguardar um momento para garantir que a instância foi criada
+                        setTimeout(function() {
+                            // Atualizar estado global
+                            window.mercadoPagoState.isLoaded = true;
+                            window.mercadoPagoState.isInitialized = true;
+                            window.mercadoPagoState.instance = mp;
+                            window.mercadoPagoState.publicKey = data.public_key;
 
-                    console.log('✅ MercadoPago inicializado com sucesso');
-                    console.log('📊 Estado:', window.mercadoPagoState);
+                            console.log('✅ MercadoPago inicializado com sucesso');
+                            console.log('📊 Estado:', window.mercadoPagoState);
 
-                    resolve(mp);
+                            resolve(mp);
+                        }, 100);
+
+                    } catch (mpError) {
+                        console.error('❌ Erro ao criar instância MercadoPago:', mpError);
+                        throw mpError;
+                    }
                 })
                 .catch(function(error) {
                     console.error('❌ Erro ao obter chave pública:', error);
                     
-                    // Tentar com chave de teste como fallback
-                    console.log('🔄 Tentando inicializar com configuração de fallback...');
-                    
-                    try {
-                        var mp = new MercadoPago('TEST-a8b1e4f8-e4a5-4b1c-9c8d-2e3f4g5h6i7j', {
-                            locale: 'pt-BR'
-                        });
+                    // Tentar com chave de teste como fallback apenas se não for erro de SDK
+                    if (typeof MercadoPago !== 'undefined' && MercadoPago) {
+                        console.log('🔄 Tentando inicializar com configuração de fallback...');
+                        
+                        try {
+                            var mp = new MercadoPago('TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9', {
+                                locale: 'pt-BR',
+                                advancedFraudPrevention: false
+                            });
 
-                        window.mercadoPagoState.isLoaded = true;
-                        window.mercadoPagoState.isInitialized = true;
-                        window.mercadoPagoState.instance = mp;
-                        window.mercadoPagoState.publicKey = 'TEST-FALLBACK';
+                            setTimeout(function() {
+                                window.mercadoPagoState.isLoaded = true;
+                                window.mercadoPagoState.isInitialized = true;
+                                window.mercadoPagoState.instance = mp;
+                                window.mercadoPagoState.publicKey = 'TEST-FALLBACK';
 
-                        console.log('⚠️ MercadoPago inicializado com chave de fallback');
-                        resolve(mp);
-                    } catch (fallbackError) {
-                        console.error('❌ Erro no fallback:', fallbackError);
-                        reject(fallbackError);
+                                console.log('⚠️ MercadoPago inicializado com chave de fallback');
+                                resolve(mp);
+                            }, 100);
+                        } catch (fallbackError) {
+                            console.error('❌ Erro no fallback:', fallbackError);
+                            reject(fallbackError);
+                        }
+                    } else {
+                        console.error('❌ SDK não disponível para fallback');
+                        reject(error);
                     }
                 });
         } catch (error) {
@@ -134,8 +158,17 @@
         }
     }
 
+    // Flag para evitar múltiplas inicializações
+    var autoInitAttempted = false;
+
     // Inicializar automaticamente quando o DOM estiver pronto
     function autoInitialize() {
+        if (autoInitAttempted) {
+            console.log('🔄 Auto-inicialização já tentada, pulando...');
+            return;
+        }
+        
+        autoInitAttempted = true;
         console.log('🎯 Auto-inicializando MercadoPago...');
         
         window.initializeMercadoPago()
@@ -150,6 +183,7 @@
             })
             .catch(function(error) {
                 console.error('❌ Erro na auto-inicialização:', error);
+                autoInitAttempted = false; // Permitir nova tentativa em caso de erro
                 
                 // Disparar evento de erro
                 var event = new CustomEvent('mercadoPagoError', {
@@ -162,15 +196,15 @@
     // Event listeners para diferentes estados de carregamento
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', autoInitialize);
-    } else {
+    } else if (document.readyState === 'interactive' || document.readyState === 'complete') {
         // DOM já carregado
-        setTimeout(autoInitialize, 100);
+        setTimeout(autoInitialize, 500);
     }
 
-    // Listener para quando o SDK é carregado
+    // Listener para quando o SDK é carregado (apenas uma vez)
     window.addEventListener('load', function() {
-        if (!window.mercadoPagoState.isInitialized) {
-            console.log('🔄 Página carregada, tentando inicializar MercadoPago novamente...');
+        if (!window.mercadoPagoState.isInitialized && !autoInitAttempted) {
+            console.log('🔄 Página carregada, tentando inicializar MercadoPago...');
             autoInitialize();
         }
     });

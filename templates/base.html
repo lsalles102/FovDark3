@@ -48,6 +48,13 @@
                 loading: false,
                 error: null
             };
+
+            // Função para verificar se MercadoPago está realmente disponível
+            window.checkMercadoPagoAvailability = function() {
+                return typeof MercadoPago !== 'undefined' && 
+                       MercadoPago !== null && 
+                       typeof MercadoPago === 'function';
+            };
         </script>
 
 
@@ -145,9 +152,26 @@
         <!-- MercadoPago SDK -->
         <script 
             src="https://sdk.mercadopago.com/js/v2" 
-            onload="console.log('✅ MercadoPago SDK carregado com sucesso:', typeof MercadoPago !== 'undefined' ? MercadoPago : null); window.mercadoPagoSDKState.loaded = true;"
-            onerror="console.error('❌ Erro ao carregar MercadoPago SDK'); window.mercadoPagoSDKState.error = 'Failed to load SDK';"
-            async>
+            onload="
+                if (window.checkMercadoPagoAvailability()) {
+                    console.log('✅ MercadoPago SDK carregado e disponível');
+                    window.mercadoPagoSDKState.loaded = true;
+                    window.mercadoPagoSDKState.loading = false;
+                } else {
+                    console.warn('⚠️ SDK carregado mas MercadoPago não disponível');
+                    window.mercadoPagoSDKState.error = 'SDK loaded but not available';
+                }
+            "
+            onerror="
+                console.error('❌ Erro ao carregar MercadoPago SDK'); 
+                window.mercadoPagoSDKState.error = 'Failed to load SDK';
+                window.mercadoPagoSDKState.loading = false;
+            "
+            onloadstart="
+                console.log('🔄 Iniciando carregamento do MercadoPago SDK...');
+                window.mercadoPagoSDKState.loading = true;
+            "
+            defer>
         </script>
 
         <!-- Scripts personalizados em ordem correta -->
