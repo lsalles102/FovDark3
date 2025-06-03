@@ -24,10 +24,21 @@
         }
     }
 
-    // ===== VERIFICAÇÃO DE AUTENTICAÇÃO =====
-    async function checkAuthentication() {
-        console.log('🔍 Verificando autenticação...');
+    // Global error handler
+    window.addEventListener('error', function(e) {
+        console.error('Erro global capturado:', e.error);
+        return true; // Previne que o erro pare a execução
+    });
 
+    window.addEventListener('unhandledrejection', function(e) {
+        console.error('Promise rejeitada não tratada:', e.reason);
+        e.preventDefault(); // Previne que apareça no console como erro não tratado
+    });
+
+    // ===== AUTENTICAÇÃO =====
+    async function checkAuthentication() {
+    try {
+        console.log('🔍 Verificando autenticação...');
         const token = localStorage.getItem('access_token');
         const userData = localStorage.getItem('user_data');
 
@@ -89,6 +100,17 @@
             clearAuthData();
             updateNavigation(false);
         }
+return true;
+    } catch (error) {
+        console.error('❌ Erro na autenticação:', error);
+        clearAuthData();
+        return false;
+    }
+    } catch (globalError) {
+        console.error('❌ Erro global na autenticação:', globalError);
+        clearAuthData();
+        return false;
+    }
     }
 
     // ===== NAVEGAÇÃO =====
@@ -863,6 +885,25 @@
     window.toggleFaq = toggleFaq; // Expose the FAQ toggle function
 
 })();
+
+// Inicialização quando DOM carrega
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 Inicializando FovDark...');
+    console.log('✅ DOM carregado');
+
+    // Inicializar de forma assíncrona
+    initializeApp();
+    console.log('🎯 Sistema inicializado com sucesso');
+});
+
+// Função de inicialização assíncrona
+async function initializeApp() {
+    try {
+        await checkAuthentication();
+    } catch (error) {
+        console.error('Erro na inicialização:', error);
+    }
+}
 
 function handleSuccessfulLogin(data) {
         console.log('✅ Login bem-sucedido para:', data.user.email);

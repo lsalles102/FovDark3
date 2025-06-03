@@ -1026,7 +1026,7 @@ display: flex;
         background: hsl(var(--border-primary));
         border-radius: 2px;
         overflow: hidden;
-    }
+    }<previous_generation>```text
 
     .progress-bar {
         height: 100%;
@@ -1597,6 +1597,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }, 500);
         });
+
+        // Processar compra
+        const buyButtons = document.querySelectorAll('.btn-buy');
+        buyButtons.forEach(button => {
+            button.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const productId = e.target.dataset.productId;
+                if (productId) {
+                    await processarCompra(productId);
+                } else {
+                    console.error('ID do produto não encontrado');
+                    showToast('Erro: ID do produto não encontrado', 'error');
+                }
+            });
+        });
+
+        async function processarCompra(productId) {
+        try {
+            console.log('🛒 Processando compra do produto:', productId);
+            showToast('Processando compra...', 'info');
+
+            // Verificar se o MercadoPago está disponível
+            if (typeof window.MercadoPago === 'undefined') {
+                console.error('MercadoPago SDK não está disponível');
+                showToast('Erro: Sistema de pagamento não disponível', 'error');
+                return;
+            }
 </script>
 
         <!-- MercadoPago será inicializado globalmente pelo mercadopago-init.js -->

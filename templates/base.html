@@ -38,9 +38,24 @@
         <!-- Custom CSS -->
         <link rel="stylesheet" href="/static/style.css" />
 
-        <!-- MercadoPago SDK -->
-        <script src="https://sdk.mercadopago.com/js/v2"></script>
-        
+        <!-- MercadoPago SDK com error handling -->
+        <script>
+            // Carregar MercadoPago SDK de forma segura
+            (function() {
+                const script = document.createElement('script');
+                script.src = 'https://sdk.mercadopago.com/js/v2';
+                script.async = true;
+                script.onload = function() {
+                    console.log('Mercado Pago SDK carregado com sucesso:', window.MercadoPago || {});
+                };
+                script.onerror = function() {
+                    console.warn('Erro ao carregar MercadoPago SDK - modo offline');
+                };
+                document.head.appendChild(script);
+            })();
+        </script>
+        <script src="/static/mercadopago-init.js" defer></script>
+
         {% block extra_head %}{% endblock %}
     </head>
     <body>
@@ -132,9 +147,8 @@
         </footer>
 
         <!-- Scripts -->
-        <script src="/static/mercadopago-init.js"></script>
         <script src="/static/script.js"></script>
-        
+
         {% block scripts %}{% endblock %}
     </body>
 </html>
