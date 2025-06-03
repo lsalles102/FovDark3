@@ -368,9 +368,7 @@ async def get_mercadopago_public_key():
     except Exception as e:
         print(f"❌ Erro ao obter chave pública: {e}")
         # Retornar chave de teste como fallback
-        return {"public_key": "TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9"}xcept Exception as e:
-        print(f"❌ Erro ao obter chave pública: {e}")
-        raise HTTPException(status_code=500, detail="Erro ao obter configuração de pagamento")
+        return {"public_key": "TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9"}
 
 class SecurePaymentRequest(BaseModel):
     token: str
