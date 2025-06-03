@@ -149,11 +149,11 @@
         </footer>
 
         <!-- Scripts -->
-        <!-- MercadoPago SDK -->
+        <!-- MercadoPago SDK - Carregado primeiro SEM defer para garantir disponibilidade -->
         <script 
             src="https://sdk.mercadopago.com/js/v2" 
             onload="
-                if (window.checkMercadoPagoAvailability()) {
+                if (typeof MercadoPago !== 'undefined') {
                     console.log('✅ MercadoPago SDK carregado e disponível');
                     window.mercadoPagoSDKState.loaded = true;
                     window.mercadoPagoSDKState.loading = false;
@@ -170,11 +170,10 @@
             onloadstart="
                 console.log('🔄 Iniciando carregamento do MercadoPago SDK...');
                 window.mercadoPagoSDKState.loading = true;
-            "
-            defer>
+            ">
         </script>
 
-        <!-- Scripts personalizados em ordem correta -->
+        <!-- Scripts personalizados em ordem correta - COM defer para aguardar MercadoPago -->
         <script src="/static/mercadopago-init.js" defer></script>
         <script src="/static/script.js" defer></script>
 

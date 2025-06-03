@@ -191,14 +191,14 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Content Security Policy
         if request.url.path.endswith('.html') or 'text/html' in response.headers.get('content-type', ''):
             response.headers['Content-Security-Policy'] = (
-                "default-src 'self' https://sdk.mercadopago.com https://www.mercadolibre.com; "
-                "connect-src 'self' https://www.mercadolibre.com https://api.mercadopago.com https://fonts.googleapis.com; "
-                "frame-src 'self' https://www.mercadolibre.com; "
-                "script-src 'self' 'unsafe-inline' https://sdk.mercadopago.com https://cdnjs.cloudflare.com; "
+                "default-src 'self' https://sdk.mercadopago.com https://www.mercadolibre.com https://static.cloudflareinsights.com; "
+                "connect-src 'self' https://www.mercadolibre.com https://api.mercadopago.com https://fonts.googleapis.com https://static.cloudflareinsights.com; "
+                "frame-src 'self' https://www.mercadolibre.com https://sdk.mercadopago.com; "
+                "script-src 'self' 'unsafe-inline' https://sdk.mercadopago.com https://cdnjs.cloudflare.com https://static.cloudflareinsights.com; "
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; "
                 "img-src 'self' data: https:; "
                 "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; "
-                "frame-ancestors 'none';"
+                "frame-ancestors 'none"
             )
 
         # Set proper content type and headers for static files
@@ -748,7 +748,7 @@ async def check_license(
                 db.commit()
 
             # Licença expirada
-            expired_days = (now - current_user.data_expiracao).days
+            expired_days = (now - current_user.data_expiracao).days```python
 
             response = {
                 "valid": False,
@@ -1444,10 +1444,10 @@ async def get_mercadopago_public_key():
     """Obter chave pública do MercadoPago"""
     try:
         from mercadopago_integration import MERCADOPAGO_ACCESS_TOKEN
-        
+
         if not MERCADOPAGO_ACCESS_TOKEN:
             raise HTTPException(status_code=500, detail="MercadoPago não configurado")
-        
+
         # Extrair chave pública do token de acesso
         # Para tokens de teste: TEST-xxx -> public key
         # Para tokens de produção: APP_USR-xxx -> public key correspondente
@@ -1458,12 +1458,12 @@ async def get_mercadopago_public_key():
             # Para produção, você precisaria configurar a chave pública real
             # Por enquanto, usar uma chave de teste como fallback
             public_key = "TEST-a8b1e4f8-e4a5-4b1c-9c8d-2e3f4g5h6i7j"
-        
+
         return {
             "public_key": public_key,
             "environment": "test" if "TEST-" in MERCADOPAGO_ACCESS_TOKEN else "production"
         }
-        
+
     except Exception as e:
         print(f"❌ Erro ao obter chave pública: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor")
@@ -1519,6 +1519,7 @@ async def mercadopago_status():
                 "payments_real": is_production,
                 "token_prefix": MERCADOPAGO_ACCESS_TOKEN[:20] + "..." if len(MERCADOPAGO_ACCESS_TOKEN) > 20 else "***",
                 "webhook_url": f"{domain}/api/webhook/mercadopago",
+                "```python
                 "checkout_urls": {
                     "success": f"{domain}/success",
                     "failure": f"{domain}/cancelled", 

@@ -38,26 +38,28 @@
             }
 
             // Verificar se o SDK está carregado
-            if (typeof MercadoPago === 'undefined' || !MercadoPago) {
+            if (typeof MercadoPago === 'undefined' || !MercadoPago || typeof MercadoPago !== 'function') {
                 console.log('⏳ SDK do MercadoPago não carregado ainda, aguardando...');
                 
-                // Aguardar até 10 segundos pelo SDK
+                // Aguardar até 15 segundos pelo SDK (tempo aumentado)
                 var attempts = 0;
-                var maxAttempts = 50; // 50 x 200ms = 10 segundos
+                var maxAttempts = 75; // 75 x 200ms = 15 segundos
                 
                 var checkInterval = setInterval(function() {
                     attempts++;
                     
-                    if (typeof MercadoPago !== 'undefined' && MercadoPago) {
+                    if (typeof MercadoPago !== 'undefined' && MercadoPago && typeof MercadoPago === 'function') {
                         clearInterval(checkInterval);
                         console.log('✅ SDK do MercadoPago detectado após ' + (attempts * 200) + 'ms');
                         initializeMercadoPagoInstance(resolve, reject);
                     } else if (attempts >= maxAttempts) {
                         clearInterval(checkInterval);
-                        console.error('❌ Timeout: SDK do MercadoPago não carregou após 10 segundos');
+                        console.error('❌ Timeout: SDK do MercadoPago não carregou após 15 segundos');
+                        console.log('🔍 Estado atual do MercadoPago:', typeof MercadoPago);
                         reject(new Error('SDK do MercadoPago não carregou - verifique CSP e conectividade'));
                     } else if (attempts % 15 === 0) {
                         console.log('⏳ Ainda aguardando MercadoPago... tentativa ' + attempts + '/' + maxAttempts);
+                        console.log('🔍 Tipo atual do MercadoPago:', typeof MercadoPago);
                     }
                 }, 200);
             } else {

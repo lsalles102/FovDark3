@@ -348,13 +348,11 @@
 
 {% block scripts %}
 <script>
-  // Inicializando o SDK Mercado Pago com a sua Public Key
-  const mp = new MercadoPago('APP_USR-d3554b5b-eeae-4495-88e3-93fa0fa9e81e', {
-    locale: 'pt-BR',
-  });
-
-  console.log("Mercado Pago SDK carregado com sucesso:", mp);
-
-  // Adicione a lógica de pagamento ou qualquer outra interação com o Mercado Pago aqui
+// A inicialização do MercadoPago agora é feita pelo mercadopago-init.js
+// Este bloco pode ser usado para lógica específica da página inicial
+document.addEventListener('mercadoPagoReady', function(event) {
+    console.log("✅ MercadoPago pronto para uso na página inicial");
+    // Adicione aqui lógica específica da página inicial que depende do MercadoPago
+});
 </script>
 {% endblock %}
