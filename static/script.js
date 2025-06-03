@@ -503,6 +503,37 @@
             return;
         }
 
+        // Verificar se MercadoPago está disponível
+        if (!window.isMercadoPagoReady || !window.isMercadoPagoReady()) {
+            console.log('⏳ Aguardando MercadoPago estar pronto...');
+            
+            // Aguardar o evento de MercadoPago pronto
+            const waitForMercadoPago = new Promise((resolve, reject) => {
+                if (window.isMercadoPagoReady && window.isMercadoPagoReady()) {
+                    resolve();
+                    return;
+                }
+                
+                const timeout = setTimeout(() => {
+                    reject(new Error('Timeout aguardando MercadoPago'));
+                }, 10000); // 10 segundos timeout
+                
+                window.addEventListener('mercadopagoReady', () => {
+                    clearTimeout(timeout);
+                    resolve();
+                });
+            });
+            
+            try {
+                await waitForMercadoPago;
+                console.log('✅ MercadoPago pronto, prosseguindo...');
+            } catch (error) {
+                console.error('❌ MercadoPago não disponível:', error);
+                showToast('Sistema de pagamento indisponível. Tente novamente.', 'error');
+                return;
+            }
+        }
+
         // Verificar se productId é válido
         if (!productId || productId === 'undefined' || productId === undefined) {
             console.error('❌ Product ID inválido:', productId);
