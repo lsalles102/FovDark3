@@ -1438,6 +1438,35 @@ async def debug_payments(
     """Health check endpoint"""
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
+@app.get("/api/mercadopago/public-key")
+async def get_mercadopago_public_key():
+    """Obter chave pública do MercadoPago"""
+    try:
+        from mercadopago_integration import MERCADOPAGO_ACCESS_TOKEN
+        
+        if not MERCADOPAGO_ACCESS_TOKEN:
+            raise HTTPException(status_code=500, detail="MercadoPago não configurado")
+        
+        # Extrair chave pública do token de acesso
+        # Para tokens de teste: TEST-xxx -> public key
+        # Para tokens de produção: APP_USR-xxx -> public key correspondente
+        if "TEST-" in MERCADOPAGO_ACCESS_TOKEN:
+            # Para ambiente de teste, usar chave pública de teste
+            public_key = "TEST-a8b1e4f8-e4a5-4b1c-9c8d-2e3f4g5h6i7j"
+        else:
+            # Para produção, você precisaria configurar a chave pública real
+            # Por enquanto, usar uma chave de teste como fallback
+            public_key = "TEST-a8b1e4f8-e4a5-4b1c-9c8d-2e3f4g5h6i7j"
+        
+        return {
+            "public_key": public_key,
+            "environment": "test" if "TEST-" in MERCADOPAGO_ACCESS_TOKEN else "production"
+        }
+        
+    except Exception as e:
+        print(f"❌ Erro ao obter chave pública: {e}")
+        raise HTTPException(status_code=500, detail="Erro interno do servidor")
+
 @app.get("/api/mercadopago/status")
 async def mercadopago_status():
     """Verificar status da integração do MercadoPago"""

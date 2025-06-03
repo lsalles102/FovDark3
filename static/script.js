@@ -32,7 +32,9 @@
         if (e.message && e.message.includes('MercadoPago is not defined')) {
             console.log('🔄 Tentando recarregar MercadoPago SDK...');
             if (typeof window.initializeMercadoPago === 'function') {
-                window.initializeMercadoPago().catch(err => {
+                window.initializeMercadoPago().then(function() {
+                    console.log('✅ MercadoPago recarregado com sucesso');
+                }).catch(function(err) {
                     console.error('❌ Falha ao recarregar MercadoPago:', err);
                 });
             }
