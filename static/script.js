@@ -27,11 +27,28 @@
     // Global error handler
     window.addEventListener('error', function(e) {
         console.error('Erro global capturado:', e.error);
+        
+        // Tratar erros específicos do MercadoPago
+        if (e.message && e.message.includes('MercadoPago is not defined')) {
+            console.log('🔄 Tentando recarregar MercadoPago SDK...');
+            if (typeof window.initializeMercadoPago === 'function') {
+                window.initializeMercadoPago().catch(err => {
+                    console.error('❌ Falha ao recarregar MercadoPago:', err);
+                });
+            }
+        }
+        
         return true; // Previne que o erro pare a execução
     });
 
     window.addEventListener('unhandledrejection', function(e) {
         console.error('Promise rejeitada não tratada:', e.reason);
+        
+        // Tratar promises rejeitadas do MercadoPago
+        if (e.reason && e.reason.message && e.reason.message.includes('MercadoPago')) {
+            console.log('🔄 Promise do MercadoPago rejeitada, tentando novamente...');
+        }
+        
         e.preventDefault(); // Previne que apareça no console como erro não tratado
     });
 
@@ -523,8 +540,30 @@
             return;
         }
 
-        // Processar pagamento diretamente
-        processPurchase(productId, productPrice, planName, durationDays);
+        // Verificar se MercadoPago está disponível
+        if (typeof window.isMercadoPagoAvailable === 'function' && !window.isMercadoPagoAvailable()) {
+            console.log('⏳ Aguardando MercadoPago carregar...');
+            showToast('Carregando sistema de pagamento...', 'info');
+            
+            // Aguardar MercadoPago ficar disponível
+            const checkMercadoPago = setInterval(() => {
+                if (window.isMercadoPagoAvailable && window.isMercadoPagoAvailable()) {
+                    clearInterval(checkMercadoPago);
+                    console.log('✅ MercadoPago disponível, processando pagamento');
+                    processPurchase(productId, productPrice, planName, durationDays);
+                }
+            }, 100);
+            
+            // Timeout após 10 segundos
+            setTimeout(() => {
+                clearInterval(checkMercadoPago);
+                console.log('⚠️ Timeout aguardando MercadoPago, processando mesmo assim');
+                processPurchase(productId, productPrice, planName, durationDays);
+            }, 10000);
+        } else {
+            // Processar pagamento diretamente
+            processPurchase(productId, productPrice, planName, durationDays);
+        }
     };
 
     async function processPurchase(productId, productPrice, planName, durationDays) {
@@ -600,7 +639,7 @@
     }
 
     // Função para processar compra
-    async function buyProduct(productId) {
+    function buyProduct(productId) {
         // Implementar lógica de compra aqui
         console.log(`Produto ${productId} comprado!`);
     }
