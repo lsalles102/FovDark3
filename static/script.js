@@ -543,13 +543,8 @@
         }
 
         // Verificar se MercadoPago está disponível
-        if (typeof MercadoPago === 'undefined' || typeof window.isMercadoPagoAvailable !== 'function' || !window.isMercadoPagoAvailable()) {
+        if (typeof window.isMercadoPagoAvailable === 'function' && !window.isMercadoPagoAvailable()) {
             console.log('⏳ Aguardando MercadoPago carregar...');
-            console.log('🔍 Status atual:');
-            console.log('  - MercadoPago definido:', typeof MercadoPago !== 'undefined');
-            console.log('  - Função helper disponível:', typeof window.isMercadoPagoAvailable === 'function');
-            console.log('  - Estado:', window.mercadoPagoState);
-            
             showToast('Carregando sistema de pagamento...', 'info');
             
             // Aguardar MercadoPago ficar disponível
@@ -559,21 +554,13 @@
             const checkMercadoPago = setInterval(() => {
                 attempts++;
                 
-                const isMPDefined = typeof MercadoPago !== 'undefined';
-                const isHelperAvailable = typeof window.isMercadoPagoAvailable === 'function';
-                const isInstanceReady = isHelperAvailable && window.isMercadoPagoAvailable();
-                
-                if (isMPDefined && isHelperAvailable && isInstanceReady) {
+                if (window.isMercadoPagoAvailable && window.isMercadoPagoAvailable()) {
                     clearInterval(checkMercadoPago);
-                    console.log('✅ MercadoPago totalmente disponível após ' + (attempts * 200) + 'ms');
+                    console.log('✅ MercadoPago disponível após ' + (attempts * 200) + 'ms');
                     processPurchase(productId, productPrice, planName, durationDays);
                 } else if (attempts >= maxAttempts) {
                     clearInterval(checkMercadoPago);
                     console.log('⚠️ Timeout aguardando MercadoPago após ' + (maxAttempts * 200) + 'ms');
-                    console.log('🔍 Status final:');
-                    console.log('  - MercadoPago definido:', isMPDefined);
-                    console.log('  - Função helper disponível:', isHelperAvailable);
-                    console.log('  - Instância pronta:', isInstanceReady);
                     console.log('🔍 Verificando se MercadoPago foi bloqueado por CSP');
                     
                     // Verificar se o SDK foi pelo menos carregado
