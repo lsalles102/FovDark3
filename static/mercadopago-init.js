@@ -34,22 +34,23 @@
             // Inicializar apenas uma vez
             if (!window.mercadoPagoInstance) {
                 // Obter chave pública do backend
-                const publicKey = await fetch('/api/mercadopago/public-key')
+                fetch('/api/mercadopago/public-key')
                     .then(res => res.json())
                     .then(data => data.public_key)
-                    .catch(() => 'TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9'); // fallback
-                
-                window.mercadoPagoInstance = new MercadoPago(publicKey, {
-                    locale: 'pt-BR'
-                });
-                
-                console.log('✅ MercadoPago SDK inicializado globalmente');
-                window.mercadoPagoInitialized = true;
-                
-                // Disparar evento customizado
-                window.dispatchEvent(new CustomEvent('mercadopagoReady', {
-                    detail: { instance: window.mercadoPagoInstance }
-                }));
+                    .catch(() => 'TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9') // fallback
+                    .then(publicKey => {
+                        window.mercadoPagoInstance = new MercadoPago(publicKey, {
+                            locale: 'pt-BR'
+                        });
+                        
+                        console.log('✅ MercadoPago SDK inicializado globalmente');
+                        window.mercadoPagoInitialized = true;
+                        
+                        // Disparar evento customizado
+                        window.dispatchEvent(new CustomEvent('mercadopagoReady', {
+                            detail: { instance: window.mercadoPagoInstance }
+                        }));
+                    });
             }
         } catch (error) {
             console.error('❌ Erro ao inicializar MercadoPago:', error);

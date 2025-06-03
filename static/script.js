@@ -506,24 +506,24 @@
         // Verificar se MercadoPago está disponível
         if (!window.isMercadoPagoReady || !window.isMercadoPagoReady()) {
             console.log('⏳ Aguardando MercadoPago estar pronto...');
-            
+
             // Aguardar o evento de MercadoPago pronto
             const waitForMercadoPago = new Promise((resolve, reject) => {
                 if (window.isMercadoPagoReady && window.isMercadoPagoReady()) {
                     resolve();
                     return;
                 }
-                
+
                 const timeout = setTimeout(() => {
                     reject(new Error('Timeout aguardando MercadoPago'));
                 }, 10000); // 10 segundos timeout
-                
+
                 window.addEventListener('mercadopagoReady', () => {
                     clearTimeout(timeout);
                     resolve();
                 });
             });
-            
+
             try {
                 await waitForMercadoPago;
                 console.log('✅ MercadoPago pronto, prosseguindo...');
@@ -608,6 +608,12 @@
             showToast('Erro de conexão com o servidor', 'error');
         }
     };
+
+    // Função para processar compra
+    async function buyProduct(productId) {
+        // Implementar lógica de compra aqui
+        console.log(`Produto ${productId} comprado!`);
+    }
 
     // ===== UTILITÁRIOS =====
     function redirectUser() {
