@@ -191,12 +191,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Content Security Policy
         if request.url.path.endswith('.html') or 'text/html' in response.headers.get('content-type', ''):
             response.headers['Content-Security-Policy'] = (
-                "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://sdk.mercadopago.com; "
-                "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; "
+                "default-src 'self' https://sdk.mercadopago.com https://www.mercadolibre.com; "
+                "connect-src 'self' https://www.mercadolibre.com https://api.mercadopago.com https://fonts.googleapis.com; "
+                "frame-src 'self' https://www.mercadolibre.com; "
+                "script-src 'self' 'unsafe-inline' https://sdk.mercadopago.com https://cdnjs.cloudflare.com; "
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; "
                 "img-src 'self' data: https:; "
-                "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; "
-                "connect-src 'self' https://api.mercadopago.com https://fonts.googleapis.com; "
+                "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; "
                 "frame-ancestors 'none';"
             )
 
