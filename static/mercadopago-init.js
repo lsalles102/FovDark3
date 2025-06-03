@@ -11,18 +11,19 @@
     }
 
     let attempts = 0;
-    const maxAttempts = 50; // 5 segundos máximo
+    const maxAttempts = 100; // 10 segundos máximo
 
     // Aguardar SDK estar carregado
     function initMercadoPago() {
         attempts++;
 
-        if (typeof MercadoPago === 'undefined') {
+        // Verificar se MercadoPago está disponível globalmente
+        if (typeof window.MercadoPago === 'undefined' && typeof MercadoPago === 'undefined') {
             if (attempts < maxAttempts) {
                 console.log(`⏳ Aguardando SDK do MercadoPago... (tentativa ${attempts}/${maxAttempts})`);
                 setTimeout(initMercadoPago, 100);
             } else {
-                console.error('❌ Timeout: SDK do MercadoPago não carregou');
+                console.error('❌ Timeout: SDK do MercadoPago não carregou após', maxAttempts * 100, 'ms');
                 // Tentar recarregar o SDK
                 loadMercadoPagoSDK();
             }
@@ -30,12 +31,15 @@
         }
 
         try {
+            // Usar MercadoPago global ou window.MercadoPago
+            const MPClass = window.MercadoPago || MercadoPago;
+            
             // Inicializar apenas uma vez
-            if (!window.mercadoPagoInstance) {
+            if (!window.mercadoPagoInstance && MPClass) {
                 // Usar chave pública padrão
                 const publicKey = 'TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9';
 
-                window.mercadoPagoInstance = new MercadoPago(publicKey, {
+                window.mercadoPagoInstance = new MPClass(publicKey, {
                     locale: 'pt-BR'
                 });
 
@@ -55,7 +59,7 @@
                 console.log('🔄 Tentando inicializar MercadoPago novamente...');
                 window.mercadoPagoInitialized = false;
                 window.mercadoPagoInstance = null;
-                attempts = 0;
+                attempts = Math.max(0, attempts - 10); // Reduzir tentativas para não ficar infinito
                 initMercadoPago();
             }, 2000);
         }

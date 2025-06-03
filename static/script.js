@@ -37,80 +37,78 @@
 
     // ===== AUTENTICAÇÃO =====
     async function checkAuthentication() {
-    try {
-        console.log('🔍 Verificando autenticação...');
-        const token = localStorage.getItem('access_token');
-        const userData = localStorage.getItem('user_data');
-
-        if (!token) {
-            console.log('❌ Token não encontrado');
-            clearAuthData();
-            updateNavigation(false);
-            return;
-        }
-
-        // Se tem dados do usuário salvos, usar eles primeiro
-        if (userData) {
-            try {
-                currentUser = JSON.parse(userData);
-                isAuthenticated = true;
-                updateNavigation(true);
-                console.log('✅ Usando dados salvos do usuário:', currentUser.email);
-                return;
-            } catch (error) {
-                console.error('❌ Erro ao processar dados salvos:', error);
-            }
-        }
-
-        // Verificar token no servidor apenas se necessário
         try {
-            const response = await fetch('/api/verify_token', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+            console.log('🔍 Verificando autenticação...');
+            const token = localStorage.getItem('access_token');
+            const userData = localStorage.getItem('user_data');
 
-            if (response.ok) {
-                const data = await response.json();
-                if (data.valid) {
-                    localStorage.setItem('user_data', JSON.stringify(data.user));
-                    currentUser = data.user;
-                    isAuthenticated = true;
-                    updateNavigation(true);
-                    console.log('✅ Usuário autenticado:', currentUser.email);
-                } else {
-                    console.log('❌ Token inválido');
-                    clearAuthData();
-                    updateNavigation(false);
-                }
-            } else {
-                console.log('❌ Erro na verificação do token');
+            if (!token) {
+                console.log('❌ Token não encontrado');
                 clearAuthData();
                 updateNavigation(false);
+                return false;
+            }
+
+            // Se tem dados do usuário salvos, usar eles primeiro
+            if (userData) {
+                try {
+                    currentUser = JSON.parse(userData);
+                    isAuthenticated = true;
+                    updateNavigation(true);
+                    console.log('✅ Usando dados salvos do usuário:', currentUser.email);
+                    return true;
+                } catch (error) {
+                    console.error('❌ Erro ao processar dados salvos:', error);
+                }
+            }
+
+            // Verificar token no servidor apenas se necessário
+            try {
+                const response = await fetch('/api/verify_token', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.valid) {
+                        localStorage.setItem('user_data', JSON.stringify(data.user));
+                        currentUser = data.user;
+                        isAuthenticated = true;
+                        updateNavigation(true);
+                        console.log('✅ Usuário autenticado:', currentUser.email);
+                        return true;
+                    } else {
+                        console.log('❌ Token inválido');
+                        clearAuthData();
+                        updateNavigation(false);
+                        return false;
+                    }
+                } else {
+                    console.log('❌ Erro na verificação do token');
+                    clearAuthData();
+                    updateNavigation(false);
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Erro na verificação de autenticação:', error);
+                // Não limpar dados em caso de erro de rede
+                if (currentUser) {
+                    console.log('🔄 Mantendo sessão devido a erro de rede');
+                    return true;
+                }
+                clearAuthData();
+                updateNavigation(false);
+                return false;
             }
         } catch (error) {
-            console.error('❌ Erro na verificação de autenticação:', error);
-            // Não limpar dados em caso de erro de rede
-            if (currentUser) {
-                console.log('🔄 Mantendo sessão devido a erro de rede');
-                return;
-            }
+            console.error('❌ Erro na autenticação:', error);
             clearAuthData();
-            updateNavigation(false);
+            return false;
         }
-return true;
-    } catch (error) {
-        console.error('❌ Erro na autenticação:', error);
-        clearAuthData();
-        return false;
-    }
-    } catch (globalError) {
-        console.error('❌ Erro global na autenticação:', globalError);
-        clearAuthData();
-        return false;
-    }
     }
 
     // ===== NAVEGAÇÃO =====
@@ -857,12 +855,12 @@ return true;
 })();
 
 // Inicialização quando DOM carrega
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Inicializando FovDark...');
     console.log('✅ DOM carregado');
 
     // Inicializar de forma assíncrona
-    initializeApp();
+    await initializeApp();
     console.log('🎯 Sistema inicializado com sucesso');
 });
 

@@ -41,25 +41,47 @@
         <!-- MercadoPago SDK com error handling -->
         <script>
             // Carregar MercadoPago SDK de forma segura
-            (function() {
-                const script = document.createElement('script');
-                script.src = 'https://sdk.mercadopago.com/js/v2';
-                script.async = true;
-                script.defer = true;
-                script.onload = function() {
-                    console.log('✅ MercadoPago SDK carregado');
-                    // Aguardar um pouco antes de tentar inicializar
-                    setTimeout(() => {
-                        if (typeof MercadoPago !== 'undefined') {
-                            console.log('✅ MercadoPago disponível');
-                        }
-                    }, 100);
-                };
-                script.onerror = function() {
-                    console.warn('❌ Erro ao carregar MercadoPago SDK');
-                };
-                document.head.appendChild(script);
-            })();
+            window.mercadoPagoSDKLoaded = false;
+            
+            function loadMercadoPagoSDK() {
+                return new Promise((resolve, reject) => {
+                    if (window.mercadoPagoSDKLoaded && (typeof MercadoPago !== 'undefined' || typeof window.MercadoPago !== 'undefined')) {
+                        console.log('✅ MercadoPago SDK já carregado');
+                        resolve();
+                        return;
+                    }
+
+                    const script = document.createElement('script');
+                    script.src = 'https://sdk.mercadopago.com/js/v2';
+                    script.async = true;
+                    script.onload = function() {
+                        console.log('✅ MercadoPago SDK carregado com sucesso');
+                        window.mercadoPagoSDKLoaded = true;
+                        
+                        // Aguardar um pouco para o SDK se estabilizar
+                        setTimeout(() => {
+                            if (typeof MercadoPago !== 'undefined' || typeof window.MercadoPago !== 'undefined') {
+                                console.log('✅ MercadoPago disponível globalmente');
+                                resolve();
+                            } else {
+                                console.warn('⚠️ MercadoPago carregado mas não disponível');
+                                resolve(); // Resolver mesmo assim
+                            }
+                        }, 200);
+                    };
+                    script.onerror = function(error) {
+                        console.error('❌ Erro ao carregar MercadoPago SDK:', error);
+                        reject(error);
+                    };
+                    
+                    document.head.appendChild(script);
+                });
+            }
+
+            // Carregar SDK imediatamente
+            loadMercadoPagoSDK().catch(error => {
+                console.error('❌ Falha ao carregar MercadoPago SDK:', error);
+            });
         </script>
         <script src="/static/mercadopago-init.js"></script>
 
