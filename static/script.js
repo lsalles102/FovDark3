@@ -548,22 +548,37 @@
             showToast('Carregando sistema de pagamento...', 'info');
             
             // Aguardar MercadoPago ficar disponível
+            let attempts = 0;
+            const maxAttempts = 50; // 50 x 200ms = 10 segundos
+            
             const checkMercadoPago = setInterval(() => {
+                attempts++;
+                
                 if (window.isMercadoPagoAvailable && window.isMercadoPagoAvailable()) {
                     clearInterval(checkMercadoPago);
-                    console.log('✅ MercadoPago disponível, processando pagamento');
+                    console.log('✅ MercadoPago disponível após ' + (attempts * 200) + 'ms');
                     processPurchase(productId, productPrice, planName, durationDays);
+                } else if (attempts >= maxAttempts) {
+                    clearInterval(checkMercadoPago);
+                    console.log('⚠️ Timeout aguardando MercadoPago após ' + (maxAttempts * 200) + 'ms');
+                    console.log('🔍 Verificando se MercadoPago foi bloqueado por CSP');
+                    
+                    // Verificar se o SDK foi pelo menos carregado
+                    if (typeof MercadoPago === 'undefined') {
+                        console.error('❌ MercadoPago SDK não foi carregado - problema de CSP ou rede');
+                        showToast('Erro: Sistema de pagamento não carregou. Verifique sua conexão.', 'error');
+                        return;
+                    }
+                    
+                    console.log('🔄 SDK carregado mas inicialização falhou, tentando processar mesmo assim');
+                    processPurchase(productId, productPrice, planName, durationDays);
+                } else if (attempts % 10 === 0) {
+                    console.log('⏳ Aguardando MercadoPago... tentativa ' + attempts + '/' + maxAttempts);
                 }
-            }, 100);
-            
-            // Timeout após 10 segundos
-            setTimeout(() => {
-                clearInterval(checkMercadoPago);
-                console.log('⚠️ Timeout aguardando MercadoPago, processando mesmo assim');
-                processPurchase(productId, productPrice, planName, durationDays);
-            }, 10000);
+            }, 200);
         } else {
             // Processar pagamento diretamente
+            console.log('✅ MercadoPago já disponível, processando pagamento');
             processPurchase(productId, productPrice, planName, durationDays);
         }
     };

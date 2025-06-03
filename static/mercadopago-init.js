@@ -41,25 +41,29 @@
             if (typeof MercadoPago === 'undefined') {
                 console.log('⏳ SDK do MercadoPago não carregado ainda, aguardando...');
                 
-                // Aguardar até 10 segundos pelo SDK
+                // Aguardar até 15 segundos pelo SDK
                 var attempts = 0;
-                var maxAttempts = 50; // 50 x 200ms = 10 segundos
+                var maxAttempts = 75; // 75 x 200ms = 15 segundos
                 
                 var checkInterval = setInterval(function() {
                     attempts++;
                     
                     if (typeof MercadoPago !== 'undefined') {
                         clearInterval(checkInterval);
-                        console.log('✅ SDK do MercadoPago detectado, continuando inicialização');
+                        console.log('✅ SDK do MercadoPago detectado após ' + (attempts * 200) + 'ms');
                         initializeMercadoPagoInstance(resolve, reject);
                     } else if (attempts >= maxAttempts) {
                         clearInterval(checkInterval);
-                        console.error('❌ Timeout: SDK do MercadoPago não carregou');
-                        reject(new Error('SDK do MercadoPago não carregou'));
+                        console.error('❌ Timeout: SDK do MercadoPago não carregou após 15 segundos');
+                        console.log('🔍 Verificando se há erros de CSP ou bloqueios de rede');
+                        reject(new Error('SDK do MercadoPago não carregou - verifique CSP e conectividade'));
+                    } else if (attempts % 10 === 0) {
+                        console.log('⏳ Ainda aguardando MercadoPago... tentativa ' + attempts + '/' + maxAttempts);
                     }
                 }, 200);
             } else {
                 // SDK já carregado, inicializar imediatamente
+                console.log('✅ SDK do MercadoPago já disponível');
                 initializeMercadoPagoInstance(resolve, reject);
             }
         });
