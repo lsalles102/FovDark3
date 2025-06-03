@@ -781,6 +781,11 @@
         }
     }
 
+    // Função para verificar se MercadoPago está disponível
+    function isMercadoPagoAvailable() {
+        return typeof MercadoPago !== 'undefined' && window.mercadoPagoInstance;
+    }
+
     // ===== FAQ FUNCTIONALITY =====
     function toggleFaq(element) {
         const faqItem = element.closest('.faq-item');

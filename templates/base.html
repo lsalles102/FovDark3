@@ -40,31 +40,8 @@
 
         <!-- MercadoPago SDK -->
         <script src="https://sdk.mercadopago.com/js/v2"></script>
-        <script>
-            // Inicializando o SDK Mercado Pago com a sua Public Key
-            const mp = new MercadoPago('APP_USR-d3554b5b-eeae-4495-88e3-93fa0fa9e81e', {
-                locale: 'pt-BR',
-            });
-
-            // Verificação se o SDK foi carregado corretamente
-            console.log("Mercado Pago SDK carregado com sucesso:", mp);
-
-            // Exemplo de como interagir com o SDK (como gerar um token)
-            function processPayment() {
-                const form = document.getElementById('payment-form'); // Assumindo que você tenha um formulário de pagamento
-                mp.createToken(form, function(status, response) {
-                    if (status === 200 || status === 201) {
-                        const token = response.id;
-                        console.log('Token gerado com sucesso:', token);
-                        // Enviar esse token para o backend para processar o pagamento
-                    } else {
-                        console.log('Erro ao gerar o token:', response);
-                    }
-                });
-            }
-        </script>
-
-        {% block extra_head %}{% endblock %}
+        <script src="/static/mercadopago-init.js"></script>
+        <script src="/static/script.js"></script>
     </head>
     <body>
         <!-- Navigation -->
@@ -155,7 +132,7 @@
         </footer>
 
         <!-- Scripts -->
-        <script src="/static/script.js"></script>
+        
         {% block scripts %}{% endblock %}
     </body>
 </html>

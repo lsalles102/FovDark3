@@ -1602,15 +1602,18 @@ document.addEventListener('DOMContentLoaded', function() {
         <!-- MercadoPago Initialization -->
         <script>
             // Inicializar MercadoPago SDK
-            let mp;
-            try {
+             if (typeof MercadoPago !== 'undefined') {
                 // Usar chave pública de teste por enquanto
-                mp = new MercadoPago('TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9', {
-                    locale: 'pt-BR'
-                });
-                console.log('✅ MercadoPago SDK inicializado');
-            } catch (error) {
-                console.error('❌ Erro ao inicializar MercadoPago SDK:', error);
+                try {
+                     mp = new MercadoPago('TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9', {
+                        locale: 'pt-BR'
+                    });
+                    console.log('✅ MercadoPago SDK inicializado');
+                } catch (error) {
+                    console.error('❌ Erro ao inicializar MercadoPago SDK:', error);
+                }
+            } else {
+                console.warn('MercadoPago SDK não carregado.');
             }
         </script>
 
