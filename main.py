@@ -1519,7 +1519,6 @@ async def mercadopago_status():
                 "payments_real": is_production,
                 "token_prefix": MERCADOPAGO_ACCESS_TOKEN[:20] + "..." if len(MERCADOPAGO_ACCESS_TOKEN) > 20 else "***",
                 "webhook_url": f"{domain}/api/webhook/mercadopago",
-                "```python
                 "checkout_urls": {
                     "success": f"{domain}/success",
                     "failure": f"{domain}/cancelled", 

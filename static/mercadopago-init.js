@@ -1,8 +1,7 @@
-
 // ===== MERCADOPAGO INITIALIZATION =====
 (function() {
     'use strict';
-    
+
     console.log('🔧 Inicializando módulo MercadoPago...');
 
     // Estado global do MercadoPago
@@ -40,14 +39,14 @@
             // Verificar se o SDK está carregado
             if (typeof MercadoPago === 'undefined' || !MercadoPago || typeof MercadoPago !== 'function') {
                 console.log('⏳ SDK do MercadoPago não carregado ainda, aguardando...');
-                
+
                 // Aguardar até 15 segundos pelo SDK (tempo aumentado)
                 var attempts = 0;
                 var maxAttempts = 75; // 75 x 200ms = 15 segundos
-                
+
                 var checkInterval = setInterval(function() {
                     attempts++;
-                    
+
                     if (typeof MercadoPago !== 'undefined' && MercadoPago && typeof MercadoPago === 'function') {
                         clearInterval(checkInterval);
                         console.log('✅ SDK do MercadoPago detectado após ' + (attempts * 200) + 'ms');
@@ -125,11 +124,11 @@
                 })
                 .catch(function(error) {
                     console.error('❌ Erro ao obter chave pública:', error);
-                    
+
                     // Tentar com chave de teste como fallback apenas se não for erro de SDK
                     if (typeof MercadoPago !== 'undefined' && MercadoPago) {
                         console.log('🔄 Tentando inicializar com configuração de fallback...');
-                        
+
                         try {
                             var mp = new MercadoPago('TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9', {
                                 locale: 'pt-BR',
@@ -169,14 +168,14 @@
             console.log('🔄 Auto-inicialização já tentada, pulando...');
             return;
         }
-        
+
         autoInitAttempted = true;
         console.log('🎯 Auto-inicializando MercadoPago...');
-        
+
         window.initializeMercadoPago()
             .then(function(mp) {
                 console.log('🎉 MercadoPago auto-inicializado com sucesso');
-                
+
                 // Disparar evento personalizado
                 var event = new CustomEvent('mercadoPagoReady', {
                     detail: { instance: mp }
@@ -186,7 +185,7 @@
             .catch(function(error) {
                 console.error('❌ Erro na auto-inicialização:', error);
                 autoInitAttempted = false; // Permitir nova tentativa em caso de erro
-                
+
                 // Disparar evento de erro
                 var event = new CustomEvent('mercadoPagoError', {
                     detail: { error: error }
