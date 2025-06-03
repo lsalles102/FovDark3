@@ -17,7 +17,7 @@ import time
 import re
 
 from database import get_db, engine, Base
-from models import User, Payment, Product, SiteSettings
+from models import User, Payment, Product, SiteSettings, Download
 from auth import (
     authenticate_user, create_access_token, get_current_user,
     get_password_hash, verify_password, decode_access_token, check_rate_limit, reset_rate_limit
@@ -790,6 +790,263 @@ async def get_admin_payments(
         for payment in payments
     ]
 
+# ===== DOWNLOADS API ENDPOINTS =====
+
+@app.get("/api/downloads/{category}")
+async def get_downloads_by_category(category: str, db: Session = Depends(get_db)):
+    """Obter downloads por categoria"""
+    try:
+        valid_categories = ['software', 'iso', 'optimizer']
+        if category not in valid_categories:
+            raise HTTPException(status_code=400, detail="Categoria inválida")
+
+        downloads = db.query(Download).filter(
+            Download.category == category,
+            Download.is_active == True
+        ).order_by(Download.is_featured.desc(), Download.created_at.desc()).all()
+
+        downloads_data = []
+        for download in downloads:
+            download_dict = {
+                "id": download.id,
+                "title": download.title,
+                "description": download.description,
+                "category": download.category,
+                "image_url": download.image_url,
+                "file_size": download.file_size,
+                "version": download.version,
+                "is_free": download.is_free,
+                "price": float(download.price) if download.price else 0.0,
+                "download_count": download.download_count,
+                "is_featured": download.is_featured,
+                "tags": download.tags,
+                "requirements": download.requirements,
+                "created_at": download.created_at.isoformat() if download.created_at else None
+            }
+            downloads_data.append(download_dict)
+
+        return downloads_data
+
+    except Exception as e:
+        print(f"❌ Erro no endpoint /api/downloads/{category}: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro interno do servidor: {str(e)}")
+
+@app.post("/api/downloads/{download_id}/download")
+async def download_file(
+    download_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Processar download de arquivo"""
+    try:
+        download = db.query(Download).filter(Download.id == download_id).first()
+        if not download:
+            raise HTTPException(status_code=404, detail="Download não encontrado")
+
+        if not download.is_active:
+            raise HTTPException(status_code=403, detail="Download não disponível")
+
+        # Se for pago, verificar se o usuário tem licença ativa
+        if not download.is_free:
+            has_active_license = current_user.data_expiracao and current_user.data_expiracao > datetime.utcnow()
+            if not has_active_license:
+                raise HTTPException(status_code=403, detail="Licença necessária para downloads pagos")
+
+        # Incrementar contador de downloads
+        download.download_count += 1
+        db.commit()
+
+        # Retornar arquivo ou URL de download
+        if download.download_url:
+            return {"download_url": download.download_url, "message": "Download iniciado"}
+        else:
+            # Se não tiver URL, simular download direto
+            return {"message": "Download processado com sucesso"}
+
+    except Exception as e:
+        print(f"❌ Erro no download {download_id}: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erro interno do servidor: {str(e)}")
+
+@app.get("/api/admin/downloads")
+async def get_admin_downloads(
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """Obter todos os downloads para administração"""
+    downloads = db.query(Download).order_by(Download.created_at.desc()).all()
+    return [
+        {
+            "id": download.id,
+            "title": download.title,
+            "description": download.description,
+            "category": download.category,
+            "image_url": download.image_url,
+            "download_url": download.download_url,
+            "file_size": download.file_size,
+            "version": download.version,
+            "is_free": download.is_free,
+            "price": download.price,
+            "download_count": download.download_count,
+            "is_active": download.is_active,
+            "is_featured": download.is_featured,
+            "tags": download.tags,
+            "requirements": download.requirements,
+            "created_at": download.created_at.isoformat() if download.created_at else None,
+            "updated_at": download.updated_at.isoformat() if download.updated_at else None
+        }
+        for download in downloads
+    ]
+
+@app.post("/api/admin/downloads")
+async def create_download(
+    title: str = Form(...),
+    description: str = Form(""),
+    category: str = Form(...),
+    image_url: str = Form(""),
+    download_url: str = Form(""),
+    file_size: str = Form(""),
+    version: str = Form(""),
+    is_free: str = Form("true"),
+    price: float = Form(0.0),
+    tags: str = Form(""),
+    requirements: str = Form(""),
+    is_active: str = Form("true"),
+    is_featured: str = Form("false"),
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """Criar novo download"""
+    try:
+        valid_categories = ['software', 'iso', 'optimizer']
+        if category not in valid_categories:
+            raise HTTPException(status_code=400, detail="Categoria inválida")
+
+        is_free_bool = is_free.lower() in ('true', '1', 'on', 'yes')
+        is_active_bool = is_active.lower() in ('true', '1', 'on', 'yes')
+        is_featured_bool = is_featured.lower() in ('true', '1', 'on', 'yes')
+
+        new_download = Download(
+            title=title.strip(),
+            description=description.strip() if description else None,
+            category=category,
+            image_url=image_url.strip() if image_url else None,
+            download_url=download_url.strip() if download_url else None,
+            file_size=file_size.strip() if file_size else None,
+            version=version.strip() if version else None,
+            is_free=is_free_bool,
+            price=float(price) if not is_free_bool else 0.0,
+            tags=tags.strip() if tags else None,
+            requirements=requirements.strip() if requirements else None,
+            is_active=is_active_bool,
+            is_featured=is_featured_bool
+        )
+
+        db.add(new_download)
+        db.commit()
+        db.refresh(new_download)
+
+        return {
+            "message": "Download criado com sucesso",
+            "download": {
+                "id": new_download.id,
+                "title": new_download.title,
+                "category": new_download.category,
+                "is_free": new_download.is_free,
+                "price": new_download.price
+            }
+        }
+    except Exception as e:
+        print(f"❌ Erro ao criar download: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erro interno do servidor: {str(e)}")
+
+@app.put("/api/admin/downloads/{download_id}")
+async def update_download(
+    download_id: int,
+    title: str = Form(...),
+    description: str = Form(""),
+    category: str = Form(...),
+    image_url: str = Form(""),
+    download_url: str = Form(""),
+    file_size: str = Form(""),
+    version: str = Form(""),
+    is_free: str = Form("true"),
+    price: float = Form(0.0),
+    tags: str = Form(""),
+    requirements: str = Form(""),
+    is_active: str = Form("true"),
+    is_featured: str = Form("false"),
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """Atualizar download existente"""
+    try:
+        download = db.query(Download).filter(Download.id == download_id).first()
+        if not download:
+            raise HTTPException(status_code=404, detail="Download não encontrado")
+
+        valid_categories = ['software', 'iso', 'optimizer']
+        if category not in valid_categories:
+            raise HTTPException(status_code=400, detail="Categoria inválida")
+
+        is_free_bool = is_free.lower() in ('true', '1', 'on', 'yes')
+        is_active_bool = is_active.lower() in ('true', '1', 'on', 'yes')
+        is_featured_bool = is_featured.lower() in ('true', '1', 'on', 'yes')
+
+        download.title = title.strip()
+        download.description = description.strip() if description else None
+        download.category = category
+        download.image_url = image_url.strip() if image_url else None
+        download.download_url = download_url.strip() if download_url else None
+        download.file_size = file_size.strip() if file_size else None
+        download.version = version.strip() if version else None
+        download.is_free = is_free_bool
+        download.price = float(price) if not is_free_bool else 0.0
+        download.tags = tags.strip() if tags else None
+        download.requirements = requirements.strip() if requirements else None
+        download.is_active = is_active_bool
+        download.is_featured = is_featured_bool
+        download.updated_at = datetime.utcnow()
+
+        db.commit()
+        db.refresh(download)
+
+        return {
+            "message": "Download atualizado com sucesso",
+            "download": {
+                "id": download.id,
+                "title": download.title,
+                "category": download.category,
+                "is_active": download.is_active
+            }
+        }
+    except Exception as e:
+        print(f"❌ Erro ao atualizar download: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erro interno do servidor: {str(e)}")
+
+@app.delete("/api/admin/downloads/{download_id}")
+async def delete_download(
+    download_id: int,
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """Deletar download"""
+    try:
+        download = db.query(Download).filter(Download.id == download_id).first()
+        if not download:
+            raise HTTPException(status_code=404, detail="Download não encontrado")
+
+        db.delete(download)
+        db.commit()
+
+        return {"message": "Download deletado com sucesso"}
+    except Exception as e:
+        print(f"❌ Erro ao deletar download: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erro interno do servidor: {str(e)}")
+
 
 
 @app.get("/api/download/loader")
@@ -1266,6 +1523,21 @@ async def mercadopago_status():
             "can_process_payments": False,
             "debug": {"error": str(e), "traceback": traceback.format_exc()}
         }
+
+@app.get("/softwares", response_class=HTMLResponse)
+async def softwares_page(request: Request):
+    """Página de softwares"""
+    return templates.TemplateResponse("softwares.html", {"request": request})
+
+@app.get("/isos", response_class=HTMLResponse)
+async def isos_page(request: Request):
+    """Página de ISOs otimizadas"""
+    return templates.TemplateResponse("isos.html", {"request": request})
+
+@app.get("/otimizadores", response_class=HTMLResponse)
+async def otimizadores_page(request: Request):
+    """Página de otimizadores"""
+    return templates.TemplateResponse("otimizadores.html", {"request": request})
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_page(request: Request):

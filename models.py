@@ -68,6 +68,28 @@ class SiteSettings(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class Download(Base):
+    __tablename__ = "downloads"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    category = Column(String, nullable=False)  # 'software', 'iso', 'optimizer'
+    image_url = Column(String, nullable=True)
+    download_url = Column(String, nullable=True)
+    file_size = Column(String, nullable=True)
+    version = Column(String, nullable=True)
+    is_free = Column(Boolean, default=True)
+    price = Column(Float, default=0.0)
+    download_count = Column(Integer, default=0)
+    is_active = Column(Boolean, default=True)
+    is_featured = Column(Boolean, default=False)
+    tags = Column(Text, nullable=True)  # comma separated tags
+    requirements = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class AdminLog(Base):
     __tablename__ = "admin_logs"
 

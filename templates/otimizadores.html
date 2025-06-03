@@ -1,0 +1,575 @@
+
+{% extends "base.html" %}
+
+{% block title %}Otimizadores - FovDark{% endblock %}
+
+{% block content %}
+<section class="downloads-section">
+    <div class="container">
+        <div class="downloads-header">
+            <h1><i class="fas fa-rocket"></i> OTIMIZADORES</h1>
+            <p>⚡ Ferramentas para turbinar seu sistema e melhorar performance</p>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="downloads-controls">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Buscar otimizadores..." onkeyup="filterDownloads()">
+            </div>
+            <div class="filter-controls">
+                <select id="filterType" onchange="filterDownloads()">
+                    <option value="">Todos os tipos</option>
+                    <option value="free">Gratuitos</option>
+                    <option value="paid">Pagos</option>
+                    <option value="featured">Em destaque</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Downloads Grid -->
+        <div class="downloads-grid" id="downloadsGrid">
+            <!-- Loading state -->
+            <div class="loading-container">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Carregando otimizadores...</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Download Modal -->
+<div id="downloadModal" class="download-modal-overlay">
+    <div class="download-modal">
+        <div class="download-header">
+            <h3 id="downloadTitle"></h3>
+            <button class="download-close" onclick="closeDownloadModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="download-body">
+            <div id="downloadContent"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .downloads-section {
+        padding: 2rem 0;
+        min-height: 80vh;
+    }
+
+    .downloads-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .downloads-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #10b981, #059669);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    .downloads-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .search-box {
+        position: relative;
+        flex: 1;
+        max-width: 400px;
+    }
+
+    .search-box i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 3rem;
+        background: var(--bg-secondary);
+        border: 2px solid var(--border);
+        border-radius: 25px;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .search-box input:focus {
+        border-color: #10b981;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    .filter-controls select {
+        padding: 0.75rem 1rem;
+        background: var(--bg-secondary);
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .filter-controls select:focus {
+        border-color: #10b981;
+        outline: none;
+    }
+
+    .downloads-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .download-card {
+        background: var(--bg-secondary);
+        border: 2px solid var(--border);
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-height: 400px;
+    }
+
+    .download-card:hover {
+        border-color: #10b981;
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+    }
+
+    .download-card-image {
+        height: 180px;
+        background: linear-gradient(135deg, #065f46, #047857);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .download-card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .download-card:hover .download-card-image img {
+        transform: scale(1.1);
+    }
+
+    .download-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .download-price {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: var(--success);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 700;
+    }
+
+    .download-price.paid {
+        background: var(--warning);
+    }
+
+    .download-card-content {
+        flex: 1;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .download-card-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .download-card-description {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        line-height: 1.4;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .download-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: auto;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .info-item .label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .info-item .value {
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .download-button {
+        width: 100%;
+        background: linear-gradient(135deg, #10b981, #059669);
+        border: none;
+        border-radius: 8px;
+        padding: 0.8rem 1rem;
+        color: white;
+        font-weight: 700;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+    }
+
+    .download-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+    }
+
+    .download-button.locked {
+        background: var(--warning);
+    }
+
+    /* Download Modal */
+    .download-modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(10px);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .download-modal {
+        background: var(--bg-secondary);
+        border: 2px solid var(--border);
+        border-radius: 15px;
+        max-width: 500px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .download-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem 2rem;
+        border-bottom: 2px solid var(--border);
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+    }
+
+    .download-close {
+        background: none;
+        border: 2px solid var(--border);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .download-close:hover {
+        border-color: var(--danger);
+        color: var(--danger);
+        background: rgba(239, 68, 68, 0.1);
+    }
+
+    .download-body {
+        padding: 2rem;
+    }
+
+    /* Loading */
+    .loading-container {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-secondary);
+    }
+
+    .loading-container i {
+        font-size: 2rem;
+        color: #10b981;
+        margin-bottom: 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .downloads-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-box {
+            max-width: none;
+        }
+
+        .downloads-grid {
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .download-info {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+    }
+</style>
+
+<script>
+    let downloads = [];
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadDownloads('optimizer');
+    });
+
+    async function loadDownloads(category) {
+        try {
+            const response = await fetch(`/api/downloads/${category}`);
+            const data = await response.json();
+
+            if (response.ok) {
+                downloads = data;
+                displayDownloads(downloads);
+            } else {
+                throw new Error(data.detail || 'Erro ao carregar downloads');
+            }
+        } catch (error) {
+            console.error('Erro ao carregar downloads:', error);
+            document.getElementById('downloadsGrid').innerHTML = `
+                <div class="loading-container">
+                    <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
+                    <p>Erro ao carregar downloads</p>
+                </div>
+            `;
+        }
+    }
+
+    function displayDownloads(downloadsList) {
+        const container = document.getElementById('downloadsGrid');
+
+        if (!downloadsList || downloadsList.length === 0) {
+            container.innerHTML = `
+                <div class="loading-container">
+                    <i class="fas fa-rocket"></i>
+                    <p>Nenhum otimizador disponível</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = downloadsList.map(download => {
+            const imageUrl = download.image_url || '/static/cyberpunk-soldier.jpg';
+            const priceDisplay = download.is_free ? 'GRÁTIS' : `R$ ${download.price.toFixed(2)}`;
+            const priceClass = download.is_free ? '' : 'paid';
+
+            return `
+                <div class="download-card" data-tags="${download.tags || ''}" data-type="${download.is_free ? 'free' : 'paid'}" data-featured="${download.is_featured}">
+                    <div class="download-card-image">
+                        <img src="${imageUrl}" alt="${download.title}" onerror="this.src='/static/cyberpunk-soldier.jpg'">
+                        ${download.is_featured ? '<div class="download-badge">DESTAQUE</div>' : ''}
+                        <div class="download-price ${priceClass}">${priceDisplay}</div>
+                    </div>
+
+                    <div class="download-card-content">
+                        <h3 class="download-card-title">${download.title}</h3>
+                        <p class="download-card-description">${download.description || 'Otimizador para melhorar performance do sistema'}</p>
+
+                        <div class="download-info">
+                            <div class="info-item">
+                                <span class="label">Versão</span>
+                                <span class="value">${download.version || 'Mais recente'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Tamanho</span>
+                                <span class="value">${download.file_size || 'N/A'}</span>
+                            </div>
+                        </div>
+
+                        <button class="download-button ${!download.is_free ? 'locked' : ''}" onclick="handleDownload(${download.id}, '${download.title}', ${download.is_free}, ${download.price || 0})">
+                            <i class="fas fa-${download.is_free ? 'download' : 'lock'}"></i>
+                            ${download.is_free ? 'BAIXAR GRÁTIS' : 'COMPRAR'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function filterDownloads() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const filterType = document.getElementById('filterType').value;
+
+        const filtered = downloads.filter(download => {
+            const matchesSearch = download.title.toLowerCase().includes(searchTerm) ||
+                                  (download.description && download.description.toLowerCase().includes(searchTerm)) ||
+                                  (download.tags && download.tags.toLowerCase().includes(searchTerm));
+
+            const matchesFilter = !filterType ||
+                                  (filterType === 'free' && download.is_free) ||
+                                  (filterType === 'paid' && !download.is_free) ||
+                                  (filterType === 'featured' && download.is_featured);
+
+            return matchesSearch && matchesFilter;
+        });
+
+        displayDownloads(filtered);
+    }
+
+    async function handleDownload(downloadId, title, isFree, price) {
+        if (isFree) {
+            await processDownload(downloadId);
+        } else {
+            await processPaidDownload(downloadId, title, price);
+        }
+    }
+
+    async function processDownload(downloadId) {
+        try {
+            const token = localStorage.getItem('access_token');
+            
+            const response = await fetch(`/api/downloads/${downloadId}/download`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `download_${downloadId}`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                showToast('Download iniciado!', 'success');
+            } else {
+                const data = await response.json();
+                if (response.status === 401) {
+                    showToast('Você precisa fazer login primeiro', 'error');
+                    setTimeout(() => window.location.href = '/login', 2000);
+                } else {
+                    showToast(data.detail || 'Erro no download', 'error');
+                }
+            }
+        } catch (error) {
+            console.error('Erro no download:', error);
+            showToast('Erro de conexão', 'error');
+        }
+    }
+
+    async function processPaidDownload(downloadId, title, price) {
+        showToast('Redirecionando para pagamento...', 'info');
+        // Implementar integração com MercadoPago
+    }
+
+    function closeDownloadModal() {
+        document.getElementById('downloadModal').style.display = 'none';
+    }
+
+    function showToast(message, type = 'info') {
+        let toast = document.getElementById('toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'toast';
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 10000;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                max-width: 300px;
+            `;
+            document.body.appendChild(toast);
+        }
+
+        const colors = {
+            success: '#10b981',
+            error: '#ef4444',
+            warning: '#f59e0b',
+            info: '#3b82f6'
+        };
+
+        toast.style.backgroundColor = colors[type] || colors.info;
+        toast.textContent = message;
+        toast.style.transform = 'translateX(0)';
+
+        setTimeout(() => {
+            toast.style.transform = 'translateX(100%)';
+        }, 4000);
+    }
+</script>
+{% endblock %}
