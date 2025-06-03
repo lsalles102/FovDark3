@@ -33,7 +33,13 @@
         try {
             // Inicializar apenas uma vez
             if (!window.mercadoPagoInstance) {
-                window.mercadoPagoInstance = new MercadoPago('TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9', {
+                // Obter chave pública do backend
+                const publicKey = await fetch('/api/mercadopago/public-key')
+                    .then(res => res.json())
+                    .then(data => data.public_key)
+                    .catch(() => 'TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9'); // fallback
+                
+                window.mercadoPagoInstance = new MercadoPago(publicKey, {
                     locale: 'pt-BR'
                 });
                 
