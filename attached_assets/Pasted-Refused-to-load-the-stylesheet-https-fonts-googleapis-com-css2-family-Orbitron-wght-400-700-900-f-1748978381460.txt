@@ -1,0 +1,74 @@
+Refused to load the stylesheet 'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap' because it violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback.
+Understand this error
+1898add8-3401-447b-b91c-9d675ed155af-00-2zjz9jpuw27o9.picard.replit.dev/:1 Refused to load the script 'https://sdk.mercadopago.com/js/v2' because it violates the following Content Security Policy directive: "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback.
+Understand this error
+mercadopago-init.js:6 🔧 Iniciando configuração do MercadoPago...
+mercadopago-init.js:107 🎯 Configuração do MercadoPago preparada
+script.js:3 🚀 Inicializando FovDark...
+(index):483 Uncaught ReferenceError: MercadoPago is not defined
+    at (index):483:14Understand this error
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 1/50)
+script.js:11 ✅ DOM carregado
+script.js:29 🔍 Verificando autenticação...
+script.js:35 ❌ Token não encontrado
+script.js:171 🧹 Limpando todos os dados de autenticação...
+script.js:185 ✅ Dados de autenticação limpos
+script.js:21 🎯 Sistema inicializado com sucesso
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 2/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 3/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 4/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 5/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 6/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 7/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 8/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 9/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 10/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 11/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 12/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 13/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 14/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 15/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 16/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 17/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 18/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 19/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 20/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 21/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 22/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 23/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 24/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 25/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 26/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 27/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 28/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 29/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 30/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 31/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 32/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 33/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 34/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 35/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 36/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 37/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 38/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 39/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 40/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 41/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 42/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 43/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 44/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 45/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 46/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 47/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 48/50)
+mercadopago-init.js:23 ⏳ Aguardando SDK do MercadoPago... (tentativa 49/50)
+mercadopago-init.js:26 ❌ Timeout: SDK do MercadoPago não carregou
+initMercadoPago @ mercadopago-init.js:26Understand this error
+mercadopago-init.js:71 🔄 Tentando recarregar SDK do MercadoPago...
+mercadopago-init.js:91 Refused to load the script 'https://sdk.mercadopago.com/js/v2' because it violates the following Content Security Policy directive: "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback.
+
+loadMercadoPagoSDK @ mercadopago-init.js:91Understand this error
+mercadopago-init.js:88 ❌ Falha ao recarregar SDK do MercadoPago
+script.onerror @ mercadopago-init.js:88Understand this error
+1898add8-3401-447b-b91c-9d675ed155af-00-2zjz9jpuw27o9.picard.replit.dev/:1 Refused to load the stylesheet 'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap' because it violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback.
+Understand this error
