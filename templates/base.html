@@ -45,16 +45,23 @@
                 const script = document.createElement('script');
                 script.src = 'https://sdk.mercadopago.com/js/v2';
                 script.async = true;
+                script.defer = true;
                 script.onload = function() {
-                    console.log('Mercado Pago SDK carregado com sucesso:', window.MercadoPago || {});
+                    console.log('✅ MercadoPago SDK carregado');
+                    // Aguardar um pouco antes de tentar inicializar
+                    setTimeout(() => {
+                        if (typeof MercadoPago !== 'undefined') {
+                            console.log('✅ MercadoPago disponível');
+                        }
+                    }, 100);
                 };
                 script.onerror = function() {
-                    console.warn('Erro ao carregar MercadoPago SDK - modo offline');
+                    console.warn('❌ Erro ao carregar MercadoPago SDK');
                 };
                 document.head.appendChild(script);
             })();
         </script>
-        <script src="/static/mercadopago-init.js" defer></script>
+        <script src="/static/mercadopago-init.js"></script>
 
         {% block extra_head %}{% endblock %}
     </head>

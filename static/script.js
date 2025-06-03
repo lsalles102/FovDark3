@@ -513,7 +513,7 @@ return true;
     }
 
     // ===== COMPRA =====
-    window.selectPlan = async function(productId, productPrice, planName, durationDays) {
+    window.selectPlan = function(productId, productPrice, planName, durationDays) {
         console.log('🔄 Iniciando processo de pagamento...');
         console.log('📦 Product ID:', productId);
         console.log('💰 Preço:', productPrice);
@@ -525,36 +525,11 @@ return true;
             return;
         }
 
-        // Verificar se MercadoPago está disponível
-        if (!window.isMercadoPagoReady || !window.isMercadoPagoReady()) {
-            console.log('⏳ Aguardando MercadoPago estar pronto...');
+        // Processar pagamento diretamente
+        processPurchase(productId, productPrice, planName, durationDays);
+    };
 
-            // Aguardar o evento de MercadoPago pronto
-            const waitForMercadoPago = new Promise((resolve, reject) => {
-                if (window.isMercadoPagoReady && window.isMercadoPagoReady()) {
-                    resolve();
-                    return;
-                }
-
-                const timeout = setTimeout(() => {
-                    reject(new Error('Timeout aguardando MercadoPago'));
-                }, 10000); // 10 segundos timeout
-
-                window.addEventListener('mercadopagoReady', () => {
-                    clearTimeout(timeout);
-                    resolve();
-                });
-            });
-
-            try {
-                await waitForMercadoPago;
-                console.log('✅ MercadoPago pronto, prosseguindo...');
-            } catch (error) {
-                console.error('❌ MercadoPago não disponível:', error);
-                showToast('Sistema de pagamento indisponível. Tente novamente.', 'error');
-                return;
-            }
-        }
+    async function processPurchase(productId, productPrice, planName, durationDays) {
 
         // Verificar se productId é válido
         if (!productId || productId === 'undefined' || productId === undefined) {
@@ -580,11 +555,6 @@ return true;
             };
 
             console.log('📄 Body da requisição:', requestBody);
-
-            console.log('🔄 Enviando dados para checkout:', {
-                plano: planName || 'Plano Padrão',
-                product_id: numericProductId
-            });
 
             const response = await fetch('/api/criar-checkout', {
                 method: 'POST',
@@ -629,7 +599,7 @@ return true;
             console.error('💥 Erro crítico:', error);
             showToast('Erro de conexão com o servidor', 'error');
         }
-    };
+    }
 
     // Função para processar compra
     async function buyProduct(productId) {
