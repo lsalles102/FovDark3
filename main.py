@@ -296,44 +296,60 @@ async def login_user(
     if len(email) > 255 or len(password) > 128:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Dados inválidos")
 
+    # Validar formato do email
+    import re
+    if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Formato de email inválido")
+
     # Log de segurança (sem expor dados sensíveis)
     client_ip = request.client.host if request.client else 'unknown'
     print(f"🔄 Tentativa de login - IP: {client_ip}")
 
     try:
-        # Rate limiting removido para melhor debugging
-
-        user_check = db.query(User).filter(User.email.ilike(email.strip())).first()
-        if not user_check:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email ou senha incorretos")
-
-        user = authenticate_user(db, email.strip(), password)
+        # Buscar usuário
+        user = db.query(User).filter(User.email.ilike(email.strip())).first()
         if not user:
-            user_check.tentativas_login += 1
-            db.commit()
+            print(f"❌ Usuário não encontrado: {email[:3]}***")
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email ou senha incorretos")
 
+        # Verificar se conta não está bloqueada
+        if user.tentativas_login >= 5:
+            print(f"🚫 Conta bloqueada por muitas tentativas: {email[:3]}***")
+            raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Conta temporariamente bloqueada. Tente novamente mais tarde.")
+
+        # Autenticar usuário
+        authenticated_user = authenticate_user(db, email.strip(), password)
+        if not authenticated_user:
+            # Incrementar tentativas
+            user.tentativas_login += 1
+            db.commit()
+            print(f"❌ Falha na autenticação: {email[:3]}***")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email ou senha incorretos")
+
+        # Reset tentativas e atualizar último login
         user.tentativas_login = 0
         user.ultimo_login = datetime.utcnow()
         user.ip_ultimo_login = request.client.host
         db.commit()
 
+        # Verificar privilégios de admin
         AUTHORIZED_ADMIN_EMAILS = ["admin@fovdark.com", "lsalles102@gmail.com"]
         user_email_lower = user.email.lower().strip()
         is_authorized_admin = user_email_lower in [email.lower() for email in AUTHORIZED_ADMIN_EMAILS]
 
-        if is_authorized_admin:
-            if not user.is_admin:
-                user.is_admin = True
-                db.commit()
-        else:
-            if user.is_admin:
-                user.is_admin = False
-                db.commit()
+        if is_authorized_admin and not user.is_admin:
+            user.is_admin = True
+            db.commit()
+            print(f"👑 Usuário promovido a admin: {email[:3]}***")
+        elif not is_authorized_admin and user.is_admin:
+            user.is_admin = False
+            db.commit()
+            print(f"👤 Privilégios de admin removidos: {email[:3]}***")
 
-        # Rate limit reset removido
-
+        # Criar token
         access_token = create_access_token(data={"sub": user.email})
+
+        print(f"✅ Login bem-sucedido: {email[:3]}***")
 
         return {
             "access_token": access_token,
@@ -348,12 +364,14 @@ async def login_user(
 
     except HTTPException as he:
         print(f"❌ HTTP Exception no login: {he.detail}")
+        db.rollback()
         raise he
     except Exception as e:
         print(f"💥 Erro crítico no login: {str(e)}")
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Erro interno do servidor durante o login")
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Erro interno do servidor")
 
 @app.get("/api/admin/users")
 async def get_all_users(

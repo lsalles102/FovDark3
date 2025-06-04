@@ -66,6 +66,15 @@
             }
         }
 
+        // Tratar erros de autenticação
+        if (e.reason && e.reason.message && e.reason.message.includes('401')) {
+            console.log('🚫 Erro de autenticação detectado - redirecionando para login');
+            clearAuthData();
+            if (window.location.pathname !== '/login') {
+                window.location.href = '/login';
+            }
+        }
+
         e.preventDefault(); // Previne que apareça no console como erro não tratado
     });
 
@@ -83,20 +92,56 @@
                 return false;
             }
 
-            // Se tem dados do usuário salvos, usar eles primeiro
+            // Se tem dados do usuário salvos, verificar no servidor
             if (userData) {
                 try {
-                    currentUser = JSON.parse(userData);
+                    const parsedUserData = JSON.parse(userData);
+                    
+                    // Verificar token no servidor
+                    const response = await fetch('/api/verify_token', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.valid && data.user) {
+                            // Atualizar dados do usuário com informações mais recentes
+                            localStorage.setItem('user_data', JSON.stringify(data.user));
+                            currentUser = data.user;
+                            isAuthenticated = true;
+                            updateNavigation(true);
+                            console.log('✅ Usuário autenticado:', currentUser.email);
+                            return true;
+                        }
+                    }
+                    
+                    if (response.status === 401) {
+                        console.log('❌ Token expirado');
+                        clearAuthData();
+                        updateNavigation(false);
+                        return false;
+                    }
+
+                    // Se não conseguiu verificar mas tem dados válidos, usar temporariamente
+                    currentUser = parsedUserData;
                     isAuthenticated = true;
                     updateNavigation(true);
-                    console.log('✅ Usando dados salvos do usuário:', currentUser.email);
+                    console.log('⚠️ Usando dados salvos (offline):', currentUser.email);
                     return true;
+                    
                 } catch (error) {
                     console.error('❌ Erro ao processar dados salvos:', error);
+                    clearAuthData();
+                    updateNavigation(false);
+                    return false;
                 }
             }
 
-            // Verificar token no servidor apenas se necessário
+            // Se não tem dados salvos, apenas verificar token
             try {
                 const response = await fetch('/api/verify_token', {
                     method: 'POST',
@@ -108,39 +153,31 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    if (data.valid) {
+                    if (data.valid && data.user) {
                         localStorage.setItem('user_data', JSON.stringify(data.user));
                         currentUser = data.user;
                         isAuthenticated = true;
                         updateNavigation(true);
-                        console.log('✅ Usuário autenticado:', currentUser.email);
+                        console.log('✅ Usuário autenticado via servidor:', currentUser.email);
                         return true;
-                    } else {
-                        console.log('❌ Token inválido');
-                        clearAuthData();
-                        updateNavigation(false);
-                        return false;
                     }
-                } else {
-                    console.log('❌ Erro na verificação do token');
-                    clearAuthData();
-                    updateNavigation(false);
-                    return false;
                 }
+
+                console.log('❌ Token inválido ou resposta inválida');
+                clearAuthData();
+                updateNavigation(false);
+                return false;
+
             } catch (error) {
                 console.error('❌ Erro na verificação de autenticação:', error);
-                // Não limpar dados em caso de erro de rede
-                if (currentUser) {
-                    console.log('🔄 Mantendo sessão devido a erro de rede');
-                    return true;
-                }
                 clearAuthData();
                 updateNavigation(false);
                 return false;
             }
         } catch (error) {
-            console.error('❌ Erro na autenticação:', error);
+            console.error('❌ Erro geral na autenticação:', error);
             clearAuthData();
+            updateNavigation(false);
             return false;
         }
     }
@@ -362,36 +399,46 @@
                 body: formData
             });
 
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ detail: 'Erro de conexão' }));
+                console.log('❌ Erro no login:', errorData.detail);
+                showToast(errorData.detail || 'Erro no login', 'error');
+                return;
+            }
+
             const data = await response.json();
+            console.log('✅ Login bem-sucedido');
 
-            if (response.ok) {
-                console.log('✅ Login bem-sucedido');
+            // Validar dados recebidos
+            if (!data.access_token || !data.user) {
+                throw new Error('Dados de login inválidos recebidos do servidor');
+            }
 
-                // Salvar dados de forma simples
-                localStorage.setItem('access_token', data.access_token);
-                localStorage.setItem('user_data', JSON.stringify(data.user));
+            // Salvar dados de forma simples
+            localStorage.setItem('access_token', data.access_token);
+            localStorage.setItem('user_data', JSON.stringify(data.user));
 
-                console.log('✅ Dados salvos:', data.user.email);
+            console.log('✅ Dados salvos:', data.user.email);
 
-                // Atualizar estado
-                currentUser = data.user;
-                isAuthenticated = true;
+            // Atualizar estado
+            currentUser = data.user;
+            isAuthenticated = true;
 
-                // Redirecionar imediatamente
+            // Mostrar feedback positivo
+            showToast('Login realizado com sucesso!', 'success');
+
+            // Aguardar um momento antes de redirecionar
+            setTimeout(() => {
                 if (data.user.is_admin) {
                     window.location.replace('/admin');
                 } else {
                     window.location.replace('/painel');
                 }
-
-            } else {
-                console.log('❌ Erro no login:', data.detail);
-                showToast(data.detail || 'Erro no login', 'error');
-            }
+            }, 1000);
 
         } catch (error) {
             console.error('❌ Erro no login:', error);
-            showToast('Erro de conexão', 'error');
+            showToast('Erro de conexão. Tente novamente.', 'error');
         } finally {
             setLoading(submitBtn, false);
         }
