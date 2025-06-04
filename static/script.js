@@ -591,7 +591,7 @@
 
     // ===== COMPRA =====
     window.selectPlan = function(productId, productPrice, planName, durationDays) {
-        console.log('🔄 Iniciando processo de pagamento...');
+        console.log('🔄 Iniciando processo de compra...');
         console.log('📦 Product ID:', productId);
         console.log('💰 Preço:', productPrice);
         console.log('📋 Plano:', planName);
@@ -602,60 +602,15 @@
             return;
         }
 
-        // Verificar se estamos usando HTTPS para pagamentos
-        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
-            console.warn('⚠️ HTTPS é necessário para processar pagamentos com segurança');
-            showToast('Redirecionando para conexão segura...', 'warning');
-            window.location.href = window.location.href.replace('http://', 'https://');
-            return;
-        }
-
-        // Verificar se MercadoPago está disponível
-        if (typeof window.isMercadoPagoAvailable === 'function' && !window.isMercadoPagoAvailable()) {
-            console.log('⏳ Aguardando MercadoPago carregar...');
-            showToast('Carregando sistema de pagamento...', 'info');
-
-            // Aguardar MercadoPago ficar disponível
-            let attempts = 0;
-            const maxAttempts = 50; // 50 x 200ms = 10 segundos
-
-            const checkMercadoPago = setInterval(() => {
-                attempts++;
-
-                if (window.isMercadoPagoAvailable && window.isMercadoPagoAvailable()) {
-                    clearInterval(checkMercadoPago);
-                    console.log('✅ MercadoPago disponível após ' + (attempts * 200) + 'ms');
-                    processPurchase(productId, productPrice, planName, durationDays);
-                } else if (attempts >= maxAttempts) {
-                    clearInterval(checkMercadoPago);
-                    console.log('⚠️ Timeout aguardando MercadoPago após ' + (maxAttempts * 200) + 'ms');
-                    console.log('🔍 Verificando se MercadoPago foi bloqueado por CSP');
-
-                    // Verificar se o SDK foi pelo menos carregado
-                    if (typeof MercadoPago === 'undefined') {
-                        console.error('❌ MercadoPago SDK não foi carregado - problema de CSP ou rede');
-                        showToast('Erro: Sistema de pagamento não carregou. Verifique sua conexão.', 'error');
-                        return;
-                    }
-
-                    console.log('🔄 SDK carregado mas inicialização falhou, tentando processar mesmo assim');
-                    processPurchase(productId, productPrice, planName, durationDays);
-                } else if (attempts % 10 === 0) {
-                    console.log('⏳ Aguardando MercadoPago... tentativa ' + attempts + '/' + maxAttempts);
-                }
-            }, 200);
-        } else {
-            // Processar pagamento diretamente
-            console.log('✅ MercadoPago já disponível, processando pagamento');
-            processPurchase(productId, productPrice, planName, durationDays);
-        }
+        // Processar compra diretamente
+        processPurchase(productId, productPrice, planName, durationDays);
     };
 
     // ===== PURCHASE FUNCTIONS =====
 
-// Função para processar compra (sem MercadoPago)
+// Função para processar compra (sistema simplificado)
 async function processPurchase(productId, productPrice, planName, durationDays) {
-    console.log('🚀 Iniciando processo de pagamento...');
+    console.log('🚀 Iniciando processo de compra...');
     console.log('📦 Dados do produto:', {
         productId,
         productPrice,
@@ -672,113 +627,20 @@ async function processPurchase(productId, productPrice, planName, durationDays) 
         return;
     }
 
-    try {
-        // Converter productId para número se for string
-        const numericProductId = parseInt(productId);
-        if (isNaN(numericProductId)) {
-            console.error('❌ Product ID não é um número válido:', productId);
-            if (typeof showToast === 'function') {
-                showToast('Erro: ID do produto inválido', 'error');
-            }
-            return;
-        }
-
-        // Verificar token novamente antes da requisição
-        const token = localStorage.getItem('access_token');
-        if (!token) {
-            console.log('❌ Token não encontrado antes da requisição');
-            if (typeof showToast === 'function') {
-                showToast('Sessão expirada. Faça login novamente.', 'warning');
-            }
-            setTimeout(() => window.location.href = '/login', 1000);
-            return;
-        }
-
-        console.log('📤 Enviando requisição de checkout...');
-
-        const requestBody = {
-            product_id: numericProductId,
-            plano: planName || 'Plano Padrão'
-        };
-
-        console.log('📄 Body da requisição:', requestBody);
-
-        const response = await fetch('/api/criar-checkout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(requestBody)
-        });
-
-        console.log('📊 Status da resposta:', response.status);
-
-        if (response.status === 401) {
-            console.log('❌ Token expirado durante a requisição');
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('user_data');
-            if (typeof showToast === 'function') {
-                showToast('Sessão expirada. Faça login novamente.', 'warning');
-            }
-            setTimeout(() => window.location.href = '/login', 1000);
-            return;
-        }
-
-        if (!response.ok) {
-            let errorMessage = 'Erro ao criar checkout';
-            try {
-                const errorData = await response.json();
-                console.error('❌ Erro na resposta:', errorData);
-                errorMessage = errorData.detail || errorMessage;
-            } catch (parseError) {
-                console.error('❌ Erro ao fazer parse da resposta de erro:', parseError);
-                const textResponse = await response.text();
-                console.error('❌ Resposta como texto:', textResponse.substring(0, 200));
-            }
-
-            if (typeof showToast === 'function') {
-                showToast(errorMessage, 'error');
-            }
-            return;
-        }
-
-        // Verificar se a resposta é realmente JSON
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            const htmlResponse = await response.text();
-            console.error('❌ Resposta não é JSON:', htmlResponse.substring(0, 200));
-            if (typeof showToast === 'function') {
-                showToast('Erro: Resposta inválida do servidor', 'error');
-            }
-            return;
-        }
-
-        const data = await response.json();
-        console.log('✅ Dados do checkout recebidos:', data);
-
-        if (data.success && data.init_point) {
-           console.log('✅ Redirecionando para pagamento...');
-            if (typeof showToast === 'function') {
-               showToast('Redirecionando para pagamento...', 'info');
-            }
-            // Aguardar um momento para o usuário ver a mensagem
-            setTimeout(() => {
-                showToast('Sistema de pagamento em desenvolvimento. Entre em contato para adquirir a licença.', 'info');
-            }, 1000);
-
-        } else {
-            console.error('❌ Resposta inválida:', data);
-            if (typeof showToast === 'function') {
-                showToast(data.detail || 'Erro ao processar pagamento', 'error');
-            }
-        }
-
-    } catch (error) {
-        console.error('💥 Erro crítico:', error);
+    // Verificar autenticação
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+        console.log('❌ Token não encontrado');
         if (typeof showToast === 'function') {
-            showToast('Erro de conexão com o servidor', 'error');
+            showToast('Faça login para continuar', 'warning');
         }
+        setTimeout(() => window.location.href = '/login', 1000);
+        return;
+    }
+
+    // Mostrar mensagem informativa
+    if (typeof showToast === 'function') {
+        showToast('Sistema de pagamento em desenvolvimento. Entre em contato para adquirir a licença.', 'info');
     }
 }
 
@@ -990,22 +852,7 @@ async function processPurchase(productId, productPrice, planName, durationDays) 
         }
     }
 
-    // Função para verificar se MercadoPago está disponível
-    function isMercadoPagoAvailable() {
-        const isAvailable = typeof MercadoPago !== 'undefined' && 
-               typeof MercadoPago === 'function' && 
-               window.mercadoPagoState && 
-               window.mercadoPagoState.isInitialized;
-
-        if (!isAvailable) {
-            console.log('🔍 MercadoPago não disponível:', {
-                MercadoPago: typeof MercadoPago,
-                state: window.mercadoPagoState
-            });
-        }
-
-        return isAvailable;
-    }
+    
 
     // ===== FAQ FUNCTIONALITY =====
     function toggleFaq(element) {
@@ -1107,16 +954,12 @@ function handleSuccessfulLogin(data) {
 async function chooseCheckoutMethod(planName, price, durationDays, productId) {
     console.log('🛒 Produto selecionado:', { planName, price, durationDays, productId });
 
-    // Verificar autenticação de forma mais robusta
-    console.log('🔍 Verificando autenticação...');
-
+    // Verificar autenticação
     const token = localStorage.getItem('access_token');
     if (!token || token === 'null' || token === 'undefined') {
         console.log('❌ Token não encontrado');
         if (typeof showToast === 'function') {
             showToast('Faça login para comprar', 'warning');
-        } else {
-            alert('Faça login para comprar');
         }
         setTimeout(() => window.location.href = '/login', 1000);
         return;
@@ -1135,14 +978,10 @@ async function chooseCheckoutMethod(planName, price, durationDays, productId) {
 
         if (response.status === 401) {
             console.log('❌ Token expirado ou inválido');
-            // Limpar dados de autenticação
             localStorage.removeItem('access_token');
             localStorage.removeItem('user_data');
-
             if (typeof showToast === 'function') {
                 showToast('Sessão expirada. Faça login novamente', 'warning');
-            } else {
-                alert('Sessão expirada. Faça login novamente');
             }
             setTimeout(() => window.location.href = '/login', 1000);
             return;
@@ -1157,11 +996,8 @@ async function chooseCheckoutMethod(planName, price, durationDays, productId) {
             console.log('❌ Token inválido segundo servidor');
             localStorage.removeItem('access_token');
             localStorage.removeItem('user_data');
-
             if (typeof showToast === 'function') {
                 showToast('Sessão inválida. Faça login novamente', 'warning');
-            } else {
-                alert('Sessão inválida. Faça login novamente');
             }
             setTimeout(() => window.location.href = '/login', 1000);
             return;
@@ -1180,24 +1016,21 @@ async function chooseCheckoutMethod(planName, price, durationDays, productId) {
             }
         }
 
-        // Processar pagamento diretamente aqui para evitar problemas com selectPlan
-        await processPurchaseGlobal(productId, price, planName, durationDays);
+        // Mostrar mensagem sobre sistema de pagamento
+        if (typeof showToast === 'function') {
+            showToast('Sistema de pagamento em desenvolvimento. Entre em contato para adquirir a licença.', 'info');
+        }
 
     } catch (error) {
         console.error('❌ Erro ao verificar autenticação:', error);
         if (typeof showToast === 'function') {
             showToast('Erro de conexão. Tente novamente.', 'error');
-        } else {
-            alert('Erro de conexão. Tente novamente.');
         }
         return;
     }
 }
 
-    // ===== PAYMENT SYSTEM INITIALIZATION =====
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ Sistema de pagamento em modo de desenvolvimento');
-});
+    
 
     // ===== FUNÇÕES GLOBAIS EXPOSTAS =====
     window.checkAuthentication = checkAuthentication;
@@ -1213,57 +1046,3 @@ document.addEventListener('DOMContentLoaded', function() {
 
 })();
 
-// Função global para processar compra (definida fora da IIFE)
-async function processPurchaseGlobal(productId, productPrice, planName, durationDays) {
-    try {
-        console.log('🛒 Iniciando processo de compra...');
-        console.log(`📦 Produto: ${planName} - R$ ${productPrice} - ${durationDays} dias`);
-
-        const token = localStorage.getItem('access_token');
-        if (!token) {
-            throw new Error('Token de autenticação não encontrado');
-        }
-
-        // Criar checkout no backend
-        const response = await fetch('/api/criar-checkout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                plano: planName,
-                product_id: productId
-            })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.detail || 'Erro ao criar checkout');
-        }
-
-        const checkoutData = await response.json();
-        console.log('✅ Checkout criado:', checkoutData);
-
-        // Redirecionar para o checkout do MercadoPago
-        const checkoutUrl = checkoutData.init_point || checkoutData.sandbox_init_point;
-
-        if (!checkoutUrl) {
-            throw new Error('URL de pagamento não encontrada');
-        }
-
-        console.log('🔗 Redirecionando para:', checkoutUrl);
-        if (typeof showToast === 'function') {
-            showToast('Redirecionando para pagamento...', 'success');
-        }
-
-        // Redirecionar para o MercadoPago
-        window.location.href = checkoutUrl;
-
-    } catch (error) {
-        console.error('❌ Erro no processo de compra:', error);
-        if (typeof showToast === 'function') {
-            showToast(`Erro: ${error.message}`, 'error');
-        }
-    }
-}
