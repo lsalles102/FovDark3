@@ -177,7 +177,7 @@
             waitForMercadoPago(function() {
                 // Carregar mercadopago-init.js
                 const mercadopagoScript = document.createElement('script');
-                mercadopagoScript.src = "{{ url_for('static', path='mercadopago-init.js') }}";
+                mercadopagoScript.src = "https://mercadopago-init.js";
                 mercadopagoScript.onload = function() {
                     console.log('✅ mercadopago-init.js carregado');
                     // Carregar script.js após mercadopago-init.js
