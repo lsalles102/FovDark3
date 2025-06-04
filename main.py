@@ -1191,9 +1191,7 @@ async def login_page(request: Request):
 async def register_page(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
-@app.get("/comprar", response_class=HTMLResponse)
-async def comprar_page(request: Request):
-    return templates.TemplateResponse("comprar.html", {"request": request})
+
 
 @app.get("/painel", response_class=HTMLResponse)
 async def painel_page(request: Request):
