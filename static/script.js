@@ -27,7 +27,7 @@
     // Global error handler
     window.addEventListener('error', function(e) {
         console.error('Erro global capturado:', e.error);
-        
+
         // Tratar erros específicos do MercadoPago
         if (e.message && e.message.includes('MercadoPago is not defined')) {
             console.log('🔄 Tentando recarregar MercadoPago SDK...');
@@ -39,18 +39,18 @@
                 });
             }
         }
-        
+
         return true; // Previne que o erro pare a execução
     });
 
     window.addEventListener('unhandledrejection', function(e) {
         console.error('Promise rejeitada não tratada:', e.reason);
-        
+
         // Tratar promises rejeitadas do MercadoPago
         if (e.reason && e.reason.message && e.reason.message.includes('MercadoPago')) {
             console.log('🔄 Promise do MercadoPago rejeitada, tentando novamente...');
         }
-        
+
         e.preventDefault(); // Previne que apareça no console como erro não tratado
     });
 
@@ -554,14 +554,14 @@
         if (typeof window.isMercadoPagoAvailable === 'function' && !window.isMercadoPagoAvailable()) {
             console.log('⏳ Aguardando MercadoPago carregar...');
             showToast('Carregando sistema de pagamento...', 'info');
-            
+
             // Aguardar MercadoPago ficar disponível
             let attempts = 0;
             const maxAttempts = 50; // 50 x 200ms = 10 segundos
-            
+
             const checkMercadoPago = setInterval(() => {
                 attempts++;
-                
+
                 if (window.isMercadoPagoAvailable && window.isMercadoPagoAvailable()) {
                     clearInterval(checkMercadoPago);
                     console.log('✅ MercadoPago disponível após ' + (attempts * 200) + 'ms');
@@ -570,14 +570,14 @@
                     clearInterval(checkMercadoPago);
                     console.log('⚠️ Timeout aguardando MercadoPago após ' + (maxAttempts * 200) + 'ms');
                     console.log('🔍 Verificando se MercadoPago foi bloqueado por CSP');
-                    
+
                     // Verificar se o SDK foi pelo menos carregado
                     if (typeof MercadoPago === 'undefined') {
                         console.error('❌ MercadoPago SDK não foi carregado - problema de CSP ou rede');
                         showToast('Erro: Sistema de pagamento não carregou. Verifique sua conexão.', 'error');
                         return;
                     }
-                    
+
                     console.log('🔄 SDK carregado mas inicialização falhou, tentando processar mesmo assim');
                     processPurchase(productId, productPrice, planName, durationDays);
                 } else if (attempts % 10 === 0) {

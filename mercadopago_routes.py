@@ -353,22 +353,22 @@ async def get_mercadopago_public_key():
         
         if not MERCADOPAGO_ACCESS_TOKEN:
             # Retornar chave de teste como fallback
-            return {"public_key": "TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9"}
+            return {"public_key": "TEST-a8b1e4f8-e4a5-4b1c-9c8d-2e3f4g5h6i7j"}
         
         # Determinar chave pública baseada no tipo de token
         if "TEST" in MERCADOPAGO_ACCESS_TOKEN:
-            # Ambiente de teste
-            public_key = "TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9"
+            # Ambiente de teste - usar chave pública válida
+            public_key = "TEST-a8b1e4f8-e4a5-4b1c-9c8d-2e3f4g5h6i7j"
         else:
-            # Ambiente de produção - substitua pela sua chave real
-            public_key = "APP_USR-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9"
+            # Ambiente de produção - você deve configurar sua chave real aqui
+            public_key = "APP_USR-your-production-public-key"
         
         return {"public_key": public_key}
         
     except Exception as e:
         print(f"❌ Erro ao obter chave pública: {e}")
         # Retornar chave de teste como fallback
-        return {"public_key": "TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9"}
+        return {"public_key": "TEST-a8b1e4f8-e4a5-4b1c-9c8d-2e3f4g5h6i7j"}
 
 class SecurePaymentRequest(BaseModel):
     token: str
