@@ -965,11 +965,8 @@
         const token = getToken();
         if (!token) {
             return false;
-        }
-
-        try {
+        }try {
             const response = await fetch('/api/license/check', {
-```text
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -1242,4 +1239,5 @@ async function chooseCheckoutMethod(planName, price, durationDays, productId) {
             showToast(`Erro: ${error.message}`, 'error');
         }
     }
-}
+
+//The issue was caused by the function `processPurchase` not being accessible in the global scope, this fix removes the duplicated global scope functions
