@@ -191,10 +191,10 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Content Security Policy
         if request.url.path.endswith('.html') or 'text/html' in response.headers.get('content-type', ''):
             response.headers['Content-Security-Policy'] = (
-                "default-src 'self' https://sdk.mercadopago.com https://www.mercadolibre.com https://static.cloudflareinsights.com https://www.fovdark.shop https://mercadopago-init.js/ http://890ccd5f-759e-42f3-b6f0-5afa5d70af68-00-1imk31afnoo3x.riker.replit.dev; "
-                "connect-src 'self' https://www.mercadolibre.com https://api.mercadopago.com https://fonts.googleapis.com https://static.cloudflareinsights.com https://www.fovdark.shop https://mercadopago-init.js/ http://890ccd5f-759e-42f3-b6f0-5afa5d70af68-00-1imk31afnoo3x.riker.replit.dev; "
+                "default-src 'self' https://sdk.mercadopago.com https://www.mercadolibre.com https://static.cloudflareinsights.com https://www.fovdark.shop http://890ccd5f-759e-42f3-b6f0-5afa5d70af68-00-1imk31afnoo3x.riker.replit.dev; "
+                "connect-src 'self' https://www.mercadolibre.com https://api.mercadopago.com https://fonts.googleapis.com https://static.cloudflareinsights.com https://www.fovdark.shop http://890ccd5f-759e-42f3-b6f0-5afa5d70af68-00-1imk31afnoo3x.riker.replit.dev; "
                 "frame-src 'self' https://www.mercadolibre.com https://sdk.mercadopago.com https://www.fovdark.shop; "
-                "script-src 'self' 'unsafe-inline' https://sdk.mercadopago.com https://cdnjs.cloudflare.com https://static.cloudflareinsights.com https://www.fovdark.shop https://mercadopago-init.js/ http://890ccd5f-759e-42f3-b6f0-5afa5d70af68-00-1imk31afnoo3x.riker.replit.dev; "
+                "script-src 'self' 'unsafe-inline' https://sdk.mercadopago.com https://cdnjs.cloudflare.com https://static.cloudflareinsights.com https://www.fovdark.shop http://890ccd5f-759e-42f3-b6f0-5afa5d70af68-00-1imk31afnoo3x.riker.replit.dev; "
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://www.fovdark.shop; "
                 "img-src 'self' data: https: https://www.fovdark.shop; "
                 "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://www.fovdark.shop; "
