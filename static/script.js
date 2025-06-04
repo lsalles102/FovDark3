@@ -733,7 +733,7 @@
                     const textResponse = await response.text();
                     console.error('❌ Resposta como texto:', textResponse.substring(0, 200));
                 }
-                
+
                 if (typeof showToast === 'function') {
                     showToast(errorMessage, 'error');
                 }
@@ -969,6 +969,7 @@
 
         try {
             const response = await fetch('/api/license/check', {
+```text
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -1188,5 +1189,57 @@ async function chooseCheckoutMethod(planName, price, durationDays, productId) {
             alert('Erro de conexão. Tente novamente.');
         }
         return;
+    }
+}
+
+    // Função para processar compra
+    async function processPurchase(productId, productPrice, planName, durationDays) {
+        try {
+            console.log('🛒 Iniciando processo de compra...');
+            console.log(`📦 Produto: ${planName} - R$ ${productPrice} - ${durationDays} dias`);
+
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                throw new Error('Token de autenticação não encontrado');
+            }
+
+            // Criar checkout no backend
+            const response = await fetch('/api/criar-checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    plano: planName,
+                    product_id: productId
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Erro ao criar checkout');
+            }
+
+            const checkoutData = await response.json();
+            console.log('✅ Checkout criado:', checkoutData);
+
+            // Redirecionar para o checkout do MercadoPago
+            const checkoutUrl = checkoutData.init_point || checkoutData.sandbox_init_point;
+
+            if (!checkoutUrl) {
+                throw new Error('URL de pagamento não encontrada');
+            }
+
+            console.log('🔗 Redirecionando para:', checkoutUrl);
+            showToast('Redirecionando para pagamento...', 'success');
+
+            // Redirecionar para o MercadoPago
+            window.location.href = checkoutUrl;
+
+        } catch (error) {
+            console.error('❌ Erro no processo de compra:', error);
+            showToast(`Erro: ${error.message}`, 'error');
+        }
     }
 }
