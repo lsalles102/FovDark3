@@ -150,48 +150,63 @@
 
         <!-- Scripts -->
         <!-- MercadoPago SDK (carregado primeiro) -->
-    <script src="https://sdk.mercadopago.com/js/v2" crossorigin="anonymous" onload="console.log('✅ MercadoPago SDK carregado');" onerror="console.error('❌ Erro ao carregar MercadoPago SDK');"></script>
+        <script src="https://sdk.mercadopago.com/js/v2" crossorigin="anonymous" onload="console.log('✅ MercadoPago SDK carregado');" onerror="console.error('❌ Erro ao carregar MercadoPago SDK');"></script>
 
-    <!-- Scripts customizados (carregados após o SDK) -->
-    <script>
-        // Aguardar carregamento completo do MercadoPago SDK
-        function waitForMercadoPago(callback, maxAttempts = 30) {
-            let attempts = 0;
-            const interval = setInterval(() => {
-                attempts++;
-                if (typeof MercadoPago !== 'undefined') {
-                    clearInterval(interval);
-                    console.log('✅ MercadoPago disponível globalmente');
-                    callback();
-                } else if (attempts >= maxAttempts) {
-                    clearInterval(interval);
-                    console.error('❌ Timeout aguardando MercadoPago SDK');
-                } else {
-                    console.log(`🔄 Tentativa ${attempts}: Aguardando MercadoPago...`);
+        <!-- Scripts customizados (carregados após o SDK) -->
+        <script>
+            // Função para garantir HTTPS na URL
+            function ensureHttpsUrl(url) {
+                if (url.startsWith('http://') && window.location.protocol === 'https:') {
+                    return url.replace('http://', 'https://');
                 }
-            }, 100);
-        }
+                return url;
+            }
 
-        // Carregar scripts personalizados após MercadoPago estar disponível
-        document.addEventListener('DOMContentLoaded', function() {
-            waitForMercadoPago(function() {
-                // Carregar mercadopago-init.js
-                const mercadopagoScript = document.createElement('script');
-                mercadopagoScript.src = "{{ url_for('static', path='mercadopago-init.js') }}";
-                mercadopagoScript.onload = function() {
-                    console.log('✅ mercadopago-init.js carregado');
-                    // Carregar script.js após mercadopago-init.js
-                    const mainScript = document.createElement('script');
-                    mainScript.src = "{{ url_for('static', path='script.js') }}";
-                    mainScript.onload = function() {
-                        console.log('✅ script.js carregado');
+            // Aguardar carregamento completo do MercadoPago SDK
+            function waitForMercadoPago(callback, maxAttempts = 30) {
+                let attempts = 0;
+                const interval = setInterval(() => {
+                    attempts++;
+                    if (typeof MercadoPago !== 'undefined') {
+                        clearInterval(interval);
+                        console.log('✅ MercadoPago disponível globalmente');
+                        callback();
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(interval);
+                        console.error('❌ Timeout aguardando MercadoPago SDK');
+                    } else {
+                        console.log(`🔄 Tentativa ${attempts}: Aguardando MercadoPago...`);
+                    }
+                }, 100);
+            }
+
+            // Carregar scripts personalizados após MercadoPago estar disponível
+            document.addEventListener('DOMContentLoaded', function() {
+                waitForMercadoPago(function() {
+                    // Carregar mercadopago-init.js com HTTPS garantido
+                    const mercadopagoScript = document.createElement('script');
+                    let mercadopagoUrl = "{{ url_for('static', path='mercadopago-init.js') }}";
+                    mercadopagoScript.src = ensureHttpsUrl(mercadopagoUrl);
+                    mercadopagoScript.crossOrigin = 'anonymous';
+                    mercadopagoScript.onload = function() {
+                        console.log('✅ mercadopago-init.js carregado via HTTPS');
+                        // Carregar script.js após mercadopago-init.js
+                        const mainScript = document.createElement('script');
+                        let mainScriptUrl = "{{ url_for('static', path='script.js') }}";
+                        mainScript.src = ensureHttpsUrl(mainScriptUrl);
+                        mainScript.crossOrigin = 'anonymous';
+                        mainScript.onload = function() {
+                            console.log('✅ script.js carregado via HTTPS');
+                        };
+                        document.head.appendChild(mainScript);
                     };
-                    document.head.appendChild(mainScript);
-                };
-                document.head.appendChild(mercadopagoScript);
+                    mercadopagoScript.onerror = function() {
+                        console.error('❌ Erro ao carregar mercadopago-init.js');
+                    };
+                    document.head.appendChild(mercadopagoScript);
+                });
             });
-        });
-    </script>
+        </script>
 
         {% block scripts %}{% endblock %}
     </body>

@@ -24,10 +24,24 @@
         return window.mercadoPagoState.instance;
     };
 
+    // Função para verificar se estamos usando HTTPS
+    function ensureHttpsEnvironment() {
+        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+            console.warn('⚠️ Aplicação não está usando HTTPS. MercadoPago pode não funcionar corretamente.');
+            return false;
+        }
+        return true;
+    }
+
     // Função para inicializar MercadoPago
     window.initializeMercadoPago = function() {
         return new Promise(function(resolve, reject) {
             console.log('🚀 Iniciando inicialização do MercadoPago...');
+            
+            // Verificar protocolo HTTPS
+            if (!ensureHttpsEnvironment()) {
+                console.warn('⚠️ Protocolo HTTPS recomendado para MercadoPago');
+            }
 
             // Verificar se já está inicializado
             if (window.mercadoPagoState.isInitialized && window.mercadoPagoState.instance) {

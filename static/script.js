@@ -542,6 +542,14 @@
             return;
         }
 
+        // Verificar se estamos usando HTTPS para pagamentos
+        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+            console.warn('⚠️ HTTPS é necessário para processar pagamentos com segurança');
+            showToast('Redirecionando para conexão segura...', 'warning');
+            window.location.href = window.location.href.replace('http://', 'https://');
+            return;
+        }
+
         // Verificar se MercadoPago está disponível
         if (typeof window.isMercadoPagoAvailable === 'function' && !window.isMercadoPagoAvailable()) {
             console.log('⏳ Aguardando MercadoPago carregar...');
