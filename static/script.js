@@ -874,10 +874,19 @@
 
     // Função para verificar se MercadoPago está disponível
     function isMercadoPagoAvailable() {
-        return typeof MercadoPago !== 'undefined' && 
+        const isAvailable = typeof MercadoPago !== 'undefined' && 
                typeof MercadoPago === 'function' && 
                window.mercadoPagoState && 
                window.mercadoPagoState.isInitialized;
+        
+        if (!isAvailable) {
+            console.log('🔍 MercadoPago não disponível:', {
+                MercadoPago: typeof MercadoPago,
+                state: window.mercadoPagoState
+            });
+        }
+        
+        return isAvailable;
     }
 
     // ===== FAQ FUNCTIONALITY =====

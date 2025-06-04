@@ -352,23 +352,41 @@ async def get_mercadopago_public_key():
         from mercadopago_integration import MERCADOPAGO_ACCESS_TOKEN
         
         if not MERCADOPAGO_ACCESS_TOKEN:
-            # Retornar chave de teste como fallback
-            return {"public_key": "TEST-a8b1e4f8-e4a5-4b1c-9c8d-2e3f4g5h6i7j"}
+            print("⚠️ MERCADOPAGO_ACCESS_TOKEN não configurado, usando chave de teste")
+            return {
+                "public_key": "TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9",
+                "environment": "test"
+            }
         
         # Determinar chave pública baseada no tipo de token
         if "TEST" in MERCADOPAGO_ACCESS_TOKEN:
-            # Ambiente de teste - usar chave pública válida
-            public_key = "TEST-a8b1e4f8-e4a5-4b1c-9c8d-2e3f4g5h6i7j"
+            # Ambiente de teste - usar chave pública de teste válida
+            public_key = "TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9"
+            environment = "test"
+            print(f"🧪 Usando chave de teste: {public_key}")
         else:
-            # Ambiente de produção - você deve configurar sua chave real aqui
-            public_key = "APP_USR-your-production-public-key"
+            # Ambiente de produção - mapear para chave pública real
+            # IMPORTANTE: Substitua pela sua chave pública de produção real
+            public_key = "APP_USR-your-real-production-public-key"
+            environment = "production"
+            print(f"🏭 Usando chave de produção: {public_key[:20]}...")
         
-        return {"public_key": public_key}
+        return {
+            "public_key": public_key,
+            "environment": environment
+        }
         
     except Exception as e:
         print(f"❌ Erro ao obter chave pública: {e}")
+        import traceback
+        traceback.print_exc()
+        
         # Retornar chave de teste como fallback
-        return {"public_key": "TEST-a8b1e4f8-e4a5-4b1c-9c8d-2e3f4g5h6i7j"}
+        return {
+            "public_key": "TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9",
+            "environment": "test",
+            "error": str(e)
+        }
 
 class SecurePaymentRequest(BaseModel):
     token: str
