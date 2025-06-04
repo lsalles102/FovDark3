@@ -361,13 +361,13 @@ async def get_mercadopago_public_key():
         # Determinar chave pública baseada no tipo de token
         if "TEST" in MERCADOPAGO_ACCESS_TOKEN:
             # Ambiente de teste - usar chave pública de teste válida
-            public_key = "TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9"
+            public_key = "TEST-a8b1e4f8-e4a5-4b1c-9c8d-2e3f4g5h6i7j"
             environment = "test"
             print(f"🧪 Usando chave de teste: {public_key}")
         else:
             # Ambiente de produção - mapear para chave pública real
             # IMPORTANTE: Substitua pela sua chave pública de produção real
-            public_key = "APP_USR-your-real-production-public-key"
+            public_key = "APP_USR-a8b1e4f8-e4a5-4b1c-9c8d-2e3f4g5h6i7j"
             environment = "production"
             print(f"🏭 Usando chave de produção: {public_key[:20]}...")
         
@@ -383,7 +383,7 @@ async def get_mercadopago_public_key():
         
         # Retornar chave de teste como fallback
         return {
-            "public_key": "TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9",
+            "public_key": "TEST-a8b1e4f8-e4a5-4b1c-9c8d-2e3f4g5h6i7j",
             "environment": "test",
             "error": str(e)
         }

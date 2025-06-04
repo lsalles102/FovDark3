@@ -111,13 +111,11 @@
                     console.log('🔑 Chave pública obtida:', data.public_key.substring(0, 20) + '...');
 
                     try {
-                        // Criar instância do MercadoPago com configuração correta
+                        // Criar instância do MercadoPago com configuração mínima
                         var mp = new MercadoPago(data.public_key, {
-                            locale: 'pt-BR',
-                            // Evitar chamadas automáticas desnecessárias
-                            sandbox: data.public_key.includes('TEST'),
-                            // Configurar apenas os parâmetros necessários
-                            advancedFraudPrevention: false
+                            locale: 'pt-BR'
+                            // Removido: sandbox, advancedFraudPrevention e outros parâmetros
+                            // que podem causar chamadas automáticas com parâmetros inválidos
                         });
 
                         // Aguardar um momento para garantir que a instância foi criada
@@ -153,9 +151,8 @@
 
                         try {
                             var mp = new MercadoPago('TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9', {
-                                locale: 'pt-BR',
-                                sandbox: true,
-                                advancedFraudPrevention: false
+                                locale: 'pt-BR'
+                                // Configuração mínima para evitar parâmetros inválidos
                             });
 
                             setTimeout(function() {

@@ -47,8 +47,23 @@
         console.error('Promise rejeitada não tratada:', e.reason);
 
         // Tratar promises rejeitadas do MercadoPago
-        if (e.reason && e.reason.message && e.reason.message.includes('MercadoPago')) {
-            console.log('🔄 Promise do MercadoPago rejeitada, tentando novamente...');
+        if (e.reason && (
+            (e.reason.message && e.reason.message.includes('MercadoPago')) ||
+            (e.reason.message && e.reason.message.includes('Params Error')) ||
+            (e.reason.code && e.reason.code === 'bad_request')
+        )) {
+            console.log('🔄 Erro do MercadoPago detectado - possivelmente parâmetros inválidos');
+            console.log('💡 Sugestão: Verificar se apenas public_key e locale estão sendo enviados');
+            
+            // Tentar reinicializar MercadoPago com configuração limpa
+            if (typeof window.initializeMercadoPago === 'function') {
+                setTimeout(() => {
+                    console.log('🔄 Tentando reinicializar MercadoPago...');
+                    window.initializeMercadoPago().catch(err => {
+                        console.error('❌ Falha na reinicialização:', err);
+                    });
+                }, 2000);
+            }
         }
 
         e.preventDefault(); // Previne que apareça no console como erro não tratado
