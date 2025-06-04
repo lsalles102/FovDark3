@@ -177,12 +177,12 @@
             waitForMercadoPago(function() {
                 // Carregar mercadopago-init.js
                 const mercadopagoScript = document.createElement('script');
-                mercadopagoScript.src = "/static/mercadopago-init.js";
+                mercadopagoScript.src = "{{ url_for('static', path='mercadopago-init.js') }}";
                 mercadopagoScript.onload = function() {
                     console.log('✅ mercadopago-init.js carregado');
                     // Carregar script.js após mercadopago-init.js
                     const mainScript = document.createElement('script');
-                    mainScript.src = "/static/script.js";
+                    mainScript.src = "{{ url_for('static', path='script.js') }}";
                     mainScript.onload = function() {
                         console.log('✅ script.js carregado');
                     };
