@@ -178,15 +178,22 @@
                 // Carregar mercadopago-init.js
                 const mercadopagoScript = document.createElement('script');
                 mercadopagoScript.src = "{{ url_for('static', path='mercadopago-init.js') }}";
+                mercadopagoScript.type = 'application/javascript';
+                mercadopagoScript.crossOrigin = 'anonymous';
                 mercadopagoScript.onload = function() {
                     console.log('✅ mercadopago-init.js carregado');
                     // Carregar script.js após mercadopago-init.js
                     const mainScript = document.createElement('script');
                     mainScript.src = "{{ url_for('static', path='script.js') }}";
+                    mainScript.type = 'application/javascript';
+                    mainScript.crossOrigin = 'anonymous';
                     mainScript.onload = function() {
                         console.log('✅ script.js carregado');
                     };
                     document.head.appendChild(mainScript);
+                };
+                mercadopagoScript.onerror = function() {
+                    console.error('❌ Erro ao carregar mercadopago-init.js');
                 };
                 document.head.appendChild(mercadopagoScript);
             });
