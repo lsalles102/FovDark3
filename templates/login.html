@@ -139,7 +139,11 @@
         console.log('Token removido (logout)');
     }
 
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    // Aguardar o script.js carregar antes de configurar o event listener
+    document.addEventListener('DOMContentLoaded', function() {
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
 
                 const formData = new FormData(this);
@@ -152,7 +156,11 @@
                 const password = formData.get('password');
 
                 if (!email || !password) {
-                    showToast('Preencha todos os campos', 'error');
+                    if (typeof showToast === 'function') {
+                        showToast('Preencha todos os campos', 'error');
+                    } else {
+                        alert('Preencha todos os campos');
+                    }
                     return;
                 }
 
@@ -167,6 +175,7 @@
                     // Limpar dados antigos
                     localStorage.removeItem('access_token');
                     localStorage.removeItem('user_data');
+                    sessionStorage.clear();
 
                     const response = await fetch('/api/login', {
                         method: 'POST',
@@ -174,18 +183,35 @@
                     });
 
                     if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({ detail: 'Erro de conexão' }));
-                        console.log('❌ Erro no login:', errorData.detail);
-                        showToast(errorData.detail || 'Erro ao fazer login', 'error');
+                        let errorMessage = 'Erro ao fazer login';
+                        try {
+                            const errorData = await response.json();
+                            errorMessage = errorData.detail || 'Erro ao fazer login';
+                        } catch (parseError) {
+                            console.error('❌ Erro ao fazer parse da resposta:', parseError);
+                        }
+                        
+                        console.log('❌ Erro no login:', errorMessage);
+                        
+                        if (typeof showToast === 'function') {
+                            showToast(errorMessage, 'error');
+                        } else {
+                            alert(errorMessage);
+                        }
                         return;
                     }
 
                     const data = await response.json();
-                    console.log('✅ Login bem-sucedido');
+                    console.log('✅ Login bem-sucedido para:', data.user?.email);
 
                     // Validar dados recebidos
                     if (!data.access_token || !data.user) {
-                        showToast('Resposta inválida do servidor', 'error');
+                        const message = 'Resposta inválida do servidor';
+                        if (typeof showToast === 'function') {
+                            showToast(message, 'error');
+                        } else {
+                            alert(message);
+                        }
                         return;
                     }
 
@@ -196,31 +222,40 @@
                     console.log('✅ Dados salvos para:', data.user.email);
 
                     // Mostrar sucesso
-                    showToast('Login realizado com sucesso!', 'success');
+                    if (typeof showToast === 'function') {
+                        showToast('Login realizado com sucesso!', 'success');
+                    }
                     buttonText.textContent = 'Redirecionando...';
 
                     // Aguardar e redirecionar
                     setTimeout(() => {
                         if (data.user.is_admin) {
+                            console.log('🚀 Redirecionando admin para /admin');
                             window.location.replace('/admin');
                         } else {
+                            console.log('🚀 Redirecionando usuário para /painel');
                             window.location.replace('/painel');
                         }
                     }, 1000);
 
                 } catch (error) {
-                    console.error('❌ Erro:', error);
-                    showToast('Erro de conexão. Tente novamente.', 'error');
-                } finally {
-                    // Restaurar botão se não foi bem-sucedido
-                    if (submitButton.disabled) {
-                        setTimeout(() => {
-                            submitButton.disabled = false;
-                            buttonText.textContent = 'INICIAR SESSÃO';
-                            spinner.style.display = 'none';
-                        }, 2000);
+                    console.error('❌ Erro crítico:', error);
+                    const message = 'Erro de conexão. Tente novamente.';
+                    if (typeof showToast === 'function') {
+                        showToast(message, 'error');
+                    } else {
+                        alert(message);
                     }
+                } finally {
+                    // Restaurar botão após um delay
+                    setTimeout(() => {
+                        submitButton.disabled = false;
+                        buttonText.textContent = 'INICIAR SESSÃO';
+                        spinner.style.display = 'none';
+                    }, 2000);
                 }
             });
+        }
+    });
 </script>
 {% endblock %}

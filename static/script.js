@@ -85,64 +85,15 @@
             const token = localStorage.getItem('access_token');
             const userData = localStorage.getItem('user_data');
 
-            if (!token) {
-                console.log('❌ Token não encontrado');
+            if (!token || token === 'null' || token === 'undefined') {
+                console.log('❌ Token não encontrado ou inválido');
                 clearAuthData();
                 updateNavigation(false);
                 return false;
             }
 
-            // Se tem dados do usuário salvos, verificar no servidor
-            if (userData) {
-                try {
-                    const parsedUserData = JSON.parse(userData);
-                    
-                    // Verificar token no servidor
-                    const response = await fetch('/api/verify_token', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.valid && data.user) {
-                            // Atualizar dados do usuário com informações mais recentes
-                            localStorage.setItem('user_data', JSON.stringify(data.user));
-                            currentUser = data.user;
-                            isAuthenticated = true;
-                            updateNavigation(true);
-                            console.log('✅ Usuário autenticado:', currentUser.email);
-                            return true;
-                        }
-                    }
-                    
-                    if (response.status === 401) {
-                        console.log('❌ Token expirado');
-                        clearAuthData();
-                        updateNavigation(false);
-                        return false;
-                    }
-
-                    // Se não conseguiu verificar mas tem dados válidos, usar temporariamente
-                    currentUser = parsedUserData;
-                    isAuthenticated = true;
-                    updateNavigation(true);
-                    console.log('⚠️ Usando dados salvos (offline):', currentUser.email);
-                    return true;
-                    
-                } catch (error) {
-                    console.error('❌ Erro ao processar dados salvos:', error);
-                    clearAuthData();
-                    updateNavigation(false);
-                    return false;
-                }
-            }
-
-            // Se não tem dados salvos, apenas verificar token
             try {
+                // Verificar token no servidor usando endpoint correto
                 const response = await fetch('/api/verify_token', {
                     method: 'POST',
                     headers: {
@@ -151,25 +102,49 @@
                     }
                 });
 
+                if (response.status === 401) {
+                    console.log('❌ Token expirado ou inválido');
+                    clearAuthData();
+                    updateNavigation(false);
+                    return false;
+                }
+
                 if (response.ok) {
                     const data = await response.json();
                     if (data.valid && data.user) {
+                        // Atualizar dados do usuário
                         localStorage.setItem('user_data', JSON.stringify(data.user));
                         currentUser = data.user;
                         isAuthenticated = true;
                         updateNavigation(true);
-                        console.log('✅ Usuário autenticado via servidor:', currentUser.email);
+                        console.log('✅ Usuário autenticado:', currentUser.email);
                         return true;
                     }
                 }
 
-                console.log('❌ Token inválido ou resposta inválida');
+                // Se chegou aqui, token é inválido
+                console.log('❌ Resposta inválida do servidor');
                 clearAuthData();
                 updateNavigation(false);
                 return false;
 
-            } catch (error) {
-                console.error('❌ Erro na verificação de autenticação:', error);
+            } catch (networkError) {
+                console.error('❌ Erro de rede na verificação:', networkError);
+                
+                // Se há dados salvos e é erro de rede, usar temporariamente
+                if (userData) {
+                    try {
+                        const parsedUserData = JSON.parse(userData);
+                        currentUser = parsedUserData;
+                        isAuthenticated = true;
+                        updateNavigation(true);
+                        console.log('⚠️ Usando dados salvos (erro de rede):', currentUser.email);
+                        return true;
+                    } catch (parseError) {
+                        console.error('❌ Erro ao fazer parse dos dados salvos:', parseError);
+                    }
+                }
+                
                 clearAuthData();
                 updateNavigation(false);
                 return false;
@@ -386,8 +361,9 @@
         setLoading(submitBtn, true);
 
         try {
-            // LIMPAR DADOS ANTIGOS ANTES DE FAZER O LOGIN
-            console.log('🧹 Limpando dados de autenticação anteriores...');
+            console.log('🔄 Iniciando login...');
+            
+            // Limpar dados antigos
             clearAuthData();
 
             const formData = new FormData();
@@ -400,44 +376,50 @@
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ detail: 'Erro de conexão' }));
-                console.log('❌ Erro no login:', errorData.detail);
-                showToast(errorData.detail || 'Erro no login', 'error');
+                let errorMessage = 'Erro no login';
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.detail || 'Erro no login';
+                } catch (parseError) {
+                    console.error('❌ Erro ao fazer parse da resposta de erro:', parseError);
+                }
+                console.log('❌ Erro no login:', errorMessage);
+                showToast(errorMessage, 'error');
                 return;
             }
 
             const data = await response.json();
-            console.log('✅ Login bem-sucedido');
+            console.log('✅ Login bem-sucedido para:', data.user?.email);
 
             // Validar dados recebidos
             if (!data.access_token || !data.user) {
                 throw new Error('Dados de login inválidos recebidos do servidor');
             }
 
-            // Salvar dados de forma simples
+            // Salvar dados
             localStorage.setItem('access_token', data.access_token);
             localStorage.setItem('user_data', JSON.stringify(data.user));
-
-            console.log('✅ Dados salvos:', data.user.email);
 
             // Atualizar estado
             currentUser = data.user;
             isAuthenticated = true;
+            updateNavigation(true);
 
-            // Mostrar feedback positivo
             showToast('Login realizado com sucesso!', 'success');
 
-            // Aguardar um momento antes de redirecionar
+            // Redirecionar baseado no tipo de usuário
             setTimeout(() => {
                 if (data.user.is_admin) {
+                    console.log('🚀 Redirecionando admin para /admin');
                     window.location.replace('/admin');
                 } else {
+                    console.log('🚀 Redirecionando usuário para /painel');
                     window.location.replace('/painel');
                 }
             }, 1000);
 
         } catch (error) {
-            console.error('❌ Erro no login:', error);
+            console.error('❌ Erro crítico no login:', error);
             showToast('Erro de conexão. Tente novamente.', 'error');
         } finally {
             setLoading(submitBtn, false);

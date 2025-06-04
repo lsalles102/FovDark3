@@ -1273,14 +1273,20 @@ async def verify_token(
     current_user: User = Depends(get_current_user)
 ):
     """Verificar se o token é válido"""
-    return {
-        "valid": True,
-        "user": {
-            "id": current_user.id,
-            "email": current_user.email,
-            "is_admin": current_user.is_admin
+    try:
+        return {
+            "valid": True,
+            "user": {
+                "id": current_user.id,
+                "email": current_user.email,
+                "is_admin": current_user.is_admin,
+                "data_expiracao": current_user.data_expiracao.isoformat() if current_user.data_expiracao else None,
+                "status_licenca": current_user.status_licenca
+            }
         }
-    }
+    except Exception as e:
+        print(f"❌ Erro na verificação de token: {e}")
+        raise HTTPException(status_code=401, detail="Token inválido")
 
 @app.get("/health")
 async def health_check():
