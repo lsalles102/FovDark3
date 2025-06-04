@@ -652,11 +652,20 @@
     };
 
     async function processPurchase(productId, productPrice, planName, durationDays) {
+        console.log('🚀 Iniciando processo de pagamento...');
+        console.log('📦 Dados do produto:', {
+            productId,
+            productPrice,
+            planName,
+            durationDays
+        });
 
         // Verificar se productId é válido
         if (!productId || productId === 'undefined' || productId === undefined) {
             console.error('❌ Product ID inválido:', productId);
-            showToast('Erro: Produto inválido', 'error');
+            if (typeof showToast === 'function') {
+                showToast('Erro: Produto inválido', 'error');
+            }
             return;
         }
 
@@ -665,7 +674,20 @@
             const numericProductId = parseInt(productId);
             if (isNaN(numericProductId)) {
                 console.error('❌ Product ID não é um número válido:', productId);
-                showToast('Erro: ID do produto inválido', 'error');
+                if (typeof showToast === 'function') {
+                    showToast('Erro: ID do produto inválido', 'error');
+                }
+                return;
+            }
+
+            // Verificar token novamente antes da requisição
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                console.log('❌ Token não encontrado antes da requisição');
+                if (typeof showToast === 'function') {
+                    showToast('Sessão expirada. Faça login novamente.', 'warning');
+                }
+                setTimeout(() => window.location.href = '/login', 1000);
                 return;
             }
 
@@ -682,17 +704,39 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(requestBody)
             });
 
             console.log('📊 Status da resposta:', response.status);
 
+            if (response.status === 401) {
+                console.log('❌ Token expirado durante a requisição');
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('user_data');
+                if (typeof showToast === 'function') {
+                    showToast('Sessão expirada. Faça login novamente.', 'warning');
+                }
+                setTimeout(() => window.location.href = '/login', 1000);
+                return;
+            }
+
             if (!response.ok) {
-                const errorData = await response.json();
-                console.error('❌ Erro na resposta:', errorData);
-                showToast(errorData.detail || 'Erro ao criar checkout', 'error');
+                let errorMessage = 'Erro ao criar checkout';
+                try {
+                    const errorData = await response.json();
+                    console.error('❌ Erro na resposta:', errorData);
+                    errorMessage = errorData.detail || errorMessage;
+                } catch (parseError) {
+                    console.error('❌ Erro ao fazer parse da resposta de erro:', parseError);
+                    const textResponse = await response.text();
+                    console.error('❌ Resposta como texto:', textResponse.substring(0, 200));
+                }
+                
+                if (typeof showToast === 'function') {
+                    showToast(errorMessage, 'error');
+                }
                 return;
             }
 
@@ -701,7 +745,9 @@
             if (!contentType || !contentType.includes('application/json')) {
                 const htmlResponse = await response.text();
                 console.error('❌ Resposta não é JSON:', htmlResponse.substring(0, 200));
-                showToast('Erro: Resposta inválida do servidor', 'error');
+                if (typeof showToast === 'function') {
+                    showToast('Erro: Resposta inválida do servidor', 'error');
+                }
                 return;
             }
 
@@ -710,16 +756,25 @@
 
             if (data.success && data.init_point) {
                 console.log('✅ Redirecionando para pagamento...');
-                showToast('Redirecionando para pagamento...', 'info');
-                window.location.href = data.init_point;
+                if (typeof showToast === 'function') {
+                    showToast('Redirecionando para pagamento...', 'info');
+                }
+                // Aguardar um momento para o usuário ver a mensagem
+                setTimeout(() => {
+                    window.location.href = data.init_point;
+                }, 1000);
             } else {
                 console.error('❌ Resposta inválida:', data);
-                showToast(data.detail || 'Erro ao processar pagamento', 'error');
+                if (typeof showToast === 'function') {
+                    showToast(data.detail || 'Erro ao processar pagamento', 'error');
+                }
             }
 
         } catch (error) {
             console.error('💥 Erro crítico:', error);
-            showToast('Erro de conexão com o servidor', 'error');
+            if (typeof showToast === 'function') {
+                showToast('Erro de conexão com o servidor', 'error');
+            }
         }
     }
 
@@ -1114,9 +1169,16 @@ async function chooseCheckoutMethod(planName, price, durationDays, productId) {
         // Atualizar dados do usuário se necessário
         if (userData.user) {
             localStorage.setItem('user_data', JSON.stringify(userData.user));
-            currentUser = userData.user;
-            isAuthenticated = true;
+            if (typeof currentUser !== 'undefined') {
+                currentUser = userData.user;
+            }
+            if (typeof isAuthenticated !== 'undefined') {
+                isAuthenticated = true;
+            }
         }
+
+        // Processar pagamento diretamente aqui para evitar problemas com selectPlan
+        await processPurchase(productId, price, planName, durationDays);
 
     } catch (error) {
         console.error('❌ Erro ao verificar autenticação:', error);
@@ -1126,18 +1188,5 @@ async function chooseCheckoutMethod(planName, price, durationDays, productId) {
             alert('Erro de conexão. Tente novamente.');
         }
         return;
-    }
-
-    // Verificar se temos selectPlan global
-    if (typeof window.selectPlan === 'function') {
-        console.log('✅ Iniciando processo de pagamento...');
-        window.selectPlan(productId, price, planName, durationDays);
-    } else {
-        console.error('❌ Função selectPlan não encontrada');
-        if (typeof showToast === 'function') {
-            showToast('Erro: Sistema de pagamento não disponível', 'error');
-        } else {
-            alert('Erro: Sistema de pagamento não disponível');
-        }
     }
 }

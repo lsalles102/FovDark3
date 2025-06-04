@@ -710,12 +710,13 @@ function displayProducts(products, container) {
     }
 }
 
-function chooseCheckoutMethod(planName, price, durationDays, productId) {
+async function chooseCheckoutMethod(planName, price, durationDays, productId) {
     console.log('🛒 Produto selecionado:', { planName, price, durationDays, productId });
 
     // Verificar se está logado
     const token = localStorage.getItem('access_token');
-    if (!token) {
+    if (!token || token === 'null' || token === 'undefined') {
+        console.log('❌ Token não encontrado');
         if (typeof showToast === 'function') {
             showToast('Faça login para comprar', 'warning');
         } else {
@@ -725,15 +726,135 @@ function chooseCheckoutMethod(planName, price, durationDays, productId) {
         return;
     }
 
-    // Verificar se temos selectPlan global
-    if (typeof window.selectPlan === 'function') {
-        window.selectPlan(productId, price, planName, durationDays);
-    } else {
-        console.error('❌ Função selectPlan não encontrada');
+    // Verificar se o token é válido no servidor
+    try {
+        console.log('🔍 Validando token no servidor...');
+        const response = await fetch('/api/verify_token', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.status === 401) {
+            console.log('❌ Token expirado ou inválido');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user_data');
+
+            if (typeof showToast === 'function') {
+                showToast('Sessão expirada. Faça login novamente', 'warning');
+            } else {
+                alert('Sessão expirada. Faça login novamente');
+            }
+            setTimeout(() => window.location.href = '/login', 1000);
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error(`Erro de verificação: ${response.status}`);
+        }
+
+        const userData = await response.json();
+        if (!userData.valid) {
+            console.log('❌ Token inválido segundo servidor');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user_data');
+
+            if (typeof showToast === 'function') {
+                showToast('Sessão inválida. Faça login novamente', 'warning');
+            } else {
+                alert('Sessão inválida. Faça login novamente');
+            }
+            setTimeout(() => window.location.href = '/login', 1000);
+            return;
+        }
+
+        console.log('✅ Usuário autenticado:', userData.user.email);
+
+        // Processar compra diretamente
+        await processDirectPurchase(productId, price, planName, durationDays);
+
+    } catch (error) {
+        console.error('❌ Erro ao verificar autenticação:', error);
         if (typeof showToast === 'function') {
-            showToast('Erro: Sistema de pagamento não disponível', 'error');
+            showToast('Erro de conexão. Tente novamente.', 'error');
         } else {
-            alert('Erro: Sistema de pagamento não disponível');
+            alert('Erro de conexão. Tente novamente.');
+        }
+    }
+}
+
+async function processDirectPurchase(productId, productPrice, planName, durationDays) {
+    console.log('🚀 Processando compra direta...');
+    
+    try {
+        const numericProductId = parseInt(productId);
+        if (isNaN(numericProductId)) {
+            console.error('❌ Product ID inválido:', productId);
+            if (typeof showToast === 'function') {
+                showToast('Erro: ID do produto inválido', 'error');
+            }
+            return;
+        }
+
+        const token = localStorage.getItem('access_token');
+        const requestBody = {
+            product_id: numericProductId,
+            plano: planName || 'Plano Padrão'
+        };
+
+        console.log('📤 Enviando requisição:', requestBody);
+
+        const response = await fetch('/api/criar-checkout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        if (response.status === 401) {
+            console.log('❌ Token expirado durante compra');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user_data');
+            if (typeof showToast === 'function') {
+                showToast('Sessão expirada. Faça login novamente.', 'warning');
+            }
+            setTimeout(() => window.location.href = '/login', 1000);
+            return;
+        }
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('❌ Erro na compra:', errorData);
+            if (typeof showToast === 'function') {
+                showToast(errorData.detail || 'Erro ao processar pagamento', 'error');
+            }
+            return;
+        }
+
+        const data = await response.json();
+        console.log('✅ Checkout criado:', data);
+
+        if (data.success && data.init_point) {
+            if (typeof showToast === 'function') {
+                showToast('Redirecionando para pagamento...', 'info');
+            }
+            setTimeout(() => {
+                window.location.href = data.init_point;
+            }, 1000);
+        } else {
+            if (typeof showToast === 'function') {
+                showToast(data.detail || 'Erro ao processar pagamento', 'error');
+            }
+        }
+
+    } catch (error) {
+        console.error('💥 Erro crítico na compra:', error);
+        if (typeof showToast === 'function') {
+            showToast('Erro de conexão com o servidor', 'error');
         }
     }
 }
