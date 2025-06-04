@@ -1,20 +1,21 @@
+
 <!doctype html>
 <html lang="pt-BR">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-            {% block title %}FovDark - Aim Assist Premium{% endblock %}
+            {% block title %}FovDark - Tudo para otimizar sua experiência digital{% endblock %}
         </title>
 
         <!-- SEO Meta Tags -->
         <meta
             name="description"
-            content="FovDark - O aimbot mais avançado para BloodStrike. Recursos premium, anti-detecção e suporte 24/7."
+            content="FovDark - Baixe programas, ISOs otimizadas, mods, trainers e scripts. Grátis e premium."
         />
         <meta
             name="keywords"
-            content="aimbot, aim assist, BloodStrike, gaming, precision, anti-cheat"
+            content="software, download, ISO, otimizador, mods, trainers, cheats, scripts, gaming"
         />
         <meta name="author" content="FovDark" />
 
@@ -25,7 +26,7 @@
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
             rel="stylesheet"
         />
 
@@ -41,92 +42,260 @@
         {% block extra_head %}{% endblock %}
     </head>
     <body>
-        <!-- Navigation -->
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="nav-brand">
-                    <a href="/" class="brand-link">
-                        <i class="fas fa-crosshairs"></i>
+        <!-- Header Fixo -->
+        <header class="header-modern">
+            <div class="header-container">
+                <!-- Logo -->
+                <div class="logo">
+                    <a href="/" class="logo-link">
+                        <i class="fas fa-download"></i>
                         <span>FovDark</span>
                     </a>
                 </div>
 
-                <div class="nav-menu">
-                    <a href="/" class="nav-link">
+                <!-- Menu de Navegação -->
+                <nav class="nav-menu-modern">
+                    <a href="/" class="nav-item">
                         <i class="fas fa-home"></i>
                         <span>Início</span>
                     </a>
-                    <a href="/softwares" class="nav-link">
-                        <i class="fas fa-download"></i>
-                        <span>Softwares</span>
+                    <a href="/softwares" class="nav-item">
+                        <i class="fas fa-desktop"></i>
+                        <span>Programas</span>
                     </a>
-                    <a href="/isos" class="nav-link">
+                    <a href="/isos" class="nav-item">
                         <i class="fas fa-compact-disc"></i>
-                        <span>ISOs</span>
+                        <span>ISOs Otimizadas</span>
                     </a>
-                    <a href="/otimizadores" class="nav-link">
+                    <a href="/otimizadores" class="nav-item">
                         <i class="fas fa-rocket"></i>
                         <span>Otimizadores</span>
                     </a>
-                    <a href="/login" class="nav-link login-btn">
-                        <i class="fas fa-sign-in-alt"></i>
-                        <span>Login</span>
+                    <div class="nav-dropdown">
+                        <a href="#" class="nav-item dropdown-toggle">
+                            <i class="fas fa-gamepad"></i>
+                            <span>Mods & Trainers</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </a>
+                        <div class="dropdown-menu">
+                            <a href="#mods">Mods para Jogos</a>
+                            <a href="#trainers">Trainers</a>
+                            <a href="#cheats">Cheats</a>
+                        </div>
+                    </div>
+                    <a href="#blog" class="nav-item">
+                        <i class="fas fa-newspaper"></i>
+                        <span>Blog</span>
                     </a>
-                    <a href="/register" class="nav-link register-btn">
+                    <a href="#suporte" class="nav-item">
+                        <i class="fas fa-headset"></i>
+                        <span>Suporte</span>
+                    </a>
+                </nav>
+
+                <!-- Botões de Login/Cadastro -->
+                <div class="auth-buttons">
+                    <a href="/login" class="btn-login login-btn">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Entrar</span>
+                    </a>
+                    <a href="/register" class="btn-register register-btn">
                         <i class="fas fa-user-plus"></i>
-                        <span>Registrar</span>
+                        <span>Cadastrar</span>
                     </a>
                 </div>
 
-                <div class="nav-toggle">
+                <!-- Menu Mobile Toggle -->
+                <div class="mobile-menu-toggle">
                     <span></span>
                     <span></span>
                     <span></span>
                 </div>
             </div>
-        </nav>
+
+            <!-- Menu Mobile -->
+            <div class="mobile-menu">
+                <div class="mobile-menu-content">
+                    <a href="/" class="mobile-nav-item">
+                        <i class="fas fa-home"></i>
+                        <span>Início</span>
+                    </a>
+                    <a href="/softwares" class="mobile-nav-item">
+                        <i class="fas fa-desktop"></i>
+                        <span>Programas</span>
+                    </a>
+                    <a href="/isos" class="mobile-nav-item">
+                        <i class="fas fa-compact-disc"></i>
+                        <span>ISOs Otimizadas</span>
+                    </a>
+                    <a href="/otimizadores" class="mobile-nav-item">
+                        <i class="fas fa-rocket"></i>
+                        <span>Otimizadores</span>
+                    </a>
+                    <a href="#mods" class="mobile-nav-item">
+                        <i class="fas fa-gamepad"></i>
+                        <span>Mods & Trainers</span>
+                    </a>
+                    <a href="#blog" class="mobile-nav-item">
+                        <i class="fas fa-newspaper"></i>
+                        <span>Blog</span>
+                    </a>
+                    <a href="#suporte" class="mobile-nav-item">
+                        <i class="fas fa-headset"></i>
+                        <span>Suporte</span>
+                    </a>
+                    <div class="mobile-auth-buttons">
+                        <a href="/login" class="btn-login-mobile">Entrar</a>
+                        <a href="/register" class="btn-register-mobile">Cadastrar</a>
+                    </div>
+                </div>
+            </div>
+        </header>
 
         <!-- Main Content -->
-        <main class="main-content">{% block content %}{% endblock %}</main>
+        <main class="main-content-modern">
+            {% block content %}{% endblock %}
+        </main>
 
-        <!-- Footer -->
-        <footer class="footer">
+        <!-- Rodapé Moderno -->
+        <footer class="footer-modern">
             <div class="footer-container">
                 <div class="footer-content">
+                    <!-- Informações da Empresa -->
                     <div class="footer-section">
-                        <h3>FovDark</h3>
-                        <p>
-                            Sistema avançado Anti-Detection. Precisão letal,
-                            vantagem total.
+                        <div class="footer-logo">
+                            <i class="fas fa-download"></i>
+                            <span>FovDark</span>
+                        </div>
+                        <p class="footer-description">
+                            Sua fonte confiável para softwares, mods, trainers e ferramentas otimizadas.
+                            Segurança e qualidade garantidas.
                         </p>
+                        <div class="social-links">
+                            <a href="#" class="social-link" title="Discord">
+                                <i class="fab fa-discord"></i>
+                            </a>
+                            <a href="#" class="social-link" title="Telegram">
+                                <i class="fab fa-telegram"></i>
+                            </a>
+                            <a href="#" class="social-link" title="Instagram">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="social-link" title="YouTube">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                        </div>
                     </div>
 
+                    <!-- Links Rápidos -->
                     <div class="footer-section">
-                        <h4>Links Rápidos</h4>
-                        <ul>
-                            <li><a href="/">Início</a></li>
-                            <li><a href="/painel">Painel</a></li>
+                        <h4>Downloads</h4>
+                        <ul class="footer-links">
+                            <li><a href="/softwares">Programas</a></li>
+                            <li><a href="/isos">ISOs Gamers</a></li>
+                            <li><a href="/otimizadores">Otimizadores</a></li>
+                            <li><a href="#mods">Mods & Trainers</a></li>
                         </ul>
                     </div>
 
+                    <!-- Suporte -->
                     <div class="footer-section">
                         <h4>Suporte</h4>
-                        <ul>
-                            <li><a href="#">Discord</a></li>
+                        <ul class="footer-links">
+                            <li><a href="#faq">FAQ</a></li>
+                            <li><a href="#suporte">Contato</a></li>
+                            <li><a href="#tutorial">Tutoriais</a></li>
+                            <li><a href="#parcerias">Parcerias</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Legal -->
+                    <div class="footer-section">
+                        <h4>Legal</h4>
+                        <ul class="footer-links">
+                            <li><a href="/privacy">Política de Privacidade</a></li>
+                            <li><a href="/terms">Termos de Uso</a></li>
+                            <li><a href="#dmca">DMCA</a></li>
+                            <li><a href="#cookies">Cookies</a></li>
                         </ul>
                     </div>
                 </div>
 
+                <!-- Copyright -->
                 <div class="footer-bottom">
-                    <p>&copy; 2024 FovDark. Todos os direitos reservados.</p>
+                    <div class="footer-bottom-content">
+                        <p>&copy; 2024 FovDark. Todos os direitos reservados.</p>
+                        <div class="footer-badges">
+                            <span class="security-badge">
+                                <i class="fas fa-shield-alt"></i>
+                                Seguro e Verificado
+                            </span>
+                            <span class="support-badge">
+                                <i class="fas fa-headset"></i>
+                                Suporte 24/7
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </footer>
 
         <!-- Scripts -->
-        <!-- Scripts principais da aplicação -->
         <script src="{{ url_for('static', path='script.js') }}" defer></script>
 
         {% block scripts %}{% endblock %}
+
+        <script>
+        // Menu mobile toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileToggle = document.querySelector('.mobile-menu-toggle');
+            const mobileMenu = document.querySelector('.mobile-menu');
+            const body = document.body;
+
+            if (mobileToggle && mobileMenu) {
+                mobileToggle.addEventListener('click', function() {
+                    mobileToggle.classList.toggle('active');
+                    mobileMenu.classList.toggle('active');
+                    body.classList.toggle('mobile-menu-open');
+                });
+
+                // Fechar menu ao clicar em link
+                document.querySelectorAll('.mobile-nav-item').forEach(link => {
+                    link.addEventListener('click', function() {
+                        mobileToggle.classList.remove('active');
+                        mobileMenu.classList.remove('active');
+                        body.classList.remove('mobile-menu-open');
+                    });
+                });
+            }
+
+            // Dropdown no desktop
+            const dropdown = document.querySelector('.nav-dropdown');
+            if (dropdown) {
+                dropdown.addEventListener('mouseenter', function() {
+                    this.classList.add('active');
+                });
+                dropdown.addEventListener('mouseleave', function() {
+                    this.classList.remove('active');
+                });
+            }
+
+            // Header fixo com efeito de scroll
+            const header = document.querySelector('.header-modern');
+            let lastScroll = 0;
+
+            window.addEventListener('scroll', function() {
+                const currentScroll = window.pageYOffset;
+                
+                if (currentScroll > 100) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+
+                lastScroll = currentScroll;
+            });
+        });
+        </script>
     </body>
 </html>

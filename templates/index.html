@@ -1,346 +1,240 @@
 {% extends "base.html" %}
 
-{% block title %}FovDark - Aim Assist Profissional para BloodStrike{% endblock %}
+{% block title %}FovDark - Tudo para otimizar sua experiência digital{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
-<section class="hero">
-    <div class="hero-background">
-        <div class="grid-overlay"></div>
-        <div class="glow-effects">
-            <div class="glow-orb glow-orb-1"></div>
-            <div class="glow-orb glow-orb-2"></div>
-            <div class="glow-orb glow-orb-3"></div>
+<section class="hero-modern">
+    <div class="hero-overlay"></div>
+    <div class="hero-content-modern">
+        <h1 class="hero-title-modern">Tudo para otimizar sua experiência digital!</h1>
+        <p class="hero-subtitle-modern">Baixe programas, mods e ferramentas otimizadas — grátis ou premium.</p>
+        <div class="hero-buttons">
+            <a href="#categorias" class="btn-primary">Explorar Downloads</a>
+            <a href="/painel" class="btn-secondary">Ver Planos Premium</a>
         </div>
     </div>
+</section>
 
-    <div class="hero-content">
-        <div class="hero-text">
-            <h1 class="hero-title">
-                <span class="text-glow">FOV</span><span class="text-primary">DARK</span>
-            </h1>
-            <p class="hero-subtitle">AIM ASSIST PROFISSIONAL PARA BLOODSTRIKE</p>
-            <p class="hero-description">
-                Domine o campo de batalha com precisão sobrenatural. 
-                Sistema avançado de assistência de mira com tecnologia de ponta.
-            </p>
-
-            <div class="hero-features">
-                <div class="feature-item">
-                    <i class="fas fa-crosshairs"></i>
-                    <span>Mira Perfeita</span>
+<!-- Seção de Categorias -->
+<section id="categorias" class="categories-section">
+    <div class="container">
+        <h2 class="section-title">Explore por Categoria</h2>
+        <div class="categories-grid">
+            <!-- Softwares -->
+            <div class="category-card">
+                <div class="category-icon">
+                    <i class="fas fa-desktop"></i>
                 </div>
-                <div class="feature-item">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>Anti-Detecção</span>
-                </div>
-                <div class="feature-item">
-                    <i class="fas fa-rocket"></i>
-                    <span>Performance Máxima</span>
-                </div>
+                <h3>Softwares</h3>
+                <p>Programas essenciais e ferramentas úteis</p>
+                <a href="/softwares" class="btn-category">Ver Softwares</a>
             </div>
 
-            <div class="hero-buttons">
-                <a href="/comprar" class="btn btn-primary">
-                    <i class="fas fa-shopping-cart"></i>
-                    COMPRAR AGORA
-                </a>
-                <a href="#features" class="btn btn-secondary">
-                    <i class="fas fa-info-circle"></i>
-                    SAIBA MAIS
-                </a>
+            <!-- ISOs Gamers -->
+            <div class="category-card">
+                <div class="category-icon">
+                    <i class="fas fa-compact-disc"></i>
+                </div>
+                <h3>ISOs Gamers</h3>
+                <p>Sistemas otimizados para jogos</p>
+                <a href="/isos" class="btn-category">Ver ISOs</a>
+            </div>
+
+            <!-- Otimizadores -->
+            <div class="category-card">
+                <div class="category-icon">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <h3>Otimizadores</h3>
+                <p>Acelere e otimize seu sistema</p>
+                <a href="/otimizadores" class="btn-category">Ver Otimizadores</a>
+            </div>
+
+            <!-- Mods & Trainers -->
+            <div class="category-card">
+                <div class="category-icon">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+                <h3>Mods & Trainers</h3>
+                <p>Modificações e trainers para jogos</p>
+                <a href="#mods" class="btn-category">Ver Mods</a>
+            </div>
+
+            <!-- Cheats & Scripts -->
+            <div class="category-card">
+                <div class="category-icon">
+                    <i class="fas fa-code"></i>
+                </div>
+                <h3>Cheats & Scripts</h3>
+                <p>Scripts e cheats avançados</p>
+                <a href="#cheats" class="btn-category">Ver Scripts</a>
+            </div>
+
+            <!-- Suporte -->
+            <div class="category-card">
+                <div class="category-icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h3>Suporte</h3>
+                <p>Ajuda e documentação</p>
+                <a href="#suporte" class="btn-category">Obter Ajuda</a>
             </div>
         </div>
+    </div>
+</section>
 
-        <div class="hero-visual">
-            <div class="cyberpunk-soldier-container">
-                <div class="soldier-image-frame">
-                    <img src="/static/cyberpunk-sniper.jpg" alt="Soldado Cyberpunk com Aim Assist" class="soldier-image">
-                    <div class="image-overlay">
-                        <div class="crosshair-indicator">
-                            <div class="crosshair-center"></div>
-                            <div class="crosshair-lines">
-                                <div class="line-horizontal"></div>
-                                <div class="line-vertical"></div>
-                            </div>
-                        </div>
-                        <div class="aim-assist-indicator">
-                            <span class="aim-text">AIM ASSIST</span>
-                            <span class="status-text">ATIVO</span>
-                        </div>
-                        <div class="target-locks">
-                            <div class="target-lock target-1">
-                                <div class="lock-corners"></div>
-                            </div>
-                            <div class="target-lock target-2">
-                                <div class="lock-corners"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="holographic-frame">
-                        <div class="holo-corner corner-tl"></div>
-                        <div class="holo-corner corner-tr"></div>
-                        <div class="holo-corner corner-bl"></div>
-                        <div class="holo-corner corner-br"></div>
-                    </div>
+<!-- Seção Mais Baixados -->
+<section class="downloads-section">
+    <div class="container">
+        <h2 class="section-title">Mais Baixados</h2>
+        <div class="downloads-grid" id="popular-downloads">
+            <!-- Cards serão carregados dinamicamente -->
+            <div class="download-card">
+                <div class="download-image">
+                    <i class="fas fa-download"></i>
                 </div>
-                <div class="floating-stats">
-                    <div class="stat-item">
-                        <span class="stat-value">99.9%</span>
-                        <span class="stat-label">PRECISÃO</span>
+                <div class="download-info">
+                    <h3>FovDark Optimizer</h3>
+                    <p>Otimizador completo para Windows</p>
+                    <div class="download-stats">
+                        <span><i class="fas fa-download"></i> 1.2k downloads</span>
+                        <span class="free-badge">GRÁTIS</span>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-value">0.1ms</span>
-                        <span class="stat-label">LATÊNCIA</span>
+                    <button class="btn-download">Download</button>
+                </div>
+            </div>
+
+            <div class="download-card">
+                <div class="download-image">
+                    <i class="fas fa-compact-disc"></i>
+                </div>
+                <div class="download-info">
+                    <h3>Windows 11 Gaming</h3>
+                    <p>ISO otimizada para jogos</p>
+                    <div class="download-stats">
+                        <span><i class="fas fa-download"></i> 856 downloads</span>
+                        <span class="premium-badge">PREMIUM</span>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-value">24/7</span>
-                        <span class="stat-label">ATIVO</span>
+                    <button class="btn-download">Download</button>
+                </div>
+            </div>
+
+            <div class="download-card">
+                <div class="download-image">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+                <div class="download-info">
+                    <h3>Gaming Trainer Pro</h3>
+                    <p>Trainer universal para jogos</p>
+                    <div class="download-stats">
+                        <span><i class="fas fa-download"></i> 643 downloads</span>
+                        <span class="free-badge">GRÁTIS</span>
                     </div>
+                    <button class="btn-download">Download</button>
+                </div>
+            </div>
+
+            <div class="download-card">
+                <div class="download-image">
+                    <i class="fas fa-code"></i>
+                </div>
+                <div class="download-info">
+                    <h3>Aim Assistant</h3>
+                    <p>Script avançado para FPS</p>
+                    <div class="download-stats">
+                        <span><i class="fas fa-download"></i> 2.1k downloads</span>
+                        <span class="premium-badge">PREMIUM</span>
+                    </div>
+                    <button class="btn-download">Download</button>
+                </div>
+            </div>
+
+            <div class="download-card">
+                <div class="download-image">
+                    <i class="fas fa-desktop"></i>
+                </div>
+                <div class="download-info">
+                    <h3>System Cleaner</h3>
+                    <p>Limpeza e manutenção do PC</p>
+                    <div class="download-stats">
+                        <span><i class="fas fa-download"></i> 987 downloads</span>
+                        <span class="free-badge">GRÁTIS</span>
+                    </div>
+                    <button class="btn-download">Download</button>
+                </div>
+            </div>
+
+            <div class="download-card">
+                <div class="download-image">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <div class="download-info">
+                    <h3>RAM Booster Pro</h3>
+                    <p>Otimizador de memória RAM</p>
+                    <div class="download-stats">
+                        <span><i class="fas fa-download"></i> 534 downloads</span>
+                        <span class="premium-badge">PREMIUM</span>
+                    </div>
+                    <button class="btn-download">Download</button>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Video Demo Section -->
-<section class="video-demo-section">
+<!-- Seção Como Funciona -->
+<section class="how-it-works">
     <div class="container">
-        <h2 class="section-title">VEJA O FOVDARK EM AÇÃO</h2>
-        <p class="section-subtitle">Demonstração completa do sistema em funcionamento</p>
-
-        <div class="video-container">
-            <div class="video-frame">
-                <!-- Placeholder para thumbnail do vídeo -->
-                <div class="video-thumbnail">
-                    <img src="/static/cyberpunk-sniper.jpg" alt="Demonstração FovDark" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1;">
-                </div>
-
-                <div class="video-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2;">
-                    <button class="play-button" onclick="playDemoVideo()">
-                        <i class="fas fa-play"></i>
-                    </button>
-                    <div class="video-info">
-                        <h3>DEMONSTRAÇÃO OFICIAL</h3>
-                        <p>Veja como o FovDark funciona no BloodStrike</p>
-                    </div>
-                </div>
-
-                <!-- Vídeo real (inicialmente oculto) -->
-                <video id="demoVideo" controls style="display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 3;">
-                    <!-- Video files will be added later -->
-                    Seu navegador não suporta vídeos HTML5.
-                </video>
-
-                <!-- Alternativa: Iframe para YouTube/Vimeo -->
-                <iframe id="youtubeVideo" style="display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 3;" 
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen>
-                </iframe>
-            </div>
-
-            <div class="video-features">
-                <div class="feature-highlight">
-                    <i class="fas fa-crosshairs"></i>
-                    <span>Mira Precisa</span>
-                </div>
-                <div class="feature-highlight">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>Anti-Detecção</span>
-                </div>
-                <div class="feature-highlight">
-                    <i class="fas fa-rocket"></i>
-                    <span>Performance</span>
-                </div>
-                <div class="feature-highlight">
-                    <i class="fas fa-cog"></i>
-                    <span>Configurável</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="video-stats">
-            <div class="stat-box">
-                <span class="stat-number">99.9%</span>
-                <span class="stat-label">Precisão</span>
-            </div>
-            <div class="stat-box">
-                <span class="stat-number">50K+</span>
-                <span class="stat-label">Usuários</span>
-            </div>
-            <div class="stat-box">
-                <span class="stat-number">24/7</span>
-                <span class="stat-label">Suporte</span>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Features Section -->
-<section id="features" class="features-section">
-    <div class="container">
-        <h2 class="section-title">RECURSOS AVANÇADOS</h2>
-        <p class="section-subtitle">Tecnologia militar adaptada para gaming</p>
-
+        <h2 class="section-title">Como Funciona</h2>
         <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-crosshairs"></i>
-                </div>
-                <h3>Aim Assist Inteligente</h3>
-                <p>Sistema de assistência de mira com IA avançada que identifica e rastreia alvos com precisão cirúrgica.</p>
-                <ul class="feature-list">
-                    <li>Detecção automática de inimigos</li>
-                    <li>Ajuste de velocidade personalizável</li>
-                    <li>Múltiplos pontos de mira</li>
-                </ul>
-            </div>
-
-            <div class="feature-card">
+            <div class="feature-item">
                 <div class="feature-icon">
                     <i class="fas fa-shield-alt"></i>
                 </div>
-                <h3>Anti-Detecção</h3>
-                <p>Proteção avançada contra sistemas anti-cheat com atualizações constantes.</p>
-                <ul class="feature-list">
-                    <li>Bypass de anti-cheat</li>
-                    <li>Atualizações automáticas</li>
-                    <li>Modo stealth ativo</li>
-                </ul>
+                <h3>Baixe com Segurança</h3>
+                <p>Todos os arquivos são verificados e livres de malware. Garantia total de segurança.</p>
             </div>
 
-            <div class="feature-card">
+            <div class="feature-item">
                 <div class="feature-icon">
-                    <i class="fas fa-cogs"></i>
+                    <i class="fas fa-star"></i>
                 </div>
-                <h3>Configurações</h3>
-                <p>Interface intuitiva com configurações avançadas para personalização total.</p>
-                <ul class="feature-list">
-                    <li>Perfis salvos</li>
-                    <li>Hotkeys personalizáveis</li>
-                    <li>Interface moderna</li>
-                </ul>
+                <h3>Escolha Grátis ou Premium</h3>
+                <p>Acesse conteúdo gratuito ou assine nossos planos premium para recursos exclusivos.</p>
             </div>
 
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-rocket"></i>
-                </div>
-                <h3>Performance</h3>
-                <p>Otimização máxima sem impacto no desempenho do jogo.</p>
-                <ul class="feature-list">
-                    <li>Baixo uso de CPU</li>
-                    <li>Sem queda de FPS</li>
-                    <li>Compatibilidade total</li>
-                </ul>
-            </div>
-
-            <div class="feature-card">
+            <div class="feature-item">
                 <div class="feature-icon">
                     <i class="fas fa-headset"></i>
                 </div>
-                <h3>Suporte 24/7</h3>
-                <p>Equipe especializada disponível para suporte técnico e atualizações.</p>
-                <ul class="feature-list">
-                    <li>Discord exclusivo com FAQ</li>
-                    <li>Tutoriais em vídeo</li>
-                    <li>Suporte via email</li>
-                </ul>
+                <h3>Receba Suporte Completo</h3>
+                <p>Nossa equipe está disponível 24/7 para ajudar com qualquer dúvida ou problema.</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Pricing Section -->
-<section class="pricing-section">
+<!-- Seção de Estatísticas -->
+<section class="stats-section">
     <div class="container">
-        <h2 class="section-title">PLANOS DE ACESSO</h2>
-        <p class="section-subtitle">Escolha o plano ideal para dominar</p>
-
-        <div class="pricing-grid" id="homePricingGrid">
-            <div class="loading-container" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
-                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary); margin-bottom: 1rem;"></i>
-                <p style="color: var(--text-secondary);">Carregando planos...</p>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">10K+</div>
+                <div class="stat-label">Downloads</div>
             </div>
-        </div>
-    </div>
-</section>
-
-<!-- Reviews Section -->
-<section class="reviews-section">
-    <div class="container">
-        <h2 class="section-title">AVALIAÇÕES DOS USUÁRIOS</h2>
-        <p class="section-subtitle">Veja o que nossos clientes dizem sobre o FovDark</p>
-
-        <div class="reviews-grid">
-            <div class="review-card">
-                <div class="review-rating">
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                </div>
-                <p class="review-text">"Incrível! O FovDark mudou completamente meu desempenho no BloodStrike. Nunca mais fiquei em último lugar!"</p>
-                <div class="review-author">
-                    <div class="author-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="author-info">
-                        <span class="author-name">ProGamer_2024</span>
-                        <span class="author-date">Há 2 dias</span>
-                    </div>
-                </div>
+            <div class="stat-item">
+                <div class="stat-number">500+</div>
+                <div class="stat-label">Softwares</div>
             </div>
-
-            <div class="review-card">
-                <div class="review-rating">
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                </div>
-                <p class="review-text">"Anti-detecção funciona perfeitamente. Uso há 3 meses e nunca tive problemas. Suporte muito rápido!"</p>
-                <div class="review-author">
-                    <div class="author-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="author-info">
-                        <span class="author-name">EliteShooter</span>
-                        <span class="author-date">Há 1 semana</span>
-                    </div>
-                </div>
+            <div class="stat-item">
+                <div class="stat-number">98%</div>
+                <div class="stat-label">Satisfação</div>
             </div>
-        </div>
-    </div>
-</section>
-
-<!-- CTA Section -->
-<section class="cta-section">
-    <div class="container">
-        <div class="cta-content">
-            <h2>PRONTO PARA DOMINAR?</h2>
-            <p>Junte-se a milhares de jogadores que já escolheram a vitória</p>
-            <div class="cta-stats">
-                <div class="stat-item">
-                    <span class="stat-number">50K+</span>
-                    <span class="stat-label">Usuários Ativos</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">99.9%</span>
-                    <span class="stat-label">Uptime</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">24/7</span>
-                    <span class="stat-label">Suporte</span>
-                </div>
+            <div class="stat-item">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Suporte</div>
             </div>
-            <a href="/comprar" class="btn btn-primary btn-large">
-                <i class="fas fa-crown"></i>
-                ADQUIRIR ACESSO VIP
-            </a>
         </div>
     </div>
 </section>
@@ -348,11 +242,44 @@
 
 {% block scripts %}
 <script>
-// A inicialização do MercadoPago agora é feita pelo mercadopago-init.js
-// Este bloco pode ser usado para lógica específica da página inicial
-document.addEventListener('mercadoPagoReady', function(event) {
-    console.log("✅ MercadoPago pronto para uso na página inicial");
-    // Adicione aqui lógica específica da página inicial que depende do MercadoPago
+// Carregar downloads populares dinamicamente
+document.addEventListener('DOMContentLoaded', function() {
+    // Animações suaves para os cards
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    // Observar cards de download
+    document.querySelectorAll('.download-card, .category-card, .feature-item').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(card);
+    });
+
+    // Scroll suave para seções
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
 });
 </script>
 {% endblock %}
