@@ -54,7 +54,7 @@
         )) {
             console.log('🔄 Erro do MercadoPago detectado - possivelmente parâmetros inválidos');
             console.log('💡 Sugestão: Verificar se apenas public_key e locale estão sendo enviados');
-            
+
             // Tentar reinicializar MercadoPago com configuração limpa
             if (typeof window.initializeMercadoPago === 'function') {
                 setTimeout(() => {
@@ -893,14 +893,14 @@
                typeof MercadoPago === 'function' && 
                window.mercadoPagoState && 
                window.mercadoPagoState.isInitialized;
-        
+
         if (!isAvailable) {
             console.log('🔍 MercadoPago não disponível:', {
                 MercadoPago: typeof MercadoPago,
                 state: window.mercadoPagoState
             });
         }
-        
+
         return isAvailable;
     }
 
@@ -982,7 +982,7 @@ function handleSuccessfulLogin(data) {
 
         showToast('Login realizado com sucesso!', 'success');
 
-        console.log('🧭 Redirecionando usuário...');
+        console.log('🧭 Redirecioncionando usuário...');
         console.log('👤 Usuário atual:', currentUser.email);
         console.log('👑 É admin:', currentUser?.is_admin);
 

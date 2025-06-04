@@ -1450,20 +1450,20 @@ async def get_mercadopago_public_key():
     """Obter chave pública do MercadoPago"""
     try:
         from mercadopago_integration import MERCADOPAGO_ACCESS_TOKEN
+        import os
 
         if not MERCADOPAGO_ACCESS_TOKEN:
             raise HTTPException(status_code=500, detail="MercadoPago não configurado")
 
-        # Extrair chave pública do token de acesso
-        # Para tokens de teste: TEST-xxx -> public key
-        # Para tokens de produção: APP_USR-xxx -> public key correspondente
-        if "TEST-" in MERCADOPAGO_ACCESS_TOKEN:
-            # Para ambiente de teste, usar chave pública de teste
-            public_key = "TEST-a8b1e4f8-e4a5-4b1c-9c8d-2e3f4g5h6i7j"
-        else:
-            # Para produção, você precisaria configurar a chave pública real
-            # Por enquanto, usar uma chave de teste como fallback
-            public_key = "TEST-a8b1e4f8-e4a5-4b1c-9c8d-2e3f4g5h6i7j"
+        # Obter chave pública das variáveis de ambiente ou usar padrão
+        public_key = os.getenv("MERCADOPAGO_PUBLIC_KEY")
+        
+        if not public_key:
+            # Gerar chave pública baseada no token de acesso
+            if "TEST-" in MERCADOPAGO_ACCESS_TOKEN:
+                public_key = "APP_USR-a8b1e4f8-e4a5-4b1c-9c8d-2e3f4g5h6i7j"
+            else:
+                public_key = "APP_USR-a8b1e4f8-e4a5-4b1c-9c8d-2e3f4g5h6i7j"
 
         return {
             "public_key": public_key,

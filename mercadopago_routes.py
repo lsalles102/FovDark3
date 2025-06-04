@@ -132,7 +132,7 @@ async def mercadopago_webhook(request: Request, db: Session = Depends(get_db)):
     try:
         print(f"🔔 WEBHOOK MERCADOPAGO RECEBIDO")
         print(f"=" * 50)
-        
+
         # Obter dados do webhook
         body = await request.body()
         print(f"📨 Body recebido: {body}")
@@ -168,32 +168,32 @@ async def mercadopago_webhook(request: Request, db: Session = Depends(get_db)):
         notification_type = data.get("type")
         if notification_type == "payment":
             print(f"💳 Processando notificação de pagamento...")
-            
+
             # Verificar se temos o ID do pagamento
             payment_id = data.get("data", {}).get("id") if isinstance(data.get("data"), dict) else data.get("id")
             print(f"🆔 Payment ID detectado: {payment_id}")
-            
+
             if not payment_id:
                 print(f"❌ Payment ID não encontrado nos dados")
                 print(f"🔍 Estrutura dos dados: {data}")
                 return {"status": "error", "message": "Payment ID não encontrado"}
-            
+
             try:
                 success, message = handle_payment_notification(data)
-                
+
                 if success:
                     print(f"✅ WEBHOOK PROCESSADO COM SUCESSO: {message}")
                     return {"status": "ok", "message": message}
                 else:
                     print(f"❌ ERRO NO PROCESSAMENTO DO WEBHOOK: {message}")
                     return {"status": "error", "message": message}
-                    
+
             except Exception as process_error:
                 print(f"💥 Exceção durante processamento: {process_error}")
                 import traceback
                 traceback.print_exc()
                 return {"status": "error", "message": f"Erro no processamento: {str(process_error)}"}
-                
+
         elif notification_type == "merchant_order":
             print(f"📦 Notificação de merchant_order recebida (ignorando)")
             return {"status": "ok", "message": "Merchant order notification received"}
@@ -261,7 +261,7 @@ async def test_webhook_processing(
     """Endpoint para testar processamento de webhook com payment_id real"""
     try:
         print(f"🧪 TESTE DE WEBHOOK - Payment ID: {payment_id}")
-        
+
         # Simular dados de webhook do MercadoPago
         test_webhook_data = {
             "type": "payment",
@@ -269,12 +269,12 @@ async def test_webhook_processing(
                 "id": payment_id
             }
         }
-        
+
         print(f"📊 Dados de teste: {test_webhook_data}")
-        
+
         # Processar usando a função real
         success, message = handle_payment_notification(test_webhook_data)
-        
+
         if success:
             return {
                 "success": True,
@@ -287,7 +287,7 @@ async def test_webhook_processing(
                 "message": f"Erro no teste de webhook: {message}",
                 "payment_id": payment_id
             }
-            
+
     except Exception as e:
         print(f"❌ Erro no teste de webhook: {e}")
         import traceback
@@ -303,18 +303,18 @@ async def debug_payment_info(
     """Debug de informações de pagamento do MercadoPago"""
     try:
         from mercadopago_integration import mp
-        
+
         if not mp:
             raise HTTPException(status_code=500, detail="MercadoPago não configurado")
-        
+
         # Buscar informações do pagamento
         payment_info = mp.payment().get(payment_id)
-        
+
         if payment_info["status"] != 200:
             raise HTTPException(status_code=400, detail=f"Erro ao buscar pagamento: {payment_info}")
-        
+
         payment_details = payment_info["response"]
-        
+
         # Buscar informações da preferência se disponível
         preference_info = None
         preference_id = payment_details.get("preference_id")
@@ -322,12 +322,12 @@ async def debug_payment_info(
             pref_response = mp.preference().get(preference_id)
             if pref_response["status"] == 200:
                 preference_info = pref_response["response"]
-        
+
         # Buscar pagamento no banco local
         local_payment = db.query(Payment).filter(
             Payment.gateway_id == payment_id
         ).first()
-        
+
         return {
             "payment_details": payment_details,
             "preference_info": preference_info,
@@ -340,7 +340,7 @@ async def debug_payment_info(
                 "valor": local_payment.valor if local_payment else None,
             } if local_payment else None
         }
-        
+
     except Exception as e:
         print(f"❌ Erro no debug: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -350,14 +350,14 @@ async def get_mercadopago_public_key():
     """Retorna a chave pública do MercadoPago para Secure Fields"""
     try:
         from mercadopago_integration import MERCADOPAGO_ACCESS_TOKEN
-        
+
         if not MERCADOPAGO_ACCESS_TOKEN:
             print("⚠️ MERCADOPAGO_ACCESS_TOKEN não configurado, usando chave de teste")
             return {
                 "public_key": "TEST-c8c68306-c9a2-4ec8-98db-0b00ad3c6dd9",
                 "environment": "test"
             }
-        
+
         # Determinar chave pública baseada no tipo de token
         if "TEST" in MERCADOPAGO_ACCESS_TOKEN:
             # Ambiente de teste - usar chave pública de teste válida
@@ -370,17 +370,17 @@ async def get_mercadopago_public_key():
             public_key = "APP_USR-a8b1e4f8-e4a5-4b1c-9c8d-2e3f4g5h6i7j"
             environment = "production"
             print(f"🏭 Usando chave de produção: {public_key[:20]}...")
-        
+
         return {
             "public_key": public_key,
             "environment": environment
         }
-        
+
     except Exception as e:
         print(f"❌ Erro ao obter chave pública: {e}")
         import traceback
         traceback.print_exc()
-        
+
         # Retornar chave de teste como fallback
         return {
             "public_key": "TEST-a8b1e4f8-e4a5-4b1c-9c8d-2e3f4g5h6i7j",
@@ -406,23 +406,23 @@ async def process_secure_payment(
     """Processar pagamento usando Secure Fields"""
     try:
         from mercadopago_integration import mp, get_domain
-        
+
         if not mp:
             raise HTTPException(status_code=500, detail="MercadoPago não configurado")
-        
+
         # Buscar produto
         product = db.query(Product).filter(
             Product.id == payment_data.product_id,
             Product.is_active == True
         ).first()
-        
+
         if not product:
             raise HTTPException(status_code=404, detail="Produto não encontrado")
-        
+
         # Validar valor
         if abs(payment_data.amount - float(product.price)) > 0.01:
             raise HTTPException(status_code=400, detail="Valor do pagamento não confere")
-        
+
         # Criar dados do pagamento
         payment_request = {
             "transaction_amount": float(product.price),
@@ -446,26 +446,26 @@ async def process_secure_payment(
             "notification_url": f"{get_domain()}/api/webhook/mercadopago",
             "statement_descriptor": "FOVDARK"
         }
-        
+
         # Adicionar issuer se fornecido
         if payment_data.issuer_id:
             payment_request["issuer_id"] = payment_data.issuer_id
-        
+
         print(f"💳 Processando pagamento seguro:")
         print(f"  - Usuário: {current_user.email}")
         print(f"  - Produto: {product.name}")
         print(f"  - Valor: R$ {product.price}")
         print(f"  - Token: {payment_data.token[:20]}...")
-        
+
         # Enviar para MercadoPago
         payment_response = mp.payment().create(payment_request)
-        
+
         if payment_response["status"] not in [200, 201]:
             print(f"❌ Erro na resposta do MercadoPago: {payment_response}")
             raise HTTPException(status_code=400, detail="Erro no processamento do pagamento")
-        
+
         payment_result = payment_response["response"]
-        
+
         # Registrar pagamento no banco
         payment_record = Payment(
             user_id=current_user.id,
@@ -476,28 +476,28 @@ async def process_secure_payment(
             status=payment_result["status"],
             data_pagamento=datetime.utcnow()
         )
-        
+
         db.add(payment_record)
         db.commit()
-        
+
         print(f"✅ Pagamento registrado:")
         print(f"  - ID MercadoPago: {payment_result['id']}")
         print(f"  - Status: {payment_result['status']}")
         print(f"  - Método: {payment_result.get('payment_method_id')}")
-        
+
         # Se aprovado, ativar licença imediatamente
         if payment_result["status"] == "approved":
             if current_user.data_expiracao and current_user.data_expiracao > datetime.utcnow():
                 current_user.data_expiracao = current_user.data_expiracao + timedelta(days=product.duration_days)
             else:
                 current_user.data_expiracao = datetime.utcnow() + timedelta(days=product.duration_days)
-            
+
             current_user.status_licenca = "ativa"
             payment_record.status = "completed"
             db.commit()
-            
+
             print(f"🎉 Licença ativada até: {current_user.data_expiracao}")
-        
+
         return {
             "success": True,
             "payment_id": payment_result["id"],
@@ -505,7 +505,7 @@ async def process_secure_payment(
             "status_detail": payment_result.get("status_detail"),
             "message": "Pagamento processado com sucesso"
         }
-        
+
     except HTTPException as he:
         raise he
     except Exception as e:

@@ -37,7 +37,7 @@
     window.initializeMercadoPago = function() {
         return new Promise(function(resolve, reject) {
             console.log('🚀 Iniciando inicialização do MercadoPago...');
-            
+
             // Verificar protocolo HTTPS
             if (!ensureHttpsEnvironment()) {
                 console.warn('⚠️ Protocolo HTTPS recomendado para MercadoPago');
