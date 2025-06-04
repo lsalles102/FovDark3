@@ -1,3 +1,4 @@
+
 {% extends "base.html" %} 
 {% block title %}Login - FovDark{% endblock %} 
 {% block content %}
@@ -125,18 +126,6 @@
             field.type = 'password';
             toggle.className = 'fas fa-eye';
         }
-    }
-
-    // Funções simplificadas para gerenciar token
-    function saveToken(token) {
-        localStorage.setItem('access_token', token);
-        console.log('Token salvo com sucesso');
-    }
-
-    function removeToken() {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('user_data');
-        console.log('Token removido (logout)');
     }
 
     // Aguardar o script.js carregar antes de configurar o event listener

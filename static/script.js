@@ -830,9 +830,9 @@ async function processPurchase(productId, productPrice, planName, durationDays) 
     async function validateToken() {
         const token = getToken();
         if (!token) {
-            return```tool_code
- false;
-        }try {
+            return false;
+        }
+        try {
             const response = await fetch('/api/license/check', {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -852,7 +852,7 @@ async function processPurchase(productId, productPrice, planName, durationDays) 
         }
     }
 
-    
+
 
     // ===== FAQ FUNCTIONALITY =====
     function toggleFaq(element) {
@@ -1030,7 +1030,7 @@ async function chooseCheckoutMethod(planName, price, durationDays, productId) {
     }
 }
 
-    
+
 
     // ===== FUNÇÕES GLOBAIS EXPOSTAS =====
     window.checkAuthentication = checkAuthentication;
@@ -1045,4 +1045,3 @@ async function chooseCheckoutMethod(planName, price, durationDays, productId) {
     window.toggleFaq = toggleFaq; // Expose the FAQ toggle function
 
 })();
-

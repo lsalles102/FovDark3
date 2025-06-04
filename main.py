@@ -1190,6 +1190,26 @@ async def login_page(request: Request):
 async def register_page(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
+@app.get("/softwares", response_class=HTMLResponse)
+async def softwares_page(request: Request):
+    return templates.TemplateResponse("softwares.html", {"request": request})
+
+@app.get("/isos", response_class=HTMLResponse)
+async def isos_page(request: Request):
+    return templates.TemplateResponse("isos.html", {"request": request})
+
+@app.get("/otimizadores", response_class=HTMLResponse)
+async def otimizadores_page(request: Request):
+    return templates.TemplateResponse("otimizadores.html", {"request": request})
+
+@app.get("/privacy", response_class=HTMLResponse)
+async def privacy_page(request: Request):
+    return templates.TemplateResponse("privacy.html", {"request": request})
+
+@app.get("/terms", response_class=HTMLResponse)
+async def terms_page(request: Request):
+    return templates.TemplateResponse("terms.html", {"request": request})
+
 
 
 @app.get("/painel", response_class=HTMLResponse)
