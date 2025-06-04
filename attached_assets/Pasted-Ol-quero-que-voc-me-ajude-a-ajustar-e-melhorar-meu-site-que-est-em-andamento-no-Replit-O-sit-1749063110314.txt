@@ -1,0 +1,41 @@
+Olá, quero que você me ajude a ajustar e melhorar meu site que está em andamento no Replit.
+
+O site serve para distribuição de programas, ISOs otimizadas, otimizadores, mods, trainers, cheats e scripts, tanto pagos quanto gratuitos.
+
+## Quero que você faça as seguintes alterações:
+
+1. **Cabeçalho:**
+- Adicione um cabeçalho fixo no topo com uma logo simples à esquerda.
+- Inclua um menu horizontal com as seguintes opções: Início, Programas, ISOs Otimizadas, Otimizadores, Mods & Trainers, Cheats & Scripts, Blog, Suporte.
+- Adicione um botão de Login/Cadastro no canto direito.
+
+2. **Hero Section:**
+- Crie uma seção de destaque logo abaixo do cabeçalho com uma imagem de fundo estilo futurista ou tecnológica.
+- Inclua um título grande: "Tudo para otimizar sua experiência digital!"
+- Adicione um subtítulo menor explicando: "Baixe programas, mods e ferramentas otimizadas — grátis ou premium."
+- Insira dois botões chamativos: "Explorar downloads" e "Ver planos premium".
+
+3. **Seção de Categorias:**
+- Crie uma grade ou carrossel de ícones, cada um representando as seguintes categorias: Softwares, ISOs Gamers, Otimizadores, Mods & Trainers, Cheats & Scripts.
+- Cada ícone deve ter uma legenda e link para a respectiva página.
+
+4. **Seção de "Mais Baixados":**
+- Adicione uma seção com 6 cards mostrando os programas/mods mais baixados.
+- Cada card deve ter: imagem, título, descrição curta e um botão "Download".
+
+5. **Seção "Como Funciona":**
+- Insira uma breve explicação dividida em três blocos com ícones:
+  - "Baixe com segurança"
+  - "Escolha grátis ou premium"
+  - "Receba suporte completo"
+
+6. **Rodapé:**
+- Adicione um rodapé escuro com links para: Política de Privacidade, Termos de Uso, Suporte, FAQ, Parcerias.
+- Insira ícones de redes sociais: Discord, Telegram, Instagram.
+
+7. **Estilo visual:**
+- Minimalista e moderno.
+- Fundo claro, detalhes em azul e cinza suave.
+- Tipografia limpa e moderna.
+- Espaçamento generoso e animações suaves ao passar o mouse.
+- Responsivo: deve se ajustar bem em desktop, tablet e mobile.
