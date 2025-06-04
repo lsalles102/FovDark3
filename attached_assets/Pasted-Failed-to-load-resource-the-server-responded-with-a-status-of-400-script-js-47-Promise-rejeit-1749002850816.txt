@@ -1,0 +1,42 @@
+Failed to load resource: the server responded with a status of 400 ()
+
+script.js:47 Promise rejeitada não tratada: 
+Object
+(anonymous)	@	script.js:47
+script.js:55 🔄 Erro do MercadoPago detectado - possivelmente parâmetros inválidos
+script.js:56 💡 Sugestão: Verificar se apenas public_key e locale estão sendo enviados
+script.js:61 🔄 Tentando reinicializar MercadoPago...
+mercadopago-init.js:39 🚀 Iniciando inicialização do MercadoPago...
+mercadopago-init.js:48 ✅ MercadoPago já inicializado
+script.js:1105 🛒 Produto selecionado: 
+Object
+script.js:1108 🔍 Verificando autenticação...
+script.js:1124 🔍 Validando token no servidor...
+script.js:1167 ✅ Usuário autenticado: luizsalles102@gmail.com
+script.js:1184 ❌ Erro ao verificar autenticação: ReferenceError: processPurchase is not defined
+    at chooseCheckoutMethod (script.js:1181:9)
+chooseCheckoutMethod	@	script.js:1184
+script.js:1105 🛒 Produto selecionado: 
+Object
+script.js:1108 🔍 Verificando autenticação...
+script.js:1124 🔍 Validando token no servidor...
+script.js:1167 ✅ Usuário autenticado: luizsalles102@gmail.com
+script.js:1184 ❌ Erro ao verificar autenticação: ReferenceError: processPurchase is not defined
+    at chooseCheckoutMethod (script.js:1181:9)
+chooseCheckoutMethod	@	script.js:1184
+script.js:1105 🛒 Produto selecionado: 
+Object
+script.js:1108 🔍 Verificando autenticação...
+script.js:1124 🔍 Validando token no servidor...
+script.js:1167 ✅ Usuário autenticado: luizsalles102@gmail.com
+script.js:1184 ❌ Erro ao verificar autenticação: ReferenceError: processPurchase is not defined
+    at chooseCheckoutMethod (script.js:1181:9)
+chooseCheckoutMethod	@	script.js:1184
+script.js:1105 🛒 Produto selecionado: 
+Object
+script.js:1108 🔍 Verificando autenticação...
+script.js:1124 🔍 Validando token no servidor...
+script.js:1167 ✅ Usuário autenticado: luizsalles102@gmail.com
+script.js:1184 ❌ Erro ao verificar autenticação: ReferenceError: processPurchase is not defined
+    at chooseCheckoutMethod (script.js:1181:9)
+chooseCheckoutMethod	@	script.js:1184
