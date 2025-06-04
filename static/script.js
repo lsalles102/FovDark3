@@ -1176,7 +1176,7 @@ async function chooseCheckoutMethod(planName, price, durationDays, productId) {
         }
 
         // Processar pagamento diretamente aqui para evitar problemas com selectPlan
-        await processPurchase(productId, price, planName, durationDays);
+        await processPurchaseGlobal(productId, price, planName, durationDays);
 
     } catch (error) {
         console.error('❌ Erro ao verificar autenticação:', error);
@@ -1189,55 +1189,71 @@ async function chooseCheckoutMethod(planName, price, durationDays, productId) {
     }
 }
 
-    // Função para processar compra
-    async function processPurchase(productId, productPrice, planName, durationDays) {
-        try {
-            console.log('🛒 Iniciando processo de compra...');
-            console.log(`📦 Produto: ${planName} - R$ ${productPrice} - ${durationDays} dias`);
+    // ===== FUNÇÕES GLOBAIS EXPOSTAS =====
+    window.checkAuthentication = checkAuthentication;
+    window.handleLogout = handleLogout;
+    window.showToast = showToast;
+    window.logout = logout; // Expose the new logout function
+    window.isLoggedIn = isLoggedIn; // Expose the new isLoggedIn function
+    window.getToken = getToken; // Expose the new getToken function
+    window.saveToken = saveToken; // Expose the new saveToken function
+    window.authenticatedFetch = authenticatedFetch; // Expose the new authenticatedFetch function
+    window.validateToken = validateToken; // Expose the new validateToken function
+    window.toggleFaq = toggleFaq; // Expose the FAQ toggle function
 
-            const token = localStorage.getItem('access_token');
-            if (!token) {
-                throw new Error('Token de autenticação não encontrado');
-            }
+})();
 
-            // Criar checkout no backend
-            const response = await fetch('/api/criar-checkout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    plano: planName,
-                    product_id: productId
-                })
-            });
+// Função global para processar compra (definida fora da IIFE)
+async function processPurchaseGlobal(productId, productPrice, planName, durationDays) {
+    try {
+        console.log('🛒 Iniciando processo de compra...');
+        console.log(`📦 Produto: ${planName} - R$ ${productPrice} - ${durationDays} dias`);
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || 'Erro ao criar checkout');
-            }
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            throw new Error('Token de autenticação não encontrado');
+        }
 
-            const checkoutData = await response.json();
-            console.log('✅ Checkout criado:', checkoutData);
+        // Criar checkout no backend
+        const response = await fetch('/api/criar-checkout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                plano: planName,
+                product_id: productId
+            })
+        });
 
-            // Redirecionar para o checkout do MercadoPago
-            const checkoutUrl = checkoutData.init_point || checkoutData.sandbox_init_point;
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Erro ao criar checkout');
+        }
 
-            if (!checkoutUrl) {
-                throw new Error('URL de pagamento não encontrada');
-            }
+        const checkoutData = await response.json();
+        console.log('✅ Checkout criado:', checkoutData);
 
-            console.log('🔗 Redirecionando para:', checkoutUrl);
+        // Redirecionar para o checkout do MercadoPago
+        const checkoutUrl = checkoutData.init_point || checkoutData.sandbox_init_point;
+
+        if (!checkoutUrl) {
+            throw new Error('URL de pagamento não encontrada');
+        }
+
+        console.log('🔗 Redirecionando para:', checkoutUrl);
+        if (typeof showToast === 'function') {
             showToast('Redirecionando para pagamento...', 'success');
+        }
 
-            // Redirecionar para o MercadoPago
-            window.location.href = checkoutUrl;
+        // Redirecionar para o MercadoPago
+        window.location.href = checkoutUrl;
 
-        } catch (error) {
-            console.error('❌ Erro no processo de compra:', error);
+    } catch (error) {
+        console.error('❌ Erro no processo de compra:', error);
+        if (typeof showToast === 'function') {
             showToast(`Erro: ${error.message}`, 'error');
         }
     }
-
-//The issue was caused by the function `processPurchase` not being accessible in the global scope, this fix removes the duplicated global scope functions
+}
