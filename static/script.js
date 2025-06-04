@@ -651,132 +651,136 @@
         }
     };
 
-    async function processPurchase(productId, productPrice, planName, durationDays) {
-        console.log('🚀 Iniciando processo de pagamento...');
-        console.log('📦 Dados do produto:', {
-            productId,
-            productPrice,
-            planName,
-            durationDays
-        });
+    // ===== PURCHASE FUNCTIONS =====
 
-        // Verificar se productId é válido
-        if (!productId || productId === 'undefined' || productId === undefined) {
-            console.error('❌ Product ID inválido:', productId);
+// Função para processar compra (sem MercadoPago)
+async function processPurchase(productId, productPrice, planName, durationDays) {
+    console.log('🚀 Iniciando processo de pagamento...');
+    console.log('📦 Dados do produto:', {
+        productId,
+        productPrice,
+        planName,
+        durationDays
+    });
+
+    // Verificar se productId é válido
+    if (!productId || productId === 'undefined' || productId === undefined) {
+        console.error('❌ Product ID inválido:', productId);
+        if (typeof showToast === 'function') {
+            showToast('Erro: Produto inválido', 'error');
+        }
+        return;
+    }
+
+    try {
+        // Converter productId para número se for string
+        const numericProductId = parseInt(productId);
+        if (isNaN(numericProductId)) {
+            console.error('❌ Product ID não é um número válido:', productId);
             if (typeof showToast === 'function') {
-                showToast('Erro: Produto inválido', 'error');
+                showToast('Erro: ID do produto inválido', 'error');
             }
             return;
         }
 
-        try {
-            // Converter productId para número se for string
-            const numericProductId = parseInt(productId);
-            if (isNaN(numericProductId)) {
-                console.error('❌ Product ID não é um número válido:', productId);
-                if (typeof showToast === 'function') {
-                    showToast('Erro: ID do produto inválido', 'error');
-                }
-                return;
-            }
-
-            // Verificar token novamente antes da requisição
-            const token = localStorage.getItem('access_token');
-            if (!token) {
-                console.log('❌ Token não encontrado antes da requisição');
-                if (typeof showToast === 'function') {
-                    showToast('Sessão expirada. Faça login novamente.', 'warning');
-                }
-                setTimeout(() => window.location.href = '/login', 1000);
-                return;
-            }
-
-            console.log('📤 Enviando requisição de checkout...');
-
-            const requestBody = {
-                product_id: numericProductId,
-                plano: planName || 'Plano Padrão'
-            };
-
-            console.log('📄 Body da requisição:', requestBody);
-
-            const response = await fetch('/api/criar-checkout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(requestBody)
-            });
-
-            console.log('📊 Status da resposta:', response.status);
-
-            if (response.status === 401) {
-                console.log('❌ Token expirado durante a requisição');
-                localStorage.removeItem('access_token');
-                localStorage.removeItem('user_data');
-                if (typeof showToast === 'function') {
-                    showToast('Sessão expirada. Faça login novamente.', 'warning');
-                }
-                setTimeout(() => window.location.href = '/login', 1000);
-                return;
-            }
-
-            if (!response.ok) {
-                let errorMessage = 'Erro ao criar checkout';
-                try {
-                    const errorData = await response.json();
-                    console.error('❌ Erro na resposta:', errorData);
-                    errorMessage = errorData.detail || errorMessage;
-                } catch (parseError) {
-                    console.error('❌ Erro ao fazer parse da resposta de erro:', parseError);
-                    const textResponse = await response.text();
-                    console.error('❌ Resposta como texto:', textResponse.substring(0, 200));
-                }
-
-                if (typeof showToast === 'function') {
-                    showToast(errorMessage, 'error');
-                }
-                return;
-            }
-
-            // Verificar se a resposta é realmente JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                const htmlResponse = await response.text();
-                console.error('❌ Resposta não é JSON:', htmlResponse.substring(0, 200));
-                if (typeof showToast === 'function') {
-                    showToast('Erro: Resposta inválida do servidor', 'error');
-                }
-                return;
-            }
-
-            const data = await response.json();
-            console.log('✅ Dados do checkout recebidos:', data);
-
-            if (data.success && data.init_point) {
-                console.log('✅ Redirecionando para pagamento...');
-                if (typeof showToast === 'function') {
-                    showToast('Redirecionando para pagamento...', 'info');
-                }
-                // Aguardar um momento para o usuário ver a mensagem
-                setTimeout(() => {
-                    window.location.href = data.init_point;
-                }, 1000);
-            } else {
-                console.error('❌ Resposta inválida:', data);
-                if (typeof showToast === 'function') {
-                    showToast(data.detail || 'Erro ao processar pagamento', 'error');
-                }
-            }
-
-        } catch (error) {
-            console.error('💥 Erro crítico:', error);
+        // Verificar token novamente antes da requisição
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            console.log('❌ Token não encontrado antes da requisição');
             if (typeof showToast === 'function') {
-                showToast('Erro de conexão com o servidor', 'error');
+                showToast('Sessão expirada. Faça login novamente.', 'warning');
+            }
+            setTimeout(() => window.location.href = '/login', 1000);
+            return;
+        }
+
+        console.log('📤 Enviando requisição de checkout...');
+
+        const requestBody = {
+            product_id: numericProductId,
+            plano: planName || 'Plano Padrão'
+        };
+
+        console.log('📄 Body da requisição:', requestBody);
+
+        const response = await fetch('/api/criar-checkout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        console.log('📊 Status da resposta:', response.status);
+
+        if (response.status === 401) {
+            console.log('❌ Token expirado durante a requisição');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user_data');
+            if (typeof showToast === 'function') {
+                showToast('Sessão expirada. Faça login novamente.', 'warning');
+            }
+            setTimeout(() => window.location.href = '/login', 1000);
+            return;
+        }
+
+        if (!response.ok) {
+            let errorMessage = 'Erro ao criar checkout';
+            try {
+                const errorData = await response.json();
+                console.error('❌ Erro na resposta:', errorData);
+                errorMessage = errorData.detail || errorMessage;
+            } catch (parseError) {
+                console.error('❌ Erro ao fazer parse da resposta de erro:', parseError);
+                const textResponse = await response.text();
+                console.error('❌ Resposta como texto:', textResponse.substring(0, 200));
+            }
+
+            if (typeof showToast === 'function') {
+                showToast(errorMessage, 'error');
+            }
+            return;
+        }
+
+        // Verificar se a resposta é realmente JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const htmlResponse = await response.text();
+            console.error('❌ Resposta não é JSON:', htmlResponse.substring(0, 200));
+            if (typeof showToast === 'function') {
+                showToast('Erro: Resposta inválida do servidor', 'error');
+            }
+            return;
+        }
+
+        const data = await response.json();
+        console.log('✅ Dados do checkout recebidos:', data);
+
+        if (data.success && data.init_point) {
+           console.log('✅ Redirecionando para pagamento...');
+            if (typeof showToast === 'function') {
+               showToast('Redirecionando para pagamento...', 'info');
+            }
+            // Aguardar um momento para o usuário ver a mensagem
+            setTimeout(() => {
+                showToast('Sistema de pagamento em desenvolvimento. Entre em contato para adquirir a licença.', 'info');
+            }, 1000);
+
+        } else {
+            console.error('❌ Resposta inválida:', data);
+            if (typeof showToast === 'function') {
+                showToast(data.detail || 'Erro ao processar pagamento', 'error');
             }
         }
+
+    } catch (error) {
+        console.error('💥 Erro crítico:', error);
+        if (typeof showToast === 'function') {
+            showToast('Erro de conexão com o servidor', 'error');
+        }
     }
+}
 
     // Função para processar compra
     function buyProduct(productId) {
@@ -964,7 +968,8 @@
     async function validateToken() {
         const token = getToken();
         if (!token) {
-            return false;
+            return```tool_code
+ false;
         }try {
             const response = await fetch('/api/license/check', {
                 headers: {
@@ -1188,6 +1193,11 @@ async function chooseCheckoutMethod(planName, price, durationDays, productId) {
         return;
     }
 }
+
+    // ===== PAYMENT SYSTEM INITIALIZATION =====
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ Sistema de pagamento em modo de desenvolvimento');
+});
 
     // ===== FUNÇÕES GLOBAIS EXPOSTAS =====
     window.checkAuthentication = checkAuthentication;
