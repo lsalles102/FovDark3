@@ -6,6 +6,15 @@
         <div class="purchase-header">
             <h1>ESCOLHA SEU PLANO</h1>
             <p>🎯 FovDark Painel - Script Aimbot com Interface Gráfica Ajustável 🎯.</p>
+            
+            <!-- Indicador de Login Status -->
+            <div id="loginStatus" class="login-status-indicator" style="display: none;">
+                <div class="status-card">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Faça login para realizar compras</span>
+                    <a href="/login" class="login-link">Entrar</a>
+                </div>
+            </div>
         </div>
 
         <!-- Pricing Grid -->
@@ -294,6 +303,21 @@
         left: 100%;
     }
 
+    .product-button.login-required {
+        background: linear-gradient(135deg, #ff6b35, #ff8f00);
+        cursor: pointer;
+    }
+
+    .product-button.login-required:hover {
+        background: linear-gradient(135deg, #ff8f00, #ffab00);
+    }
+
+    .btn-login-required {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
     .trust-badges {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -424,6 +448,66 @@
         margin-bottom: 2rem;
     }
 
+    /* Login Status Indicator */
+    .login-status-indicator {
+        margin-top: 2rem;
+        animation: slideIn 0.5s ease-out;
+    }
+
+    .status-card {
+        background: linear-gradient(135deg, #ff6b35, #ff8f00);
+        border: 2px solid rgba(255, 107, 53, 0.3);
+        border-radius: 15px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        color: white;
+        font-weight: 600;
+        max-width: 500px;
+        margin: 0 auto;
+        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+    }
+
+    .status-card i {
+        font-size: 1.2rem;
+        animation: pulse 2s infinite;
+    }
+
+    .login-link {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .login-link:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    @keyframes slideIn {
+        from { 
+            opacity: 0; 
+            transform: translateY(-20px); 
+        }
+        to { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+    }
+
     @media (max-width: 768px) {
         .purchase-header h1 {
             font-size: 2rem;
@@ -447,12 +531,39 @@
             flex-direction: column;
             gap: 1rem;
         }
+
+        .status-card {
+            padding: 1rem;
+            flex-direction: column;
+            text-align: center;
+            gap: 0.8rem;
+        }
+
+        .status-card span {
+            font-size: 0.9rem;
+        }
     }
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('🛒 Inicializando página de compras...');
+    
+    // Verificar status de autenticação
+    const token = localStorage.getItem('access_token');
+    const isLoggedIn = token && token !== 'null' && token !== 'undefined';
+    
+    console.log('🔍 Status de login:', isLoggedIn ? 'Logado' : 'Não logado');
+    
+    // Mostrar indicador se não estiver logado
+    if (!isLoggedIn) {
+        const loginStatus = document.getElementById('loginStatus');
+        if (loginStatus) {
+            loginStatus.style.display = 'block';
+        }
+    }
+    
+    // Carregar produtos
     loadProducts();
 });
 
@@ -521,6 +632,10 @@ function displayProducts(products, container) {
     }
 
     try {
+        // Verificar se usuário está logado
+        const token = localStorage.getItem('access_token');
+        const isLoggedIn = token && token !== 'null' && token !== 'undefined';
+        
         container.innerHTML = products.map((product, index) => {
             if (!product || typeof product !== 'object') {
                 console.error('❌ Produto inválido:', product);
@@ -545,6 +660,10 @@ function displayProducts(products, container) {
             const priceAmount = Math.floor(product.price || 0);
             const priceDecimal = String((product.price || 0).toFixed(2)).split('.')[1];
 
+            // Definir texto e classe do botão baseado no status de login
+            const buttonClass = isLoggedIn ? '' : 'login-required';
+            const buttonText = isLoggedIn ? 'Comprar agora' : 'Fazer login para comprar';
+
             return `
                 <div class="product-card ${product.is_featured ? 'featured' : ''}">
                     ${product.is_featured ? '<div class="product-badge">RECOMENDADO</div>' : ''}
@@ -568,9 +687,9 @@ function displayProducts(products, container) {
                         </div>
                         <div class="product-duration">${product.duration_days || 30} dias de acesso</div>
 
-                        <button class="product-button" onclick="chooseCheckoutMethod('${product.name}', ${product.price}, ${product.duration_days}, ${product.id})">
-                            <i class="fas fa-shopping-cart"></i>
-                            Comprar agora
+                        <button class="product-button ${buttonClass}" onclick="chooseCheckoutMethod('${product.name}', ${product.price}, ${product.duration_days}, ${product.id})" data-product-id="${product.id}">
+                            <i class="fas fa-${isLoggedIn ? 'shopping-cart' : 'user'}"></i>
+                            ${buttonText}
                         </button>
                     </div>
                 </div>

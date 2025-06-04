@@ -130,7 +130,7 @@
 
             } catch (networkError) {
                 console.error('❌ Erro de rede na verificação:', networkError);
-                
+
                 // Se há dados salvos e é erro de rede, usar temporariamente
                 if (userData) {
                     try {
@@ -144,7 +144,7 @@
                         console.error('❌ Erro ao fazer parse dos dados salvos:', parseError);
                     }
                 }
-                
+
                 clearAuthData();
                 updateNavigation(false);
                 return false;
@@ -362,7 +362,7 @@
 
         try {
             console.log('🔄 Iniciando login...');
-            
+
             // Limpar dados antigos
             clearAuthData();
 
@@ -504,9 +504,25 @@
         console.log('⚙️ Inicializando painel administrativo');
     }
 
-    function initializeComprarPage() {
+    async function initializeComprarPage() {
         console.log('🛒 Inicializando página de compras');
+
+        // Verificar autenticação primeiro
+        const authValid = await checkAuthentication();
+        console.log('🔍 Status de autenticação na página de compras:', authValid ? 'Autenticado' : 'Não autenticado');
+
+        // Carregar produtos independentemente do status de autenticação
         loadProducts();
+
+        // Mostrar aviso se não estiver logado
+        if (!authValid) {
+            console.log('⚠️ Usuário não autenticado - mostrando aviso');
+            setTimeout(() => {
+                if (typeof showToast === 'function') {
+                    showToast('Faça login para realizar compras', 'info');
+                }
+            }, 2000);
+        }
     }
 
     // ===== PRODUTOS =====
@@ -563,7 +579,7 @@
                             <li><i class="fas fa-check"></i>Suporte 24/7</li>
                         `}
                     </ul>
-                    <button class="plan-button" onclick="selectPlan(${productId}, ${productPrice}, '${productName}', ${durationDays})" data-product-id="${productId}">
+                    <button class="plan-button" onclick="chooseCheckoutMethod('${productName}', ${productPrice}, ${durationDays}, ${productId})" data-product-id="${productId}">
                         ESCOLHER PLANO
                     </button>
                 </div>
@@ -1029,3 +1045,99 @@ function handleSuccessfulLogin(data) {
             }
         }, 100);
     }
+
+async function chooseCheckoutMethod(planName, price, durationDays, productId) {
+    console.log('🛒 Produto selecionado:', { planName, price, durationDays, productId });
+
+    // Verificar autenticação de forma mais robusta
+    console.log('🔍 Verificando autenticação...');
+
+    const token = localStorage.getItem('access_token');
+    if (!token || token === 'null' || token === 'undefined') {
+        console.log('❌ Token não encontrado');
+        if (typeof showToast === 'function') {
+            showToast('Faça login para comprar', 'warning');
+        } else {
+            alert('Faça login para comprar');
+        }
+        setTimeout(() => window.location.href = '/login', 1000);
+        return;
+    }
+
+    // Verificar se o token é válido no servidor
+    try {
+        console.log('🔍 Validando token no servidor...');
+        const response = await fetch('/api/verify_token', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.status === 401) {
+            console.log('❌ Token expirado ou inválido');
+            // Limpar dados de autenticação
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user_data');
+
+            if (typeof showToast === 'function') {
+                showToast('Sessão expirada. Faça login novamente', 'warning');
+            } else {
+                alert('Sessão expirada. Faça login novamente');
+            }
+            setTimeout(() => window.location.href = '/login', 1000);
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error(`Erro de verificação: ${response.status}`);
+        }
+
+        const userData = await response.json();
+        if (!userData.valid) {
+            console.log('❌ Token inválido segundo servidor');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user_data');
+
+            if (typeof showToast === 'function') {
+                showToast('Sessão inválida. Faça login novamente', 'warning');
+            } else {
+                alert('Sessão inválida. Faça login novamente');
+            }
+            setTimeout(() => window.location.href = '/login', 1000);
+            return;
+        }
+
+        console.log('✅ Usuário autenticado:', userData.user.email);
+
+        // Atualizar dados do usuário se necessário
+        if (userData.user) {
+            localStorage.setItem('user_data', JSON.stringify(userData.user));
+            currentUser = userData.user;
+            isAuthenticated = true;
+        }
+
+    } catch (error) {
+        console.error('❌ Erro ao verificar autenticação:', error);
+        if (typeof showToast === 'function') {
+            showToast('Erro de conexão. Tente novamente.', 'error');
+        } else {
+            alert('Erro de conexão. Tente novamente.');
+        }
+        return;
+    }
+
+    // Verificar se temos selectPlan global
+    if (typeof window.selectPlan === 'function') {
+        console.log('✅ Iniciando processo de pagamento...');
+        window.selectPlan(productId, price, planName, durationDays);
+    } else {
+        console.error('❌ Função selectPlan não encontrada');
+        if (typeof showToast === 'function') {
+            showToast('Erro: Sistema de pagamento não disponível', 'error');
+        } else {
+            alert('Erro: Sistema de pagamento não disponível');
+        }
+    }
+}
