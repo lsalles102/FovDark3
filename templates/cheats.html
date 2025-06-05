@@ -1,0 +1,223 @@
+
+{% extends "base.html" %}
+
+{% block title %}Cheats & Scripts - FovDark{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-modern">
+    <div class="hero-overlay"></div>
+    <div class="hero-content-modern">
+        <h1 class="hero-title-modern">Cheats & Scripts</h1>
+        <p class="hero-subtitle-modern">Scripts avançados e cheats para games competitivos</p>
+        <div class="hero-buttons">
+            <a href="#downloads" class="btn btn-primary btn-large">Ver Scripts</a>
+            <a href="/painel" class="btn btn-secondary btn-large">Área Premium</a>
+        </div>
+    </div>
+</section>
+
+<!-- Downloads Section -->
+<section id="downloads" class="downloads-section">
+    <div class="container">
+        <h2 class="section-title">Scripts & Cheats Disponíveis</h2>
+        <p class="section-subtitle">Scripts avançados para jogos competitivos com anti-detecção</p>
+        
+        <div id="downloads-grid" class="downloads-grid">
+            <!-- Downloads serão carregados aqui via JavaScript -->
+            <div class="loading-message">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Carregando scripts e cheats...</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Aviso de Segurança -->
+<section class="security-warning">
+    <div class="container">
+        <div class="warning-card">
+            <div class="warning-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3>Uso Responsável</h3>
+            <p>Nossos scripts são desenvolvidos para uso educacional e em servidores privados. Use com responsabilidade e respeite os termos de serviço dos jogos.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Como Funciona -->
+<section class="how-it-works">
+    <div class="container">
+        <h2 class="section-title">Como Funciona</h2>
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-code"></i>
+                </div>
+                <h3>Scripts Avançados</h3>
+                <p>Códigos otimizados e constantemente atualizados para máxima performance.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-eye-slash"></i>
+                </div>
+                <h3>Anti-Detecção</h3>
+                <p>Sistemas avançados de proteção contra detecção de anti-cheat.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h3>Suporte 24/7</h3>
+                <p>Suporte técnico especializado para configuração e resolução de problemas.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadDownloads();
+});
+
+async function loadDownloads() {
+    try {
+        // Simular dados de cheats e scripts
+        const downloads = [
+            {
+                id: 1,
+                title: "Aim Assistant Pro",
+                description: "Script avançado para FPS com aimbot inteligente e anti-detecção",
+                is_free: false,
+                price: 29.99,
+                download_count: 2156,
+                image_url: "/static/cyberpunk-sniper.jpg"
+            },
+            {
+                id: 2,
+                title: "Wallhack Universal",
+                description: "Script de visão através de paredes para jogos competitivos",
+                is_free: false,
+                price: 24.99,
+                download_count: 1834,
+                image_url: "/static/cyberpunk-soldier.jpg"
+            },
+            {
+                id: 3,
+                title: "Speed Hack Lite",
+                description: "Script básico de velocidade - versão gratuita para testes",
+                is_free: true,
+                price: 0,
+                download_count: 3421,
+                image_url: "/static/hero-bg.jpg"
+            },
+            {
+                id: 4,
+                title: "Auto Clicker Pro",
+                description: "Clicker automático avançado com configurações personalizadas",
+                is_free: false,
+                price: 9.99,
+                download_count: 987,
+                image_url: "/static/cyberpunk-soldier.jpg"
+            }
+        ];
+
+        displayDownloads(downloads);
+    } catch (error) {
+        console.error('Erro ao carregar downloads:', error);
+        document.getElementById('downloads-grid').innerHTML = `
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Erro ao carregar downloads. Tente novamente mais tarde.</p>
+            </div>
+        `;
+    }
+}
+
+function displayDownloads(downloads) {
+    const grid = document.getElementById('downloads-grid');
+    
+    if (downloads.length === 0) {
+        grid.innerHTML = `
+            <div class="no-downloads">
+                <i class="fas fa-folder-open"></i>
+                <p>Nenhum script ou cheat disponível no momento.</p>
+            </div>
+        `;
+        return;
+    }
+
+    grid.innerHTML = downloads.map(download => `
+        <div class="download-card">
+            <div class="download-image">
+                <img src="${download.image_url}" alt="${download.title}" onerror="this.src='/static/hero-bg.jpg'">
+            </div>
+            <div class="download-info">
+                <h3>${download.title}</h3>
+                <p>${download.description}</p>
+                <div class="download-stats">
+                    <span><i class="fas fa-download"></i> ${download.download_count} downloads</span>
+                    <span class="${download.is_free ? 'free-badge' : 'premium-badge'}">
+                        ${download.is_free ? 'GRÁTIS' : 'PREMIUM'}
+                    </span>
+                </div>
+                <button class="btn-download" onclick="handleDownload(${download.id}, ${download.is_free})">
+                    ${download.is_free ? 'Download Grátis' : `Baixar - R$ ${download.price.toFixed(2)}`}
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function handleDownload(downloadId, isFree) {
+    if (isFree) {
+        alert('Download iniciado! Verifique sua pasta de downloads.');
+    } else {
+        alert('Para downloads premium, você precisa de uma licença ativa. Acesse o painel do cliente.');
+        window.location.href = '/painel';
+    }
+}
+</script>
+
+<style>
+.security-warning {
+    padding: 4rem 0;
+    background: var(--bg-card);
+}
+
+.warning-card {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.1));
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.warning-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.warning-card h3 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.warning-card p {
+    color: var(--text-secondary);
+}
+</style>
+{% endblock %}

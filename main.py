@@ -1202,6 +1202,22 @@ async def isos_page(request: Request):
 async def otimizadores_page(request: Request):
     return templates.TemplateResponse("otimizadores.html", {"request": request})
 
+@app.get("/mods", response_class=HTMLResponse)
+async def mods_page(request: Request):
+    return templates.TemplateResponse("mods.html", {"request": request})
+
+@app.get("/cheats", response_class=HTMLResponse)
+async def cheats_page(request: Request):
+    return templates.TemplateResponse("cheats.html", {"request": request})
+
+@app.get("/blog", response_class=HTMLResponse)
+async def blog_page(request: Request):
+    return templates.TemplateResponse("blog.html", {"request": request})
+
+@app.get("/suporte", response_class=HTMLResponse)
+async def suporte_page(request: Request):
+    return templates.TemplateResponse("suporte.html", {"request": request})
+
 @app.get("/privacy", response_class=HTMLResponse)
 async def privacy_page(request: Request):
     return templates.TemplateResponse("privacy.html", {"request": request})

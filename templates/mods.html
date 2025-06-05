@@ -1,0 +1,162 @@
+
+{% extends "base.html" %}
+
+{% block title %}Mods & Trainers - FovDark{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-modern">
+    <div class="hero-overlay"></div>
+    <div class="hero-content-modern">
+        <h1 class="hero-title-modern">Mods & Trainers</h1>
+        <p class="hero-subtitle-modern">Modificações e trainers para seus jogos favoritos</p>
+        <div class="hero-buttons">
+            <a href="#downloads" class="btn btn-primary btn-large">Ver Downloads</a>
+            <a href="/painel" class="btn btn-secondary btn-large">Área do Cliente</a>
+        </div>
+    </div>
+</section>
+
+<!-- Downloads Section -->
+<section id="downloads" class="downloads-section">
+    <div class="container">
+        <h2 class="section-title">Mods & Trainers Disponíveis</h2>
+        <p class="section-subtitle">Modificações e trainers para melhorar sua experiência de jogo</p>
+        
+        <div id="downloads-grid" class="downloads-grid">
+            <!-- Downloads serão carregados aqui via JavaScript -->
+            <div class="loading-message">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Carregando mods e trainers...</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Como Funciona -->
+<section class="how-it-works">
+    <div class="container">
+        <h2 class="section-title">Como Usar</h2>
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-download"></i>
+                </div>
+                <h3>Baixe o Mod/Trainer</h3>
+                <p>Escolha o mod ou trainer desejado e faça o download seguro.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <h3>Configure</h3>
+                <p>Siga as instruções de instalação e configuração fornecidas.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+                <h3>Jogue</h3>
+                <p>Aproveite as novas funcionalidades em seus jogos.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadDownloads();
+});
+
+async function loadDownloads() {
+    try {
+        // Simular dados de mods e trainers
+        const downloads = [
+            {
+                id: 1,
+                title: "Universal Game Trainer",
+                description: "Trainer universal compatível com centenas de jogos populares",
+                is_free: true,
+                price: 0,
+                download_count: 1523,
+                image_url: "/static/cyberpunk-soldier.jpg"
+            },
+            {
+                id: 2,
+                title: "FPS Aim Trainer",
+                description: "Trainer avançado para melhorar mira em jogos FPS",
+                is_free: false,
+                price: 15.99,
+                download_count: 892,
+                image_url: "/static/cyberpunk-sniper.jpg"
+            },
+            {
+                id: 3,
+                title: "RPG Stats Mod",
+                description: "Modificação para alterar estatísticas em jogos RPG",
+                is_free: true,
+                price: 0,
+                download_count: 654,
+                image_url: "/static/hero-bg.jpg"
+            }
+        ];
+
+        displayDownloads(downloads);
+    } catch (error) {
+        console.error('Erro ao carregar downloads:', error);
+        document.getElementById('downloads-grid').innerHTML = `
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Erro ao carregar downloads. Tente novamente mais tarde.</p>
+            </div>
+        `;
+    }
+}
+
+function displayDownloads(downloads) {
+    const grid = document.getElementById('downloads-grid');
+    
+    if (downloads.length === 0) {
+        grid.innerHTML = `
+            <div class="no-downloads">
+                <i class="fas fa-folder-open"></i>
+                <p>Nenhum mod ou trainer disponível no momento.</p>
+            </div>
+        `;
+        return;
+    }
+
+    grid.innerHTML = downloads.map(download => `
+        <div class="download-card">
+            <div class="download-image">
+                <img src="${download.image_url}" alt="${download.title}" onerror="this.src='/static/hero-bg.jpg'">
+            </div>
+            <div class="download-info">
+                <h3>${download.title}</h3>
+                <p>${download.description}</p>
+                <div class="download-stats">
+                    <span><i class="fas fa-download"></i> ${download.download_count} downloads</span>
+                    <span class="${download.is_free ? 'free-badge' : 'premium-badge'}">
+                        ${download.is_free ? 'GRÁTIS' : 'PREMIUM'}
+                    </span>
+                </div>
+                <button class="btn-download" onclick="handleDownload(${download.id}, ${download.is_free})">
+                    ${download.is_free ? 'Download Grátis' : `Baixar - R$ ${download.price.toFixed(2)}`}
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function handleDownload(downloadId, isFree) {
+    if (isFree) {
+        alert('Download iniciado! Verifique sua pasta de downloads.');
+    } else {
+        alert('Para downloads premium, você precisa de uma licença ativa. Acesse o painel do cliente.');
+        window.location.href = '/painel';
+    }
+}
+</script>
+{% endblock %}

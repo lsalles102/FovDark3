@@ -1,0 +1,154 @@
+
+{% extends "base.html" %}
+
+{% block title %}Blog - FovDark{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-modern">
+    <div class="hero-overlay"></div>
+    <div class="hero-content-modern">
+        <h1 class="hero-title-modern">Blog FovDark</h1>
+        <p class="hero-subtitle-modern">Notícias, tutoriais e atualizações sobre otimização e gaming</p>
+    </div>
+</section>
+
+<!-- Blog Posts Section -->
+<section class="blog-section">
+    <div class="container">
+        <h2 class="section-title">Últimas Postagens</h2>
+        
+        <div class="blog-grid">
+            <article class="blog-post">
+                <div class="post-image">
+                    <img src="/static/cyberpunk-soldier.jpg" alt="Post">
+                </div>
+                <div class="post-content">
+                    <div class="post-meta">
+                        <span class="post-date">15 Janeiro 2025</span>
+                        <span class="post-category">Tutoriais</span>
+                    </div>
+                    <h3>Como Otimizar seu PC para Gaming</h3>
+                    <p>Guia completo com as melhores práticas para maximizar o desempenho do seu computador em jogos.</p>
+                    <a href="#" class="btn-read-more">Ler Mais</a>
+                </div>
+            </article>
+
+            <article class="blog-post">
+                <div class="post-image">
+                    <img src="/static/cyberpunk-sniper.jpg" alt="Post">
+                </div>
+                <div class="post-content">
+                    <div class="post-meta">
+                        <span class="post-date">12 Janeiro 2025</span>
+                        <span class="post-category">Notícias</span>
+                    </div>
+                    <h3>Novos Recursos no FovDark Loader</h3>
+                    <p>Confira as últimas atualizações e melhorias implementadas na nossa ferramenta principal.</p>
+                    <a href="#" class="btn-read-more">Ler Mais</a>
+                </div>
+            </article>
+
+            <article class="blog-post">
+                <div class="post-image">
+                    <img src="/static/hero-bg.jpg" alt="Post">
+                </div>
+                <div class="post-content">
+                    <div class="post-meta">
+                        <span class="post-date">08 Janeiro 2025</span>
+                        <span class="post-category">Dicas</span>
+                    </div>
+                    <h3>Segurança em Gaming: Melhores Práticas</h3>
+                    <p>Dicas essenciais para manter seus dados seguros enquanto utiliza softwares de otimização.</p>
+                    <a href="#" class="btn-read-more">Ler Mais</a>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.blog-section {
+    padding: 6rem 0;
+}
+
+.blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.blog-post {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.blog-post:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
+}
+
+.post-image {
+    height: 200px;
+    overflow: hidden;
+}
+
+.post-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.post-content {
+    padding: 1.5rem;
+}
+
+.post-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+}
+
+.post-date {
+    color: var(--text-secondary);
+}
+
+.post-category {
+    background: var(--primary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius);
+    font-weight: 500;
+}
+
+.post-content h3 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.post-content p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.btn-read-more {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.btn-read-more:hover {
+    color: var(--secondary);
+}
+</style>
+{% endblock %}

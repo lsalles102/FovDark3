@@ -1,0 +1,240 @@
+
+{% extends "base.html" %}
+
+{% block title %}Suporte - FovDark{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-modern">
+    <div class="hero-overlay"></div>
+    <div class="hero-content-modern">
+        <h1 class="hero-title-modern">Suporte FovDark</h1>
+        <p class="hero-subtitle-modern">Estamos aqui para ajudar você 24/7</p>
+    </div>
+</section>
+
+<!-- Support Options -->
+<section class="support-section">
+    <div class="container">
+        <h2 class="section-title">Como Podemos Ajudar?</h2>
+        
+        <div class="support-grid">
+            <div class="support-card">
+                <div class="support-icon">
+                    <i class="fab fa-discord"></i>
+                </div>
+                <h3>Discord</h3>
+                <p>Suporte em tempo real com nossa comunidade</p>
+                <a href="#" class="btn btn-primary">Entrar no Discord</a>
+            </div>
+
+            <div class="support-card">
+                <div class="support-icon">
+                    <i class="fab fa-telegram"></i>
+                </div>
+                <h3>Telegram</h3>
+                <p>Chat direto com nossa equipe de suporte</p>
+                <a href="#" class="btn btn-primary">Abrir Telegram</a>
+            </div>
+
+            <div class="support-card">
+                <div class="support-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <h3>Email</h3>
+                <p>Envie sua dúvida por email</p>
+                <a href="mailto:suporte@fovdark.com" class="btn btn-primary">Enviar Email</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="faq-section">
+    <div class="container">
+        <h2 class="section-title">Perguntas Frequentes</h2>
+        
+        <div class="faq-container">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>Como faço para baixar o FovDark Loader?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Para baixar o FovDark Loader, você precisa ter uma licença ativa. Acesse o painel do cliente após fazer login e clique no botão de download.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>Qual a diferença entre os planos?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Oferecemos planos mensal, trimestral e anual. Quanto maior a duração, maior o desconto. Todos os planos incluem acesso completo a todos os recursos.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>É seguro usar os softwares do FovDark?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Sim, todos os nossos softwares são verificados e livres de malware. Utilizamos tecnologias avançadas de proteção e anti-detecção.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>Como renovar minha licença?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Você pode renovar sua licença acessando o painel do cliente e selecionando um novo plano. O tempo será adicionado automaticamente à sua licença atual.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // FAQ Accordion
+    const faqItems = document.querySelectorAll('.faq-item');
+    
+    faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        const answer = item.querySelector('.faq-answer');
+        const icon = question.querySelector('i');
+        
+        question.addEventListener('click', () => {
+            const isOpen = item.classList.contains('active');
+            
+            // Fechar todos os outros
+            faqItems.forEach(otherItem => {
+                otherItem.classList.remove('active');
+                otherItem.querySelector('.faq-answer').style.maxHeight = '0';
+                otherItem.querySelector('.faq-question i').style.transform = 'rotate(0deg)';
+            });
+            
+            // Alternar o atual
+            if (!isOpen) {
+                item.classList.add('active');
+                answer.style.maxHeight = answer.scrollHeight + 'px';
+                icon.style.transform = 'rotate(180deg)';
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.support-section {
+    padding: 6rem 0;
+}
+
+.support-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.support-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.support-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
+}
+
+.support-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: white;
+}
+
+.support-card h3 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.support-card p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.faq-section {
+    padding: 6rem 0;
+    background: var(--bg-card);
+}
+
+.faq-container {
+    max-width: 800px;
+    margin: 3rem auto 0;
+}
+
+.faq-item {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.faq-question {
+    padding: 1.5rem;
+    background: var(--bg-dark);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: var(--transition);
+}
+
+.faq-question:hover {
+    background: var(--bg-darker);
+}
+
+.faq-question h3 {
+    color: var(--text-primary);
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.faq-question i {
+    color: var(--primary);
+    transition: transform 0.3s ease;
+}
+
+.faq-answer {
+    padding: 0 1.5rem;
+    background: var(--bg-main);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.faq-answer p {
+    color: var(--text-secondary);
+    padding: 1.5rem 0;
+    margin: 0;
+    line-height: 1.6;
+}
+</style>
+{% endblock %}
