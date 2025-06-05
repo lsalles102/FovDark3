@@ -23,29 +23,34 @@
     function initializeApp() {
         try {
             setupNavigation();
-            // Só verificar autenticação em páginas que realmente precisam
-            const protectedPages = ['/painel', '/admin'];
-            if (!protectedPages.includes(window.location.pathname)) {
-                checkAuthentication();
-            } else {
-                // Para páginas protegidas, apenas verificar dados locais
-                const token = localStorage.getItem('access_token');
-                const userData = localStorage.getItem('user_data');
-                if (token && userData) {
-                    try {
-                        currentUser = JSON.parse(userData);
-                        isAuthenticated = true;
-                        updateNavigation(true);
-                    } catch (e) {
-                        console.error('Erro ao carregar dados do usuário:', e);
-                    }
-                }
-            }
+            // Verificar autenticação em todas as páginas
+            checkAuthenticationState();
             setupEventListeners();
             initializePage();
             console.log('Sistema inicializado');
         } catch (error) {
             console.error('Erro na inicialização:', error);
+        }
+    }
+
+    function checkAuthenticationState() {
+        const token = localStorage.getItem('access_token');
+        const userData = localStorage.getItem('user_data');
+        
+        if (token && userData) {
+            try {
+                currentUser = JSON.parse(userData);
+                isAuthenticated = true;
+                updateAuthUI(true);
+                console.log('Usuário autenticado:', currentUser.email);
+            } catch (e) {
+                console.error('Erro ao carregar dados do usuário:', e);
+                clearAuthData();
+                updateAuthUI(false);
+            }
+        } else {
+            isAuthenticated = false;
+            updateAuthUI(false);
         }
     }
 
@@ -206,6 +211,21 @@
         }
     }
 
+    function updateAuthUI(authenticated) {
+        const guestButtons = document.getElementById('guestButtons');
+        const userButtons = document.getElementById('userButtons');
+        const userEmail = document.getElementById('userEmail');
+
+        if (authenticated && currentUser) {
+            if (guestButtons) guestButtons.style.display = 'none';
+            if (userButtons) userButtons.style.display = 'block';
+            if (userEmail) userEmail.textContent = currentUser.email;
+        } else {
+            if (guestButtons) guestButtons.style.display = 'flex';
+            if (userButtons) userButtons.style.display = 'none';
+        }
+    }
+
     function clearAuthData() {
         localStorage.removeItem('access_token');
         localStorage.removeItem('user_data');
@@ -213,6 +233,14 @@
         sessionStorage.removeItem('user_data');
         currentUser = null;
         isAuthenticated = false;
+        updateAuthUI(false);
+    }
+
+    // Função global para logout (chamada pelo onclick no HTML)
+    window.logout = function() {
+        clearAuthData();
+        showToast('Logout realizado com sucesso!', 'success');
+        window.location.href = '/';
     }
 
     function setupNavigation() {

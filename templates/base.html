@@ -75,15 +75,35 @@
             </nav>
 
             <!-- Auth Buttons -->
-            <div class="auth-buttons">
-                <a href="/login" class="btn-login">
-                    <i class="fas fa-sign-in-alt"></i>
-                    <span>Entrar</span>
-                </a>
-                <a href="/register" class="btn-register">
-                    <i class="fas fa-user-plus"></i>
-                    <span>Cadastrar</span>
-                </a>
+            <div class="auth-buttons" id="authButtons">
+                <!-- Botões para usuários não logados -->
+                <div id="guestButtons">
+                    <a href="/login" class="btn-login">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Entrar</span>
+                    </a>
+                    <a href="/register" class="btn-register">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Cadastrar</span>
+                    </a>
+                </div>
+                
+                <!-- Botões para usuários logados -->
+                <div id="userButtons" style="display: none;">
+                    <div class="user-menu">
+                        <span class="user-email" id="userEmail"></span>
+                        <div class="user-dropdown">
+                            <a href="/painel" class="dropdown-item">
+                                <i class="fas fa-user"></i>
+                                <span>Painel</span>
+                            </a>
+                            <a href="#" onclick="logout()" class="dropdown-item logout-btn">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Sair</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Mobile Menu Toggle -->
