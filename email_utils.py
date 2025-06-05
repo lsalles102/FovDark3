@@ -142,93 +142,9 @@ def send_confirmation_email(email):
     return send_email(email, subject, html_content)
 
 def send_recovery_email(email, recovery_token):
-    """Enviar email de recuperação de senha"""
-    subject = "Recuperação de Senha - FovDark"
-    recovery_link = f"https://fovdark.repl.co/reset-password/{recovery_token}"
-
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <style>
-            .email-container {{
-                max-width: 600px;
-                margin: 0 auto;
-                font-family: Arial, sans-serif;
-                background: #0a0a0a;
-                color: #ffffff;
-                border-radius: 10px;
-                overflow: hidden;
-            }}
-            .header {{
-                background: linear-gradient(135deg, #ff6b6b, #ffd93d);
-                padding: 30px;
-                text-align: center;
-            }}
-            .content {{
-                padding: 30px;
-            }}
-            .footer {{
-                background: #1a1a1a;
-                padding: 20px;
-                text-align: center;
-                font-size: 12px;
-                color: #888;
-            }}
-            .button {{
-                display: inline-block;
-                background: #ff6b6b;
-                color: #fff;
-                padding: 12px 30px;
-                text-decoration: none;
-                border-radius: 5px;
-                font-weight: bold;
-                margin: 20px 0;
-            }}
-            .warning {{
-                background: #2a1810;
-                border-left: 4px solid #ff6b6b;
-                padding: 15px;
-                margin: 20px 0;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="email-container">
-            <div class="header">
-                <h1>🔐 FovDark</h1>
-                <p>Recuperação de Senha</p>
-            </div>
-            <div class="content">
-                <h2>Solicitação de Nova Senha</h2>
-                <p>Olá, <strong>{email}</strong>!</p>
-                <p>Recebemos uma solicitação para redefinir a senha da sua conta FovDark.</p>
-
-                <div class="warning">
-                    <strong>⚠️ Importante:</strong> Se você não solicitou esta recuperação, ignore este email. Sua conta permanecerá segura.
-                </div>
-
-                <p>Para criar uma nova senha, clique no botão abaixo:</p>
-                <a href="{recovery_link}" class="button">REDEFINIR SENHA</a>
-
-                <p><strong>Este link expira em 1 hora por segurança.</strong></p>
-
-                <p>Ou copie e cole este link no seu navegador:</p>
-                <p style="word-break: break-all; background: #1a1a1a; padding: 10px; border-radius: 5px; font-family: monospace;">
-                    {recovery_link}
-                </p>
-            </div>
-            <div class="footer">
-                <p>&copy; 2024 FovDark. Todos os direitos reservados.</p>
-                <p>Este é um email automático, não responda.</p>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-
-    return send_email(email, subject, html_content)
+    """Enviar email de recuperação de senha usando SendGrid"""
+    from password_recovery import send_recovery_email_sendgrid
+    return send_recovery_email_sendgrid(email, recovery_token)
 
 def send_purchase_confirmation(email, plan_name, expiration_date):
     """Enviar confirmação de compra"""
