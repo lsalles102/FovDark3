@@ -68,118 +68,181 @@ def use_reset_token(db: Session, token: str) -> bool:
     return False
 
 
-def send_recovery_email_smtp(email: str, recovery_token: str) -> bool:
-    """Enviar email de recuperação usando SMTP"""
+def send_recovery_email_sendgrid(email: str, recovery_token: str) -> bool:
+    """Enviar email de recuperação usando SendGrid"""
     try:
-        # Configurações SMTP (usar Gmail como exemplo)
-        smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-        smtp_port = int(os.getenv("SMTP_PORT", "587"))
-        smtp_user = os.getenv("SMTP_USER", "")
-        smtp_password = os.getenv("SMTP_PASSWORD", "")
-        
-        if not smtp_user or not smtp_password:
-            print("Configurações SMTP não encontradas")
-            return False
-        
-        # Criar link de recuperação
-        base_url = os.getenv("BASE_URL", "http://localhost:5000")
+        # Obter configurações do domínio
+        from domain_config import get_production_domain
+        base_url = get_production_domain()
         recovery_link = f"{base_url}/recover?token={recovery_token}"
         
-        # Criar mensagem
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = "Recuperação de Senha - FovDark"
-        msg['From'] = smtp_user
-        msg['To'] = email
-        
-        # Template HTML
+        # Template HTML para recuperação de senha
         html_content = f"""
         <!DOCTYPE html>
         <html>
         <head>
             <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Recuperação de Senha - FovDark</title>
             <style>
                 body {{ 
-                    font-family: Arial, sans-serif; 
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
                     background: #0a0a0a; 
                     color: #ffffff; 
                     margin: 0; 
-                    padding: 20px; 
+                    padding: 20px;
+                    line-height: 1.6;
                 }}
                 .container {{
                     max-width: 600px;
                     margin: 0 auto;
                     background: #1a1a1a;
-                    border-radius: 10px;
+                    border-radius: 15px;
                     overflow: hidden;
+                    box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
                 }}
                 .header {{
-                    background: linear-gradient(135deg, #ff6b6b, #ffd93d);
-                    padding: 30px;
+                    background: linear-gradient(135deg, #ff6b6b, #ffd93d, #ff6b6b);
+                    padding: 40px 30px;
                     text-align: center;
+                    position: relative;
+                }}
+                .header::before {{
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+                    animation: shine 3s infinite;
+                }}
+                @keyframes shine {{
+                    0% {{ transform: translateX(-100%); }}
+                    100% {{ transform: translateX(100%); }}
+                }}
+                .logo {{
+                    font-size: 2.5em;
+                    font-weight: bold;
+                    margin-bottom: 10px;
+                    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+                }}
+                .header h2 {{
+                    margin: 0;
+                    font-size: 1.5em;
+                    font-weight: 300;
                 }}
                 .content {{
-                    padding: 30px;
+                    padding: 40px 30px;
+                }}
+                .content h3 {{
+                    color: #ff6b6b;
+                    margin-top: 0;
+                    font-size: 1.3em;
                 }}
                 .button {{
                     display: inline-block;
-                    background: #ff6b6b;
+                    background: linear-gradient(135deg, #ff6b6b, #ff5252);
                     color: #ffffff !important;
-                    padding: 15px 30px;
+                    padding: 15px 40px;
                     text-decoration: none;
-                    border-radius: 5px;
+                    border-radius: 50px;
                     font-weight: bold;
+                    margin: 25px 0;
+                    font-size: 16px;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+                }}
+                .button:hover {{
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
+                }}
+                .warning {{
+                    background: rgba(255, 107, 107, 0.1);
+                    border-left: 4px solid #ff6b6b;
+                    padding: 15px;
                     margin: 20px 0;
+                    border-radius: 0 8px 8px 0;
                 }}
                 .footer {{
                     background: #0a0a0a;
-                    padding: 20px;
+                    padding: 30px;
                     text-align: center;
-                    font-size: 12px;
+                    border-top: 1px solid #333;
+                }}
+                .footer p {{
+                    margin: 5px 0;
+                    font-size: 14px;
                     color: #888;
+                }}
+                .link-backup {{
+                    background: #2a2a2a;
+                    padding: 15px;
+                    border-radius: 8px;
+                    margin: 20px 0;
+                    word-break: break-all;
+                    font-family: monospace;
+                    font-size: 12px;
+                    color: #ccc;
                 }}
             </style>
         </head>
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>🔐 FovDark</h1>
+                    <div class="logo">🔐 FovDark</div>
                     <h2>Recuperação de Senha</h2>
                 </div>
                 <div class="content">
-                    <p>Olá,</p>
-                    <p>Você solicitou a recuperação de senha para sua conta no FovDark.</p>
-                    <p>Clique no botão abaixo para redefinir sua senha:</p>
+                    <h3>Olá!</h3>
+                    <p>Você solicitou a recuperação de senha para sua conta no <strong>FovDark</strong>.</p>
+                    <p>Para redefinir sua senha de forma segura, clique no botão abaixo:</p>
+                    
                     <center>
-                        <a href="{recovery_link}" class="button">Redefinir Senha</a>
+                        <a href="{recovery_link}" class="button">🔑 Redefinir Minha Senha</a>
                     </center>
-                    <p><strong>Este link é válido por apenas 1 hora.</strong></p>
-                    <p>Se você não solicitou esta recuperação, ignore este email.</p>
-                    <hr>
-                    <p><small>Se o botão não funcionar, copie e cole este link no seu navegador:</small></p>
-                    <p><small>{recovery_link}</small></p>
+                    
+                    <div class="warning">
+                        <p><strong>⚠️ Importante:</strong></p>
+                        <ul>
+                            <li>Este link é válido por apenas <strong>1 hora</strong></li>
+                            <li>Só pode ser usado uma única vez</li>
+                            <li>Se você não solicitou esta recuperação, ignore este email</li>
+                        </ul>
+                    </div>
+                    
+                    <hr style="border: none; border-top: 1px solid #333; margin: 30px 0;">
+                    
+                    <p><strong>Link não está funcionando?</strong></p>
+                    <p>Copie e cole este endereço no seu navegador:</p>
+                    <div class="link-backup">{recovery_link}</div>
                 </div>
                 <div class="footer">
+                    <p><strong>FovDark Security Team</strong></p>
                     <p>© 2025 FovDark. Todos os direitos reservados.</p>
+                    <p>Este é um email automático, não responda a esta mensagem.</p>
                 </div>
             </div>
         </body>
         </html>
         """
         
-        html_part = MIMEText(html_content, 'html')
-        msg.attach(html_part)
+        # Usar a função send_email do email_utils.py
+        success = send_email(
+            to_email=email,
+            subject="🔐 Recuperação de Senha - FovDark",
+            html_content=html_content
+        )
         
-        # Enviar email
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
-            server.starttls()
-            server.login(smtp_user, smtp_password)
-            server.sendmail(smtp_user, email, msg.as_string())
-        
-        print(f"Email de recuperação enviado para {email}")
-        return True
-        
+        if success:
+            print(f"Email de recuperação enviado para {email} via SendGrid")
+            return True
+        else:
+            print(f"Falha ao enviar email de recuperação para {email}")
+            return False
+            
     except Exception as e:
-        print(f"Erro ao enviar email de recuperação: {e}")
+        print(f"Erro ao enviar email de recuperação via SendGrid: {e}")
         return False
 
 

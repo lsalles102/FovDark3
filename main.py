@@ -45,7 +45,7 @@ from admin import get_admin_user
 from email_utils import send_confirmation_email, send_recovery_email
 from password_recovery import (
     create_password_reset_token, verify_reset_token, use_reset_token, 
-    send_recovery_email_simple
+    send_recovery_email_sendgrid
 )
 
 Base.metadata.create_all(bind=engine)
@@ -398,8 +398,8 @@ async def forgot_password(
         # Criar token de recuperação
         token = create_password_reset_token(db, user.id)
         
-        # Enviar email de recuperação
-        email_sent = send_recovery_email_simple(email, token)
+        # Enviar email de recuperação via SendGrid
+        email_sent = send_recovery_email_sendgrid(email, token)
         
         if email_sent:
             return {"message": "Email de recuperação enviado com sucesso"}
