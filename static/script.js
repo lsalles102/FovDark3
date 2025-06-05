@@ -23,7 +23,24 @@
     function initializeApp() {
         try {
             setupNavigation();
-            checkAuthentication();
+            // Só verificar autenticação em páginas que realmente precisam
+            const protectedPages = ['/painel', '/admin'];
+            if (!protectedPages.includes(window.location.pathname)) {
+                checkAuthentication();
+            } else {
+                // Para páginas protegidas, apenas verificar dados locais
+                const token = localStorage.getItem('access_token');
+                const userData = localStorage.getItem('user_data');
+                if (token && userData) {
+                    try {
+                        currentUser = JSON.parse(userData);
+                        isAuthenticated = true;
+                        updateNavigation(true);
+                    } catch (e) {
+                        console.error('Erro ao carregar dados do usuário:', e);
+                    }
+                }
+            }
             setupEventListeners();
             initializePage();
             console.log('Sistema inicializado');
@@ -224,7 +241,11 @@
 
         window.addEventListener('storage', function(e) {
             if (e.key === 'access_token' || e.key === 'user_data') {
-                checkAuthentication();
+                // Só verificar se estamos em páginas que não são protegidas
+                const protectedPages = ['/admin', '/painel'];
+                if (!protectedPages.includes(window.location.pathname)) {
+                    checkAuthentication();
+                }
             }
         });
     }
@@ -252,11 +273,9 @@
     }
 
     function initializeLoginPage() {
-        if (isAuthenticated && currentUser) {
-            redirectUser();
-            return;
-        }
-
+        // Não redirecionar automaticamente na página de login
+        // Deixar o usuário fazer login normalmente
+        
         const loginForm = document.getElementById('loginForm');
         if (loginForm) {
             loginForm.addEventListener('submit', handleLogin);
