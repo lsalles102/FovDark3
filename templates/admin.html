@@ -1769,6 +1769,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
+let lastAdminCheck = 0;
+const adminCheckInterval = 600000; // 10 minutos para verificações de admin
+
 async function checkAdminAuth() {
     const token = localStorage.getItem('access_token');
     const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
@@ -1787,6 +1790,13 @@ async function checkAdminAuth() {
             window.location.replace('/painel');
         }, 2000);
         return false;
+    }
+
+    // Cache da verificação - só verificar no servidor ocasionalmente
+    const now = Date.now();
+    if (now - lastAdminCheck < adminCheckInterval) {
+        console.log('✅ Usando cache de verificação admin');
+        return true;
     }
 
     // Verificar se o token ainda é válido
@@ -1808,6 +1818,7 @@ async function checkAdminAuth() {
 
         if (response.ok) {
             const data = await response.json();
+            lastAdminCheck = now; // Atualizar timestamp da última verificação
             if (!data.user.is_admin) {
                 console.log('❌ Usuário não é admin no servidor, redirecionando para painel');
                 showToast('Acesso negado. Privilégios de administrador necessários.', 'error');
@@ -1822,9 +1833,17 @@ async function checkAdminAuth() {
         return true;
     } catch (error) {
         console.error('❌ Erro na verificação de auth:', error);
-        // Em caso de erro de rede, não redirecionar imediatamente
-        console.log('⚠️ Erro de rede, mantendo usuário na página');
-        return true; // Assumir que está ok se for erro de rede
+        // Em caso de erro de rede, manter usuário logado se tem dados válidos
+        if (userData && userData.is_admin) {
+            console.log('⚠️ Erro de rede, mantendo sessão admin ativa');
+            lastAdminCheck = now - (adminCheckInterval / 2); // Tentar novamente em 5 minutos
+            return true;
+        }
+        // Só redirecionar se realmente não temos dados válidos
+        console.log('❌ Sem dados válidos, redirecionando para login');
+        localStorage.clear();
+        window.location.replace('/login');
+        return false;
     }
 }
 
