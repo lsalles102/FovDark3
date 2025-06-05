@@ -1,65 +1,48 @@
 import os
-import smtplib
-import email.mime.text
-import email.mime.multipart
+import requests
+import json
 from sqlalchemy.orm import Session
 from database import get_db
 from models import SiteSettings
 
-def get_email_settings():
-    """Obter configurações de email do banco"""
-    try:
-        db = next(get_db())
-        settings = {}
-
-        email_settings = db.query(SiteSettings).filter(
-            SiteSettings.category == "api"
-        ).all()
-
-        for setting in email_settings:
-            settings[setting.key] = setting.value
-
-        db.close()
-        return settings
-    except:
-        # Configurações padrão/fallback
-        return {
-            "smtp_host": os.getenv("SMTP_HOST", "smtp.gmail.com"),
-            "smtp_port": int(os.getenv("SMTP_PORT", "587")),
-            "smtp_email": os.getenv("SMTP_EMAIL", ""),
-            "smtp_password": os.getenv("SMTP_PASSWORD", "")
-        }
+def get_sendgrid_settings():
+    """Obter configurações do SendGrid"""
+    return {
+        "api_key": os.environ.get('SENDGRID_API_KEY'),
+        "from_email": "noreply@fovdark.com",
+        "from_name": "FovDark"
+    }
 
 def send_email(to_email, subject, html_content):
-    """Enviar email usando SMTP"""
+    """Enviar email usando SendGrid"""
     try:
-        settings = get_email_settings()
-
-        if not all([settings.get("smtp_email"), settings.get("smtp_password")]):
-            print("Configurações de email não encontradas")
+        # Obter chave API do SendGrid
+        sendgrid_key = os.environ.get('SENDGRID_API_KEY')
+        if not sendgrid_key:
+            print("SENDGRID_API_KEY não configurada")
             return False
 
+        # Email remetente padrão
+        from_email = "noreply@fovdark.com"
+        
+        # Criar cliente SendGrid
+        sg = SendGridAPIClient(sendgrid_key)
+
         # Criar mensagem
-        msg = email.mime.multipart.MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From'] = settings["smtp_email"]
-        msg['To'] = to_email
+        message = Mail(
+            from_email=from_email,
+            to_emails=to_email,
+            subject=subject,
+            html_content=html_content
+        )
 
-        # Adicionar conteúdo HTML
-        html_part = email.mime.text.MIMEText(html_content, 'html')
-        msg.attach(html_part)
-
-        # Conectar e enviar
-        server = smtplib.SMTP(settings["smtp_host"], int(settings.get("smtp_port", 587)))
-        server.starttls()
-        server.login(settings["smtp_email"], settings["smtp_password"])
-        server.send_message(msg)
-        server.quit()
-
+        # Enviar email
+        response = sg.send(message)
+        print(f"Email enviado para {to_email} - Status: {response.status_code}")
         return True
 
     except Exception as e:
-        print(f"Erro ao enviar email: {e}")
+        print(f"Erro ao enviar email via SendGrid: {e}")
         return False
 
 def send_confirmation_email(email):
