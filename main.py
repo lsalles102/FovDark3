@@ -113,12 +113,16 @@ async def save_hwid(
     db: Session = Depends(get_db)
 ):
     try:
-        if not current_user.hwid:
-            current_user.hwid = hwid_data.hwid
+        existing_hwid = current_user.hwid
+        if not existing_hwid:
+            # Usar update query ao invés de atribuição direta
+            db.query(User).filter(User.id == current_user.id).update({
+                "hwid": hwid_data.hwid
+            })
             db.commit()
             return {"message": "HWID salvo com sucesso"}
 
-        if current_user.hwid != hwid_data.hwid:
+        if existing_hwid != hwid_data.hwid:
             raise HTTPException(status_code=403, detail="Este usuário já está vinculado a outro dispositivo.")
 
         return {"message": "HWID já registrado"}
