@@ -14,7 +14,7 @@ def get_sendgrid_settings():
     }
 
 def send_email(to_email, subject, html_content):
-    """Enviar email usando SendGrid"""
+    """Enviar email usando SendGrid API REST"""
     try:
         # Obter chave API do SendGrid
         sendgrid_key = os.environ.get('SENDGRID_API_KEY')
@@ -22,27 +22,47 @@ def send_email(to_email, subject, html_content):
             print("SENDGRID_API_KEY não configurada")
             return False
 
-        # Email remetente padrão
-        from_email = "noreply@fovdark.com"
+        # URL da API SendGrid
+        url = "https://api.sendgrid.com/v3/mail/send"
         
-        # Criar cliente SendGrid
-        sg = SendGridAPIClient(sendgrid_key)
-
-        # Criar mensagem
-        message = Mail(
-            from_email=from_email,
-            to_emails=to_email,
-            subject=subject,
-            html_content=html_content
-        )
-
-        # Enviar email
-        response = sg.send(message)
-        print(f"Email enviado para {to_email} - Status: {response.status_code}")
-        return True
+        # Headers
+        headers = {
+            "Authorization": f"Bearer {sendgrid_key}",
+            "Content-Type": "application/json"
+        }
+        
+        # Dados do email
+        data = {
+            "personalizations": [
+                {
+                    "to": [{"email": to_email}],
+                    "subject": subject
+                }
+            ],
+            "from": {
+                "email": "noreply@fovdark.com",
+                "name": "FovDark"
+            },
+            "content": [
+                {
+                    "type": "text/html",
+                    "value": html_content
+                }
+            ]
+        }
+        
+        # Enviar request
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        
+        if response.status_code == 202:
+            print(f"✅ Email enviado para {to_email}")
+            return True
+        else:
+            print(f"❌ Erro SendGrid - Status: {response.status_code}, Response: {response.text}")
+            return False
 
     except Exception as e:
-        print(f"Erro ao enviar email via SendGrid: {e}")
+        print(f"❌ Erro ao enviar email via SendGrid: {e}")
         return False
 
 def send_confirmation_email(email):
