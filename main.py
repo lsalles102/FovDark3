@@ -43,6 +43,10 @@ def validate_email(email: str) -> bool:
 from license import create_payment_record, get_license_status
 from admin import get_admin_user
 from email_utils import send_confirmation_email, send_recovery_email
+from password_recovery import (
+    create_password_reset_token, verify_reset_token, use_reset_token, 
+    send_recovery_email_simple
+)
 
 Base.metadata.create_all(bind=engine)
 
