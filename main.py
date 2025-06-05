@@ -202,7 +202,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 f"default-src 'self' https://sdk.mercadopago.com https://www.mercadolibre.com https://static.cloudflareinsights.com https://www.fovdark.shop {current_domain}; "
                 f"connect-src 'self' https://www.mercadolibre.com https://api.mercadopago.com https://fonts.googleapis.com https://static.cloudflareinsights.com https://www.fovdark.shop {current_domain}; "
                 f"frame-src 'self' https://www.mercadolibre.com https://sdk.mercadopago.com https://www.fovdark.shop {current_domain}; "
-                f"script-src 'self' 'unsafe-inline' https://sdk.mercadopago.com https://cdnjs.cloudflare.com https://static.cloudflareinsights.com https://www.fovdark.shop {current_domain}; "
+                f"script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sdk.mercadopago.com https://cdnjs.cloudflare.com https://static.cloudflareinsights.com https://www.fovdark.shop {current_domain}; "
                 f"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://www.fovdark.shop {current_domain}; "
                 f"img-src 'self' data: https: https://www.fovdark.shop {current_domain}; "
                 f"font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://www.fovdark.shop {current_domain}; "

@@ -1,0 +1,45 @@
+Content Security Policy of your site blocks some resources
+Some resources are blocked because their origin is not listed in your site's Content Security Policy (CSP). Your site's CSP is allowlist-based, so resources must be listed in the allowlist in order to be accessed.
+
+A site's Content Security Policy is set either via an HTTP header (recommended), or via a meta HTML tag.
+
+To fix this issue do one of the following:
+
+(Recommended) If you're using an allowlist for 'script-src', consider switching from an allowlist CSP to a strict CSP, because strict CSPs are more robust against XSS. See how to set a strict CSP.
+Or carefully check that all of the blocked resources are trustworthy; if they are, include their sources in the CSP of your site. ⚠️Never add a source you don't trust to your site's CSP. If you don't trust the source, consider hosting resources on your own site instead.
+2 directives
+Learn more: Content Security Policy - Source Allowlists
+Content Security Policy of your site blocks the use of 'eval' in JavaScript`
+The Content Security Policy (CSP) prevents the evaluation of arbitrary strings as JavaScript to make it more difficult for an attacker to inject unathorized code on your site.
+
+To solve this issue, avoid using eval(), new Function(), setTimeout([string], ...) and setInterval([string], ...) for evaluating strings.
+
+If you absolutely must: you can enable string evaluation by adding unsafe-eval as an allowed source in a script-src directive.
+
+⚠️ Allowing string evaluation comes at the risk of inline script injection.
+
+1 directive
+Source location	Directive	Status
+Class.js:22	script-src	blocked
+Learn more: Content Security Policy - Eval
+Incorrect use of <label for=FORM_ELEMENT>
+The label's for attribute doesn't match any element id. This might prevent the browser from correctly autofilling the form and accessibility tools from working correctly.
+
+To fix this issue, make sure the label's for attribute references the correct id of a form field.
+
+2 resources
+Learn more: The label elements
+No label associated with a form field
+A <label> isn't associated with a form field.
+
+To fix this issue, nest the <input> in the <label> or provide a for attribute on the <label> that matches a form field id.
+
+5 resources
+Learn more: The label elements
+Page layout may be unexpected due to Quirks Mode
+One or more documents in this page is in Quirks Mode, which will render the affected document(s) with quirks incompatible with the current HTML and CSS specifications.
+
+Quirks Mode exists mostly due to historical reasons. If this is not intentional, you can add or modify the DOCTYPE to be `<!DOCTYPE html>` to render the page in No Quirks Mode.
+
+3 elements
+Learn more: Document compatibility mode
