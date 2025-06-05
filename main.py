@@ -376,6 +376,80 @@ async def login_user(
         db.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Erro interno do servidor")
 
+@app.post("/api/forgot-password")
+async def forgot_password(
+    request: Request,
+    email: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """Endpoint para solicitar recuperação de senha"""
+    email = email.strip().lower()
+    
+    if not validate_email(email):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email inválido")
+    
+    # Buscar usuário
+    user = db.query(User).filter(User.email.ilike(email)).first()
+    if not user:
+        # Por segurança, sempre retornar sucesso mesmo se o usuário não existir
+        return {"message": "Se o email estiver cadastrado, você receberá instruções de recuperação"}
+    
+    try:
+        # Criar token de recuperação
+        token = create_password_reset_token(db, user.id)
+        
+        # Enviar email de recuperação
+        email_sent = send_recovery_email_simple(email, token)
+        
+        if email_sent:
+            return {"message": "Email de recuperação enviado com sucesso"}
+        else:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Erro ao enviar email")
+            
+    except Exception as e:
+        print(f"Erro na recuperação de senha: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Erro interno do servidor")
+
+@app.post("/api/reset-password")
+async def reset_password(
+    request: Request,
+    token: str = Form(...),
+    password: str = Form(...),
+    confirm_password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """Endpoint para redefinir senha usando token"""
+    if not token or not password or not confirm_password:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Todos os campos são obrigatórios")
+    
+    if password != confirm_password:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="As senhas não coincidem")
+    
+    if len(password) < 6:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="A senha deve ter pelo menos 6 caracteres")
+    
+    # Verificar token
+    user = verify_reset_token(db, token)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token inválido ou expirado")
+    
+    try:
+        # Atualizar senha
+        user.senha_hash = get_password_hash(password)
+        user.tentativas_login = 0  # Reset tentativas
+        
+        # Marcar token como usado
+        use_reset_token(db, token)
+        
+        db.commit()
+        
+        return {"message": "Senha redefinida com sucesso"}
+        
+    except Exception as e:
+        print(f"Erro ao redefinir senha: {e}")
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Erro interno do servidor")
+
 @app.get("/api/admin/users")
 async def get_all_users(
     admin_user: User = Depends(get_admin_user),
@@ -1418,6 +1492,11 @@ async def isos_page(request: Request):
 async def otimizadores_page(request: Request):
     """Página de otimizadores"""
     return templates.TemplateResponse("otimizadores.html", {"request": request})
+
+@app.get("/recover", response_class=HTMLResponse)
+async def recover_page(request: Request):
+    """Página de recuperação de senha"""
+    return templates.TemplateResponse("recover.html", {"request": request})
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_page(request: Request):
