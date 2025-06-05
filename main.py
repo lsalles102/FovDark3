@@ -316,38 +316,46 @@ async def login_user(
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email ou senha incorretos")
 
         # Verificar se conta não está bloqueada
-        if user.tentativas_login >= 5:
+        current_attempts = user.tentativas_login or 0
+        if current_attempts >= 5:
             print(f"🚫 Conta bloqueada por muitas tentativas: {email[:3]}***")
             raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Conta temporariamente bloqueada. Tente novamente mais tarde.")
 
         # Autenticar usuário
         authenticated_user = authenticate_user(db, email.strip(), password)
         if not authenticated_user:
-            # Incrementar tentativas
-            user.tentativas_login += 1
+            # Incrementar tentativas usando update
+            db.query(User).filter(User.id == user.id).update({
+                "tentativas_login": current_attempts + 1
+            })
             db.commit()
             print(f"❌ Falha na autenticação: {email[:3]}***")
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email ou senha incorretos")
 
-        # Reset tentativas e atualizar último login
-        user.tentativas_login = 0
-        user.ultimo_login = datetime.utcnow()
-        user.ip_ultimo_login = request.client.host
+        # Reset tentativas e atualizar último login usando update
+        client_ip = request.client.host if request.client else "unknown"
+        db.query(User).filter(User.id == user.id).update({
+            "tentativas_login": 0,
+            "ultimo_login": datetime.utcnow(),
+            "ip_ultimo_login": client_ip
+        })
         db.commit()
 
         # Verificar privilégios de admin
         AUTHORIZED_ADMIN_EMAILS = ["admin@fovdark.com", "lsalles102@gmail.com"]
         user_email_lower = user.email.lower().strip()
         is_authorized_admin = user_email_lower in [email.lower() for email in AUTHORIZED_ADMIN_EMAILS]
+        current_admin_status = bool(user.is_admin)
 
-        if is_authorized_admin and not user.is_admin:
-            user.is_admin = True
+        if is_authorized_admin != current_admin_status:
+            db.query(User).filter(User.id == user.id).update({
+                "is_admin": is_authorized_admin
+            })
             db.commit()
-            print(f"👑 Usuário promovido a admin: {email[:3]}***")
-        elif not is_authorized_admin and user.is_admin:
-            user.is_admin = False
-            db.commit()
-            print(f"👤 Privilégios de admin removidos: {email[:3]}***")
+            if is_authorized_admin:
+                print(f"👑 Usuário promovido a admin: {email[:3]}***")
+            else:
+                print(f"👤 Privilégios de admin removidos: {email[:3]}***")
 
         # Criar token
         access_token = create_access_token(data={"sub": user.email})
@@ -434,9 +442,11 @@ async def reset_password(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token inválido ou expirado")
     
     try:
-        # Atualizar senha
-        user.senha_hash = get_password_hash(password)
-        user.tentativas_login = 0  # Reset tentativas
+        # Atualizar senha usando update query
+        db.query(User).filter(User.id == user.id).update({
+            "senha_hash": get_password_hash(password),
+            "tentativas_login": 0
+        })
         
         # Marcar token como usado
         use_reset_token(db, token)

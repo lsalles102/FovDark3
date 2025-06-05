@@ -153,41 +153,57 @@ async def get_current_user(
     """Obter usuário atual do token"""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Credenciais inválidas",
+        detail="Token inválido ou expirado",
         headers={"WWW-Authenticate": "Bearer"},
     )
 
     try:
         payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
+        exp = payload.get("exp")
+        
         if email is None:
+            print("Token sem email válido")
             raise credentials_exception
-    except JWTError:
+            
+        # Verificar se o token não expirou
+        if exp is None or datetime.utcnow().timestamp() > exp:
+            print("Token expirado")
+            raise credentials_exception
+            
+    except JWTError as e:
+        print(f"Erro JWT: {e}")
         raise credentials_exception
 
     user = db.query(User).filter(User.email == email).first()
     if user is None:
+        print(f"Usuário não encontrado para o token: {email}")
         raise credentials_exception
 
-    # Lista de emails autorizados como admin (case-insensitive)
+    # Lista de emails autorizados como admin
     AUTHORIZED_ADMIN_EMAILS = [
         "admin@fovdark.com",
         "lsalles102@gmail.com"
     ]
 
-    # Verificar se o email está autorizado como admin (comparação case-insensitive)
+    # Verificar privilégios de admin
     user_email_lower = user.email.lower().strip()
     is_authorized_admin = user_email_lower in [email.lower() for email in AUTHORIZED_ADMIN_EMAILS]
 
-    # Apenas emails autorizados podem ser admin
-    user.is_admin = is_authorized_admin
-    
-    if is_authorized_admin and not user.is_admin:
-        db.commit()
-        print(f"👑 Usuário {user.email} promovido a admin")
-    elif not is_authorized_admin and user.is_admin:
-        db.commit()
-        print(f"👤 Privilégios de admin removidos de {user.email}")
+    # Atualizar privilégios apenas se necessário
+    if is_authorized_admin != bool(user.is_admin):
+        try:
+            # Usar update() ao invés de atribuição direta
+            db.query(User).filter(User.id == user.id).update({
+                "is_admin": is_authorized_admin
+            })
+            db.commit()
+            # Refresh do objeto user
+            db.refresh(user)
+            print(f"Privilégios atualizados para {user.email}: admin={is_authorized_admin}")
+        except Exception as e:
+            print(f"Erro ao atualizar privilégios: {e}")
+            db.rollback()
 
     return user
 

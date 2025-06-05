@@ -62,7 +62,10 @@ def use_reset_token(db: Session, token: str) -> bool:
     ).first()
     
     if reset_token:
-        reset_token.used = True
+        # Usar update query ao invés de atribuição direta
+        db.query(PasswordResetToken).filter(
+            PasswordResetToken.id == reset_token.id
+        ).update({"used": True})
         db.commit()
         return True
     return False
