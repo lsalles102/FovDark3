@@ -15,6 +15,7 @@ dependencies = [
     "python-jose[cryptography]>=3.4.0",
     "python-multipart>=0.0.20",
     "requests>=2.32.3",
+    "sendgrid>=6.12.3",
     "sqlalchemy>=2.0.41",
     "starlette>=0.46.2",
     "uvicorn>=0.34.2",

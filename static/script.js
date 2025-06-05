@@ -1,6 +1,8 @@
-// ===== SISTEMA DE AUTENTICAÇÃO SIMPLIFICADO =====
+// ===== SISTEMA DE AUTENTICAÇÃO DARKFOV =====
 (function() {
-    console.log('🚀 Inicializando FovDark...');
+    'use strict';
+    
+    console.log('Inicializando FovDark...');
 
     // ===== VARIÁVEIS GLOBAIS =====
     let currentUser = null;
