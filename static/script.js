@@ -6,10 +6,18 @@
 
     let currentUser = null;
     let isAuthenticated = false;
+    let lastTokenCheck = 0;
+    let tokenCheckInterval = 300000; // 5 minutos em vez de verificações constantes
 
     document.addEventListener('DOMContentLoaded', function() {
         console.log('DOM carregado');
         initializeApp();
+    });
+
+    // Adicionar tratamento global de erros para evitar unhandledrejection
+    window.addEventListener('unhandledrejection', function(event) {
+        console.warn('⚠️ Promise rejection não tratada capturada:', event.reason);
+        event.preventDefault(); // Evitar que apareça no console como erro crítico
     });
 
     function initializeApp() {
@@ -35,6 +43,14 @@
                 return false;
             }
 
+            // Cache do token - só verificar no servidor se passou do intervalo
+            const now = Date.now();
+            if (now - lastTokenCheck < tokenCheckInterval && currentUser && isAuthenticated) {
+                console.log('✅ Usando cache de autenticação');
+                updateNavigation(true);
+                return true;
+            }
+
             try {
                 const response = await fetch('/api/verify_token', {
                     method: 'POST',
@@ -56,6 +72,7 @@
                         localStorage.setItem('user_data', JSON.stringify(data.user));
                         currentUser = data.user;
                         isAuthenticated = true;
+                        lastTokenCheck = now; // Atualizar timestamp do último check
                         updateNavigation(true);
                         return true;
                     }
@@ -66,24 +83,45 @@
                 return false;
 
             } catch (networkError) {
+                console.log('⚠️ Erro de rede na verificação de token:', networkError.message);
+                
+                // Em caso de erro de rede, manter o usuário logado se temos dados válidos
                 if (userData) {
                     try {
                         const parsedUserData = JSON.parse(userData);
                         currentUser = parsedUserData;
                         isAuthenticated = true;
                         updateNavigation(true);
+                        console.log('✅ Mantendo sessão ativa offline');
                         return true;
                     } catch (parseError) {
                         console.error('Erro ao fazer parse dos dados salvos:', parseError);
                     }
                 }
 
+                // Só limpar dados se realmente for necessário
+                console.log('⚠️ Não foi possível manter sessão, limpando dados');
                 clearAuthData();
                 updateNavigation(false);
                 return false;
             }
         } catch (error) {
             console.error('Erro geral na autenticação:', error);
+            
+            // Tentar manter a sessão se temos dados válidos no localStorage
+            if (userData) {
+                try {
+                    const parsedUserData = JSON.parse(userData);
+                    currentUser = parsedUserData;
+                    isAuthenticated = true;
+                    updateNavigation(true);
+                    console.log('✅ Sessão mantida após erro de autenticação');
+                    return true;
+                } catch (parseError) {
+                    console.error('Erro ao fazer parse dos dados após erro geral:', parseError);
+                }
+            }
+            
             clearAuthData();
             updateNavigation(false);
             return false;
