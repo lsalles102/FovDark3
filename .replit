@@ -6,7 +6,7 @@ channel = "stable-24_05"
 packages = ["libxcrypt"]
 
 [workflows]
-runButton = "FovDark Server Complete"
+runButton = "Project"
 
 [[workflows.workflow]]
 name = "Project"
@@ -23,7 +23,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "pip install fastapi uvicorn sqlalchemy psycopg2-binary python-jose[cryptography] passlib[bcrypt] python-multipart jinja2 aiofiles && python main.py"
+args = "python main.py"
 waitForPort = 5000
 
 [[workflows.workflow]]
